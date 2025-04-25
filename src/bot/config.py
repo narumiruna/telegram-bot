@@ -11,7 +11,6 @@ class ServiceParams(TypedDict):
     command: str
     help: str
     agent: AgentParams
-    handoffs: list[AgentParams]
 
 
 class AgentParams(TypedDict):

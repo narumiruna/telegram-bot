@@ -4,8 +4,6 @@ import textwrap
 
 from agents import Agent
 from agents import Runner
-from agents import handoff
-from agents.extensions import handoff_filters
 from agents.mcp import MCPServerStdio
 from loguru import logger
 from telegram import Message
@@ -15,7 +13,7 @@ from telegram.ext import ContextTypes
 from bot.utils import async_load_url
 
 from ..cache import get_cache_from_env
-from ..config import ServiceParams
+from ..config import AgentParams
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
 from ..utils import parse_url
@@ -44,35 +42,20 @@ def remove_tool_messages(messages):
     return filtered_messages
 
 
-class TriageAgentCallback:
-    def __init__(self, params: ServiceParams, max_cache_size: int = 100) -> None:
-        self.command = params["command"]
-        self.help = params["help"]
-
-        agent_params = params["agent"]
-
-        self.handoff_agents = [
-            Agent(
-                name=agent["name"],
-                instructions=agent["instructions"],
-                model=get_openai_model(),
-                model_settings=get_openai_model_settings(),
-                mcp_servers=[MCPServerStdio(params=p) for p in agent["mcp_servers"].values()],
-            )
-            for agent in params["handoffs"]
-        ]
-
-        self.triage_agent = Agent(
-            name=agent_params["name"],
-            instructions=agent_params["instructions"],
+class AgentCallback:
+    @classmethod
+    def from_params(cls, params: AgentParams) -> AgentCallback:
+        agent = Agent(
+            name=params["name"],
+            instructions=params["instructions"],
             model=get_openai_model(),
             model_settings=get_openai_model_settings(),
-            mcp_servers=[MCPServerStdio(params=p) for p in agent_params["mcp_servers"].values()],
-            handoffs=[handoff(agent, input_filter=handoff_filters.remove_all_tools) for agent in self.handoff_agents],
+            mcp_servers=[MCPServerStdio(params=p) for p in params["mcp_servers"].values()],
         )
+        return cls(agent)
 
-        # Set the current agent to the triage agent
-        self._current_agent = self.triage_agent
+    def __init__(self, agent: Agent, max_cache_size: int = 100) -> None:
+        self.agent = agent
 
         # max_cache_size is the maximum number of messages to keep in the cache
         self.max_cache_size = max_cache_size
@@ -81,20 +64,12 @@ class TriageAgentCallback:
         self.cache = get_cache_from_env()
 
     async def connect(self) -> None:
-        for mcp_server in self.triage_agent.mcp_servers:
+        for mcp_server in self.agent.mcp_servers:
             await mcp_server.connect()
 
-        for agent in self.handoff_agents:
-            for mcp_server in agent.mcp_servers:
-                await mcp_server.connect()
-
     async def cleanup(self) -> None:
-        for mcp_server in self.triage_agent.mcp_servers:
+        for mcp_server in self.agent.mcp_servers:
             await mcp_server.cleanup()
-
-        for agent in self.handoff_agents:
-            for mcp_server in agent.mcp_servers:
-                await mcp_server.cleanup()
 
     async def load_url_content(self, message_text: str) -> str:
         parsed_url = parse_url(message_text)
@@ -113,7 +88,6 @@ class TriageAgentCallback:
         self,
         message: Message,
         include_reply_to_message: bool = False,
-        use_triage_agent: bool = False,
     ) -> None:
         message_text = get_message_text(
             message,
@@ -145,9 +119,7 @@ class TriageAgentCallback:
         )
 
         # send the messages to the agent
-        if use_triage_agent:
-            self._current_agent = self.triage_agent
-        result = await Runner.run(self._current_agent, input=messages)
+        result = await Runner.run(self.agent, input=messages)
 
         logger.info("New items: {new_items}", new_items=result.new_items)
 
@@ -158,9 +130,6 @@ class TriageAgentCallback:
             input_items = input_items[-self.max_cache_size :]
         await self.cache.set(key, input_items)
 
-        # handoff to another agent
-        self._current_agent = result.last_agent
-
         await message.reply_text(result.final_output)
 
     async def handle_command(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
@@ -168,7 +137,7 @@ class TriageAgentCallback:
         if not message:
             return
 
-        await self.handle_message(message, include_reply_to_message=True, use_triage_agent=True)
+        await self.handle_message(message, include_reply_to_message=True)
 
     async def handle_reply(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         # TODO: Implement filters.MessageFilter for reply to bot
@@ -188,4 +157,4 @@ class TriageAgentCallback:
         if not from_user.is_bot:
             return
 
-        await self.handle_message(message, include_reply_to_message=True, use_triage_agent=False)
+        await self.handle_message(message, include_reply_to_message=True)

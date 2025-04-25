@@ -6,18 +6,17 @@
     "instructions": "使用台灣正體中文。擅長邏輯思考且嚴謹，會分解問題並且一步一步地思考。你會使用瀏覽器查詢你需要的資訊。若遇到技術問題，你會嘗試其他方法取得資訊。",
     "mcp_servers": {
       "playwright": {
-          "command": "npx",
-          "args": ["@playwright/mcp@latest"]
+        "command": "npx",
+        "args": ["@playwright/mcp@latest"]
       },
       "yfmcp": {
-          "command": "uvx",
-          "args": ["yfmcp"]
+        "command": "uvx",
+        "args": ["yfmcp"]
       },
       "mcp-server-twse": {
         "command": "uvx",
         "args": ["twsemcp"]
       }
     }
-  },
-  "handoffs": []
+  }
 }
