@@ -14,12 +14,12 @@ from telegram.ext import ContextTypes
 
 from bot.utils import async_load_url
 
-from .cache import get_cache_from_env
-from .callbacks.utils import get_message_text
-from .config import ServiceParams
-from .model import get_openai_model
-from .model import get_openai_model_settings
-from .utils import parse_url
+from ..cache import get_cache_from_env
+from ..config import ServiceParams
+from ..model import get_openai_model
+from ..model import get_openai_model_settings
+from ..utils import parse_url
+from .utils import get_message_text
 
 
 def shorten_text(text: str, width: int = 100, placeholder: str = "...") -> str:
@@ -44,7 +44,7 @@ def remove_tool_messages(messages):
     return filtered_messages
 
 
-class AgentService:
+class TriageAgentCallback:
     def __init__(self, params: ServiceParams, max_cache_size: int = 100) -> None:
         self.command = params["command"]
         self.help = params["help"]

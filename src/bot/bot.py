@@ -11,7 +11,6 @@ from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
-from .agent import AgentService
 from .callbacks import ErrorCallback
 from .callbacks import HelpCallback
 from .callbacks import TranslationCallback
@@ -21,6 +20,7 @@ from .callbacks import format_callback
 from .callbacks import query_ticker_callback
 from .callbacks import search_youtube_callback
 from .callbacks import summarize_callback
+from .callbacks.agent import TriageAgentCallback
 from .config import load_config
 
 
@@ -44,7 +44,7 @@ def get_bot_token() -> str:
 def run_bot(config_file: Annotated[str, typer.Option("-c", "--config")] = "config/default.json") -> None:  # noqa
     chat_filter = get_chat_filter()
 
-    service = AgentService(load_config(config_file))
+    service = TriageAgentCallback(load_config(config_file))
 
     async def connect(application: Application) -> None:
         await service.connect()
