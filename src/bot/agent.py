@@ -12,7 +12,6 @@ from telegram import Message
 from telegram import Update
 from telegram.ext import CommandHandler
 from telegram.ext import ContextTypes
-from telegram.ext import MessageHandler
 from telegram.ext import filters
 
 from bot.utils import async_load_url
@@ -101,9 +100,6 @@ class AgentService:
 
     def get_command_handler(self, filters: filters.BaseFilter) -> CommandHandler:
         return CommandHandler(command=self.command, callback=self.handle_command, filters=filters)
-
-    def get_message_handler(self, filters: filters.BaseFilter) -> MessageHandler:
-        return MessageHandler(filters=filters, callback=self.handle_reply)
 
     async def load_url_content(self, message_text: str) -> str:
         parsed_url = parse_url(message_text)
