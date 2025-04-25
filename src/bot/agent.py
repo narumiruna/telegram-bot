@@ -10,9 +10,7 @@ from agents.mcp import MCPServerStdio
 from loguru import logger
 from telegram import Message
 from telegram import Update
-from telegram.ext import CommandHandler
 from telegram.ext import ContextTypes
-from telegram.ext import filters
 
 from bot.utils import async_load_url
 
@@ -97,9 +95,6 @@ class AgentService:
         for agent in self.handoff_agents:
             for mcp_server in agent.mcp_servers:
                 await mcp_server.cleanup()
-
-    def get_command_handler(self, filters: filters.BaseFilter) -> CommandHandler:
-        return CommandHandler(command=self.command, callback=self.handle_command, filters=filters)
 
     async def load_url_content(self, message_text: str) -> str:
         parsed_url = parse_url(message_text)
