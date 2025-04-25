@@ -5,8 +5,9 @@ from typing import cast
 from loguru import logger
 from pydantic import BaseModel
 
+from ..lazy import parse
+from ..lazy import send
 from .utils import chunk_on_delimiter
-from .utils import generate
 
 
 class CausalRelationship(BaseModel):
@@ -73,9 +74,9 @@ async def extract_notes(text: str, lang: str = "台灣中文") -> ResearchReport
     """.strip()  # noqa: E501
     response = cast(
         ResearchReport,
-        await generate(
-            dedent(prompt),
-            response_format=ResearchReport,
+        await parse(
+            input=dedent(prompt),
+            output_type=ResearchReport,
         ),
     )
 
@@ -99,7 +100,7 @@ async def create_notes_from_chunk(text: str) -> str:
     {text}
     ```
     """).strip()  # noqa
-    result = await generate(prompt)
+    result = await send(prompt)
     return result
 
 

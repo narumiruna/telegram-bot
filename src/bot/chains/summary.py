@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import markdown2
-from agents import Agent
-from agents import ModelSettings
-from agents import Runner
 from pydantic import BaseModel
 from pydantic import Field
 
-from ..model import get_openai_model
+from ..lazy import parse
 from ..utils import create_page
 
 PROMPT_TEMPLATE = """
@@ -103,14 +100,9 @@ async def summarize(text: str) -> str:
     Returns:
         str: A formatted string containing the summary, key points, takeaways, and hashtags.
     """
-    agent = Agent(
-        "summary",
-        output_type=Summary,
-        model=get_openai_model(),
-        model_settings=ModelSettings(temperature=0.0),
+    return str(
+        await parse(
+            input=PROMPT_TEMPLATE.format(text=text),
+            output_type=Summary,
+        )
     )
-    result = await Runner.run(
-        agent,
-        input=PROMPT_TEMPLATE.format(text=text),
-    )
-    return str(result.final_output)

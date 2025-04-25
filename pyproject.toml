@@ -14,7 +14,6 @@ dependencies = [
     "youtube-search>=2.1.2",
     "numba>=0.60.0",
     "tripplus",
-    "lazyopenai[langfuse]>=0.5.0",
     "mortgage>=1.0.5",
     "markdown2>=2.5.1",
     "rich>=13.9.4",

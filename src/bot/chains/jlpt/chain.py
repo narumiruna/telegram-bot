@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from ..utils import generate
+from ...lazy import send
 from .prompts import JLPT_V3
 
 
 async def learn_japanese(text: str) -> str:
-    return str(await generate(text, system=JLPT_V3))
+    return str(await send(text, instructions=JLPT_V3))

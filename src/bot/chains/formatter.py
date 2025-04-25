@@ -5,9 +5,9 @@ from typing import cast
 from loguru import logger
 from pydantic import BaseModel
 
+from ..lazy import parse
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
-from .utils import generate
 
 
 class FormattedContent(BaseModel):
@@ -37,9 +37,9 @@ async def _format(text: str, lang: str = "台灣中文") -> FormattedContent:
     """.strip()  # noqa: E501
     response = cast(
         FormattedContent,
-        await generate(
+        await parse(
             dedent(prompt),
-            response_format=FormattedContent,
+            output_type=FormattedContent,
         ),
     )
 
