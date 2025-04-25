@@ -68,9 +68,12 @@ def run_bot(config_file: Annotated[str, typer.Option("-c", "--config")] = "confi
     ]
     helps.append(f"/{service.command} - {service.help}")
 
-    app.add_handler(service.get_command_handler(filters=chat_filter))
     app.add_handlers(
         [
+            # agent
+            CommandHandler(service.command, service.handle_command, filters=chat_filter),
+            CommandHandler("gpt", service.handle_command, filters=chat_filter),
+            # help
             CommandHandler("help", HelpCallback(helps=helps), filters=chat_filter),
             CommandHandler("s", summarize_callback, filters=chat_filter),
             CommandHandler("jp", TranslationCallback("日本語"), filters=chat_filter),
