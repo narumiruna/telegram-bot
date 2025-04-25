@@ -71,25 +71,25 @@ def run_bot(config_file: Annotated[str, typer.Option("-c", "--config")] = "confi
     app.add_handlers(
         [
             # agent
-            CommandHandler(service.command, service.handle_command, filters=chat_filter),
-            CommandHandler("gpt", service.handle_command, filters=chat_filter),
+            CommandHandler(service.command, service.handle_command, filters=chat_filter, block=False),
+            CommandHandler("gpt", service.handle_command, filters=chat_filter, block=False),
             # help
-            CommandHandler("help", HelpCallback(helps=helps), filters=chat_filter),
-            CommandHandler("s", summarize_callback, filters=chat_filter),
-            CommandHandler("jp", TranslationCallback("日本語"), filters=chat_filter),
-            CommandHandler("tc", TranslationCallback("台灣中文"), filters=chat_filter),
-            CommandHandler("en", TranslationCallback("English"), filters=chat_filter),
-            CommandHandler("t", query_ticker_callback, filters=chat_filter),
-            CommandHandler("yt", search_youtube_callback, filters=chat_filter),
-            CommandHandler("f", format_callback, filters=chat_filter),
-            CommandHandler("echo", echo_callback),
+            CommandHandler("help", HelpCallback(helps=helps), filters=chat_filter, block=False),
+            CommandHandler("s", summarize_callback, filters=chat_filter, block=False),
+            CommandHandler("jp", TranslationCallback("日本語"), filters=chat_filter, block=False),
+            CommandHandler("tc", TranslationCallback("台灣中文"), filters=chat_filter, block=False),
+            CommandHandler("en", TranslationCallback("English"), filters=chat_filter, block=False),
+            CommandHandler("t", query_ticker_callback, filters=chat_filter, block=False),
+            CommandHandler("yt", search_youtube_callback, filters=chat_filter, block=False),
+            CommandHandler("f", format_callback, filters=chat_filter, block=False),
+            CommandHandler("echo", echo_callback, block=False),
         ]
     )
 
     # Message handlers should be placed at the end.
-    app.add_handler(MessageHandler(filters=chat_filter & filters.REPLY, callback=service.handle_reply))
-    app.add_handler(MessageHandler(filters=chat_filter, callback=file_callback))
+    app.add_handler(MessageHandler(filters=chat_filter & filters.REPLY, callback=service.handle_reply, block=False))
+    app.add_handler(MessageHandler(filters=chat_filter, callback=file_callback, block=False))
 
-    app.add_error_handler(ErrorCallback(os.getenv("DEVELOPER_CHAT_ID")))
+    app.add_error_handler(ErrorCallback(os.getenv("DEVELOPER_CHAT_ID")), block=False)
 
     app.run_polling(allowed_updates=Update.ALL_TYPES)
