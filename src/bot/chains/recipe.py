@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from .utils import generate
+from ..lazy import parse
 
 
 class InstructionStep(BaseModel):
@@ -37,10 +37,10 @@ class Recipe(BaseModel):
 
 async def generate_recipe(text: str, fabricate: bool = False) -> str:
     if fabricate:
-        recipe = generate(
+        recipe = await parse(
             text,
-            system="你是位專業的廚師，精通各式料理，熟悉各種食材的搭配。使用繁體中文回答，確保回答符合台灣用語習慣。",
-            response_format=Recipe,
+            instructions="你是位專業的廚師，精通各式料理，熟悉各種食材的搭配。使用繁體中文回答，確保回答符合台灣用語習慣。",
+            output_type=Recipe,
         )
         return str(recipe)
     else:
@@ -52,8 +52,8 @@ async def generate_recipe(text: str, fabricate: bool = False) -> str:
         {text}
         ```
         """
-        recipe = await generate(
+        recipe = await parse(
             prompt,
-            response_format=Recipe,
+            output_type=Recipe,
         )
         return str(recipe)

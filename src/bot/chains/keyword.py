@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from .utils import generate
+from ..lazy import parse
 
 SYSTEM_PROMPT = """
 Extract the most relevant keywords from the provided text to use them for Google search.
@@ -23,9 +23,9 @@ class Keywords(BaseModel):
 
 
 async def extract_keywords(text: str) -> str:
-    keywords = await generate(
+    keywords = await parse(
         f"Extract keywords from the following text:\n{text}",
-        system=SYSTEM_PROMPT,
-        response_format=Keywords,
+        instructions=SYSTEM_PROMPT,
+        output_type=Keywords,
     )
     return str(keywords)
