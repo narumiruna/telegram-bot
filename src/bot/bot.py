@@ -20,7 +20,7 @@ from .callbacks import format_callback
 from .callbacks import query_ticker_callback
 from .callbacks import search_youtube_callback
 from .callbacks import summarize_callback
-from .callbacks.agent import TriageAgentCallback
+from .callbacks.agent import AgentCallback
 from .config import load_config
 
 
@@ -44,7 +44,9 @@ def get_bot_token() -> str:
 def run_bot(config_file: Annotated[str, typer.Option("-c", "--config")] = "config/default.json") -> None:  # noqa
     chat_filter = get_chat_filter()
 
-    service = TriageAgentCallback(load_config(config_file))
+    cfg = load_config(config_file)
+
+    service = AgentCallback.from_params(cfg["agent"])
 
     async def connect(application: Application) -> None:
         await service.connect()
@@ -66,12 +68,12 @@ def run_bot(config_file: Annotated[str, typer.Option("-c", "--config")] = "confi
         "/t - Query ticker from Yahoo Finance and Taiwan stock exchange",
         "/f - Format and normalize the document in 台灣話",
     ]
-    helps.append(f"/{service.command} - {service.help}")
+    helps.append(f"/{cfg['command']} - {cfg['help']}")
 
     app.add_handlers(
         [
             # agent
-            CommandHandler(service.command, service.handle_command, filters=chat_filter, block=False),
+            CommandHandler(cfg["command"], service.handle_command, filters=chat_filter, block=False),
             CommandHandler("gpt", service.handle_command, filters=chat_filter, block=False),
             # help
             CommandHandler("help", HelpCallback(helps=helps), filters=chat_filter, block=False),
