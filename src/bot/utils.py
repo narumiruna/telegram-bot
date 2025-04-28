@@ -8,10 +8,15 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
-import kabigon
 import logfire
 import telegraph
-from kabigon.compose import Compose
+from kabigon import Compose
+from kabigon import FirecrawlLoader
+from kabigon import PDFLoader
+from kabigon import PlaywrightLoader
+from kabigon import ReelLoader
+from kabigon import YoutubeLoader
+from kabigon import YtdlpLoader
 from loguru import logger
 
 
@@ -73,12 +78,13 @@ def async_wrapper(func):
 def get_composed_loader() -> Compose:
     return Compose(
         [
-            kabigon.YoutubeLoader(),
-            kabigon.ReelLoader(),
-            kabigon.YtdlpLoader(),
-            kabigon.PDFLoader(),
-            kabigon.PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
-            kabigon.PlaywrightLoader(timeout=10_000),
+            YoutubeLoader(),
+            ReelLoader(),
+            YtdlpLoader(),
+            PDFLoader(),
+            FirecrawlLoader(),
+            PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
+            PlaywrightLoader(timeout=10_000),
         ]
     )
 
