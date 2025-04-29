@@ -105,7 +105,8 @@ class AgentCallback:
             logger.info("No key found for {key}", key=key)
 
         # remove all tool messages from the memory
-        messages = remove_tool_messages(messages)
+        # for multiple agents
+        # messages = remove_tool_messages(messages)
 
         # replace the URL with the content
         message_text = await self.load_url_content(message_text)
@@ -125,7 +126,6 @@ class AgentCallback:
 
         # update the memory
         input_items = result.to_input_list()
-        messages = remove_tool_messages(messages)
         if len(input_items) > self.max_cache_size:
             input_items = input_items[-self.max_cache_size :]
         await self.cache.set(key, input_items)
