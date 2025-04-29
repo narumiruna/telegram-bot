@@ -14,9 +14,9 @@ from telegram.ext import ContextTypes
 from bot.utils import async_load_url
 
 from ..cache import get_cache_from_env
+from ..config import AgentConfig
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
-from ..utils import load_json
 from ..utils import parse_url
 from .utils import get_message_text
 
@@ -46,13 +46,15 @@ def remove_tool_messages(messages):
 class AgentCallback:
     @classmethod
     def from_config(cls, config_file: str | Path) -> AgentCallback:
-        params = load_json(config_file)
+        config = AgentConfig.from_json(config_file)
         agent = Agent(
-            name=params["name"],
-            instructions=params["instructions"],
+            name=config.name,
+            instructions=config.instructions,
             model=get_openai_model(),
             model_settings=get_openai_model_settings(),
-            mcp_servers=[MCPServerStdio(params=v, name=k) for k, v in params["mcp_servers"].items()],
+            mcp_servers=[
+                MCPServerStdio(params=params.model_dump(), name=name) for name, params in config.mcp_servers.items()
+            ],
         )
         return cls(agent)
 
