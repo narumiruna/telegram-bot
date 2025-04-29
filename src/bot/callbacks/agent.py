@@ -50,7 +50,7 @@ class AgentCallback:
             instructions=params["instructions"],
             model=get_openai_model(),
             model_settings=get_openai_model_settings(),
-            mcp_servers=[MCPServerStdio(params=p) for p in params["mcp_servers"].values()],
+            mcp_servers=[MCPServerStdio(params=v, name=k) for k, v in params["mcp_servers"].items()],
         )
         return cls(agent)
 
