@@ -1,8 +1,8 @@
 lint:
-	uv run ruff check .
+	uv run ruff check src
 
 type:
-	uv run mypy --install-types --non-interactive .
+	uv run mypy --install-types --non-interactive src
 
 test:
 	uv run pytest -v -s --cov=src tests

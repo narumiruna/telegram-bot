@@ -2,21 +2,22 @@ from __future__ import annotations
 
 import textwrap
 from pathlib import Path
+from typing import cast
 
 from agents import Agent
 from agents import Runner
 from agents.mcp import MCPServerStdio
+from agents.mcp import MCPServerStdioParams
 from loguru import logger
 from telegram import Message
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.utils import async_load_url
-
 from ..cache import get_cache_from_env
 from ..config import AgentConfig
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
+from ..utils import async_load_url
 from ..utils import parse_url
 from .utils import get_message_text
 
@@ -53,7 +54,8 @@ class AgentCallback:
             model=get_openai_model(),
             model_settings=get_openai_model_settings(),
             mcp_servers=[
-                MCPServerStdio(params=params.model_dump(), name=name) for name, params in config.mcp_servers.items()
+                MCPServerStdio(params=cast(MCPServerStdioParams, params.model_dump()), name=name)
+                for name, params in config.mcp_servers.items()
             ],
         )
         return cls(agent)
