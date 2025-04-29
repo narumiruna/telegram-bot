@@ -13,7 +13,7 @@
         "command": "uvx",
         "args": ["yfmcp"]
       },
-      "mcp-server-twse": {
+      "twsemcp": {
         "command": "uvx",
         "args": ["twsemcp"]
       }
