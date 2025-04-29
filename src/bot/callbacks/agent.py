@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import textwrap
+from pathlib import Path
 
 from agents import Agent
 from agents import Runner
@@ -13,9 +14,9 @@ from telegram.ext import ContextTypes
 from bot.utils import async_load_url
 
 from ..cache import get_cache_from_env
-from ..config import AgentParams
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
+from ..utils import load_json
 from ..utils import parse_url
 from .utils import get_message_text
 
@@ -44,7 +45,8 @@ def remove_tool_messages(messages):
 
 class AgentCallback:
     @classmethod
-    def from_params(cls, params: AgentParams) -> AgentCallback:
+    def from_config(cls, config_file: str | Path) -> AgentCallback:
+        params = load_json(config_file)
         agent = Agent(
             name=params["name"],
             instructions=params["instructions"],
