@@ -23,12 +23,12 @@ async def _format(text: str, lang: str = "台灣中文") -> FormattedContent:
     Extract and organize information from the input text, then translate it to {lang}.
     Do not fabricate any information.
 
-    Please return:
-    1. A clear, concise title in {lang}
-    2. Well-structured Markdown content in {lang} that:
-       - Uses appropriate heading levels
-       - Includes lists or tables when helpful
-       - Maintains the core meaning and important details from the original text
+    Please use plain text only (no Markdown or any formatting syntax).
+
+    For each section:
+    - Start with an appropriate emoji and a concise title in {lang} on one line.
+    - The next line should be the well-organized content in {lang}, preserving the core meaning and important details.
+    - Use multiple sections if there are distinct topics or points.
 
     Input text:
     ```
