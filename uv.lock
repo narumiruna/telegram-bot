@@ -779,11 +779,10 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.7.0"
+version = "0.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aioytt" },
-    { name = "click" },
     { name = "firecrawl-py" },
     { name = "httpx" },
     { name = "loguru" },
@@ -793,11 +792,12 @@ dependencies = [
     { name = "pypdf" },
     { name = "rich" },
     { name = "timeout-decorator" },
+    { name = "typer" },
     { name = "youtube-transcript-api" },
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/aa/dd/e0e256c1470655f3722c65f64005330a67ba0e7e3311875be33521f05a6a/kabigon-0.7.0-py3-none-any.whl", hash = "sha256:d747305745d396355702f8871ddf78e7e1ab2f07be053f975bebf7f4ed51a489", size = 10709 },
+    { url = "https://files.pythonhosted.org/packages/10/de/cb91e0d2d49cf6b6e44da44fe626bb55eea2a29af8a233031dc1795f8dba/kabigon-0.8.1-py3-none-any.whl", hash = "sha256:0dd9c202751eb83e7f88b8db644f9e04d183740f32a2071a647625e79a19b6b2", size = 10753 },
 ]
 
 [[package]]

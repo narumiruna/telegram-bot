@@ -14,6 +14,7 @@ from kabigon import Compose
 from kabigon import FirecrawlLoader
 from kabigon import PDFLoader
 from kabigon import PlaywrightLoader
+from kabigon import PttLoader
 from kabigon import ReelLoader
 from kabigon import TwitterLoader
 from kabigon import YoutubeLoader
@@ -79,6 +80,7 @@ def async_wrapper(func):
 def get_composed_loader() -> Compose:
     return Compose(
         [
+            PttLoader(),
             TwitterLoader(),
             YoutubeLoader(),
             ReelLoader(),
