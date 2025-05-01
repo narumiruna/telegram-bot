@@ -10,15 +10,25 @@ from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
 
 
-class FormattedContent(BaseModel):
+class Section(BaseModel):
     title: str
     content: str
 
     def __str__(self) -> str:
-        return self.content
+        return f"{self.title}\n{self.content}"
 
 
-async def _format(text: str, lang: str = "台灣中文") -> FormattedContent:
+class Article(BaseModel):
+    title: str
+    sections: list[Section]
+
+    def __str__(self) -> str:
+        lines = [f"🏷️ {self.title}"]
+        lines += [str(section) for section in self.sections]
+        return "\n\n".join(lines)
+
+
+async def _format(text: str, lang: str = "台灣中文") -> Article:
     prompt = f"""
     Extract and organize information from the input text, then translate it to {lang}.
     Do not fabricate any information.
@@ -36,10 +46,10 @@ async def _format(text: str, lang: str = "台灣中文") -> FormattedContent:
     ```
     """.strip()  # noqa: E501
     response = cast(
-        FormattedContent,
+        Article,
         await parse(
             dedent(prompt),
-            output_type=FormattedContent,
+            output_type=Article,
         ),
     )
 
@@ -47,7 +57,7 @@ async def _format(text: str, lang: str = "台灣中文") -> FormattedContent:
     return response
 
 
-async def format(text: str, lang: str = "台灣中文") -> FormattedContent:
+async def format(text: str, lang: str = "台灣中文") -> Article:
     chunks = chunk_on_delimiter(text)
 
     if len(chunks) == 1:
