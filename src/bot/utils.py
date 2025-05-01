@@ -91,11 +91,6 @@ def get_composed_loader() -> Compose:
     )
 
 
-def load_url(url: str) -> str:
-    loader = get_composed_loader()
-    return loader.load(url)
-
-
 async def async_load_url(url: str) -> str:
     loader = get_composed_loader()
     return await loader.async_load(url)
