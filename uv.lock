@@ -196,7 +196,7 @@ mlx = [
 requires-dist = [
     { name = "aiocache", extras = ["redis"], specifier = ">=0.12.3" },
     { name = "duckduckgo-search", specifier = ">=7.5.1" },
-    { name = "kabigon", specifier = ">=0.6.1" },
+    { name = "kabigon", specifier = ">=0.7.0" },
     { name = "logfire", specifier = ">=3.12.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "lxml", specifier = ">=5.3.0" },
@@ -779,7 +779,7 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.6.1"
+version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aioytt" },
@@ -797,7 +797,7 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e2/5d/7951564c2833e7ae928f191088a33f6816cfdd548a1299b9972cf5ae9efa/kabigon-0.6.1-py3-none-any.whl", hash = "sha256:67311544912e95e0c9ecbe31320b2a7a59fdbe3c958c70e80c6c68b58bd6b1ef", size = 10334 },
+    { url = "https://files.pythonhosted.org/packages/aa/dd/e0e256c1470655f3722c65f64005330a67ba0e7e3311875be33521f05a6a/kabigon-0.7.0-py3-none-any.whl", hash = "sha256:d747305745d396355702f8871ddf78e7e1ab2f07be053f975bebf7f4ed51a489", size = 10709 },
 ]
 
 [[package]]
