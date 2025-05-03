@@ -23,7 +23,7 @@ class Article(BaseModel):
     sections: list[Section]
 
     def __str__(self) -> str:
-        lines = [f"🏷️ {self.title}"]
+        lines = [f"📝 {self.title}"]
         lines += [str(section) for section in self.sections]
         return "\n\n".join(lines)
 
