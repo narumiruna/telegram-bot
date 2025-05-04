@@ -1,32 +1,82 @@
 from __future__ import annotations
 
+import os
 import textwrap
 from pathlib import Path
+from textwrap import dedent
 from typing import cast
 
 from agents import Agent
 from agents import Runner
+from agents import TResponseInputItem
 from agents.mcp import MCPServerStdio
 from agents.mcp import MCPServerStdioParams
 from loguru import logger
+from mcp.client.stdio import StdioServerParameters
 from telegram import Message
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from ..cache import get_cache_from_env
-from ..config import AgentConfig
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
 from ..utils import async_load_url
+from ..utils import load_json
 from ..utils import parse_url
 from .utils import get_message_text
+
+INSTRUCTIONS = dedent(
+    """
+運用批判性思維以台灣正體中文進行全面問題分析，並準確傳達你的想法。
+
+請依照以下步驟展開您的推理過程，並在得出結論之前進行詳細的邏輯思考分析，確保在面對各類主題時，能逐步拆解並審視問題的每一個層面。請在需要時運用網路查找信息，並未成功獲取資訊時，嘗試其他策略。
+
+# Steps
+
+1. **問題拆解**：確認問題的核心，並將其分解為易於處理的小問題。
+2. **資料查詢**：使用網路進行查詢，獲取相關數據或背景資訊。
+3. **資訊整理**：分析和整理搜尋到的信息，去除不相關或冗餘的資料。
+4. **邏輯推理**：結合現有知識與獲得的信息進行嚴密的邏輯推理。
+5. **結論與建議**：在完整分析後，得出合理結論並提出適當建議。
+
+# Output Format
+
+所有內容以一般文字形式呈現，不使用粗體、斜體、標題或列表符號。每段落的開頭以適當的表情符號與簡潔的標題作為引導，簡潔表達要點。
+
+# Notes
+
+- 嚴守邏輯順序與信息精確性。
+- 若有重點或不同主題，請在同一段落的開頭使用適當表情符號提示。
+- 保持語氣專業且不偏袒任何一方觀點。
+""".strip()
+)
+
+
+def load_mcp_config(f: str | Path) -> dict[str, StdioServerParameters]:
+    data = load_json(f)
+    if not isinstance(data, dict):
+        raise ValueError(f"Invalid configuration file: {f}")
+
+    result = {}
+    for name, params in data.items():
+        if not isinstance(params, dict):
+            raise ValueError(f"Invalid parameters for {name}: {params}")
+
+        env_vars = params.get("env")
+        if isinstance(env_vars, dict):
+            for k, v in env_vars.items():
+                if v == "":
+                    env_vars[k] = os.getenv(k, "")
+
+        result[name] = StdioServerParameters.model_validate(params)
+    return result
 
 
 def shorten_text(text: str, width: int = 100, placeholder: str = "...") -> str:
     return textwrap.shorten(text, width=width, placeholder=placeholder)
 
 
-def remove_tool_messages(messages):
+def remove_tool_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
     filtered_messages = []
     tool_types = [
         "function_call",
@@ -47,15 +97,15 @@ def remove_tool_messages(messages):
 class AgentCallback:
     @classmethod
     def from_config(cls, config_file: str | Path) -> AgentCallback:
-        config = AgentConfig.from_json(config_file)
+        config = load_mcp_config(config_file)
         agent = Agent(
-            name=config.name,
-            instructions=config.instructions,
+            name="agent",
+            instructions=INSTRUCTIONS,
             model=get_openai_model(),
             model_settings=get_openai_model_settings(),
             mcp_servers=[
                 MCPServerStdio(params=cast(MCPServerStdioParams, params.model_dump()), name=name)
-                for name, params in config.mcp_servers.items()
+                for name, params in config.items()
             ],
         )
         return cls(agent)

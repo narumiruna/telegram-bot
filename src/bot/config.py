@@ -11,8 +11,6 @@ from .utils import load_json
 
 
 class AgentConfig(BaseModel):
-    name: str
-    instructions: str
     mcp_servers: dict[str, StdioServerParameters]
 
     @classmethod
