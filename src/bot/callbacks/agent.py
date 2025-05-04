@@ -147,8 +147,7 @@ class AgentCallback:
             logger.info("No key found for {key}", key=key)
 
         # remove all tool messages from the memory
-        # for multiple agents
-        # messages = remove_tool_messages(messages)
+        messages = remove_tool_messages(messages)
 
         # replace the URL with the content
         message_text = await self.load_url_content(message_text)
