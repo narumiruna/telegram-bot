@@ -6,10 +6,6 @@
       "FIRECRAWL_API_KEY": ""
     }
   },
-  "playwright": {
-    "command": "npx",
-    "args": ["@playwright/mcp@latest"]
-  },
   "yfmcp": {
     "command": "uvx",
     "args": ["yfmcp"]
