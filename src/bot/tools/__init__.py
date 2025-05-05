@@ -7,4 +7,5 @@ from .mortgage import compute_loan_details
 from .tarot import draw_tarot_card
 from .weblio import query_weblio
 from .wise import query_rate
+from .wise import query_rate_history
 from .yahoo_finance import query_ticker_from_yahoo_finance

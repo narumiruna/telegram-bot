@@ -10,25 +10,6 @@ from pydantic import BaseModel
 from pydantic import field_validator
 
 
-@function_tool
-async def query_rate(source: str, target: str) -> str:
-    """Query the exchange rate between two currencies.
-
-    Args:
-        source (str): The source currency code (e.g., "EUR").
-        target (str): The target currency code (e.g., "USD").
-
-    Returns:
-        str: A formatted string containing the exchange rate and timestamp.
-    """
-    logger.debug(f"Querying rate for {source} to {target}")
-
-    req = RateRequest(source=source, target=target)
-    rate = await req.async_do()
-
-    return f"{rate.source}{rate.target}: {rate.value:.5f} at {rate.time.strftime('%Y-%m-%d %H:%M:%S')}"
-
-
 # {"source":"EUR","target":"USD","value":1.05425,"time":1697653800557}
 class Rate(BaseModel):
     source: str
@@ -105,3 +86,42 @@ class RateHistoryRequest(BaseModel):
             )
             resp.raise_for_status()
             return [Rate.model_validate(data) for data in resp.json()]
+
+
+@function_tool
+async def query_rate(source: str, target: str) -> str:
+    """Query the exchange rate between two currencies.
+
+    Args:
+        source (str): The source currency code (e.g., "EUR").
+        target (str): The target currency code (e.g., "USD").
+    """
+    logger.debug(f"Querying rate for {source} to {target}")
+
+    req = RateRequest(source=source, target=target)
+    rate = await req.async_do()
+    return rate.model_dump()
+
+
+@function_tool
+async def query_rate_history(source: str, target: str, length: int, resolution: Resolution, unit: Unit) -> str:
+    """Query the exchange rate history between two currencies.
+
+    Args:
+        source (str): The source currency code (e.g., "EUR").
+        target (str): The target currency code (e.g., "USD").
+        length (int): The number of data points to retrieve.
+        resolution (Resolution): The resolution of the data points.
+        unit (Unit): The unit of time for the data points.
+    """
+    logger.debug(f"Querying rate history for {source} to {target}")
+
+    req = RateHistoryRequest(
+        source=source,
+        target=target,
+        length=length,
+        resolution=resolution,
+        unit=unit,
+    )
+    rates = await req.async_do()
+    return str([rate.model_dump() for rate in rates])
