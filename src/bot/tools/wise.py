@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from zoneinfo import ZoneInfo
 
 import httpx
 from agents import function_tool
@@ -27,6 +28,10 @@ class Rate(BaseModel):
         else:
             msg = f"invalid time: {v}"
             raise TypeError(msg)
+
+    def __str__(self) -> str:
+        time_str = self.time.astimezone(ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%d %H:%M:%S")
+        return f"{self.source}/{self.target}: {self.value} at {time_str}"
 
 
 class Resolution(str, Enum):
@@ -124,4 +129,4 @@ async def query_rate_history(source: str, target: str, length: int, resolution: 
         unit=unit,
     )
     rates = await req.async_do()
-    return str([rate.model_dump() for rate in rates])
+    return "\n".join([str(rate) for rate in rates])
