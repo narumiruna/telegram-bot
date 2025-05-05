@@ -20,6 +20,7 @@ from telegram.ext import ContextTypes
 from ..cache import get_cache_from_env
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
+from ..tools import query_rate
 from ..utils import async_load_url
 from ..utils import load_json
 from ..utils import parse_url
@@ -89,6 +90,7 @@ class AgentCallback:
             instructions=INSTRUCTIONS,
             model=get_openai_model(),
             model_settings=get_openai_model_settings(),
+            tools=[query_rate],
             mcp_servers=[
                 MCPServerStdio(params=cast(MCPServerStdioParams, params.model_dump()), name=name)
                 for name, params in config.items()
