@@ -105,7 +105,7 @@ async def query_rate(source: str, target: str) -> str:
 
     req = RateRequest(source=source, target=target)
     rate = await req.async_do()
-    return rate.model_dump()
+    return rate.model_dump_json()
 
 
 @function_tool
