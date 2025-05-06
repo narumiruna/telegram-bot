@@ -800,7 +800,7 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.8.4"
+version = "0.8.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aioytt" },
@@ -815,7 +815,7 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/27/a6/88b593995df91b90bfd2a9dc3b2784281c402367d80f753e10fcd2b5a9e0/kabigon-0.8.4-py3-none-any.whl", hash = "sha256:1ac1ebb8dd5c0bceaf4a94d35f29da1ff2735caf3982676b6f972a0e471bc140", size = 10141 },
+    { url = "https://files.pythonhosted.org/packages/88/3c/905fea4ce1b6af691969e202be45e4b5ddd170dff1ef9add2fcb5406cb3f/kabigon-0.8.5-py3-none-any.whl", hash = "sha256:9f826b0757d621ce8ad7b678392b3db009c46c2d03f62de7981896859e2ac596", size = 10572 },
 ]
 
 [package.optional-dependencies]
@@ -2097,11 +2097,11 @@ wheels = [
 
 [[package]]
 name = "setuptools"
-version = "80.3.0"
+version = "80.3.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/51/6c/a3f892949418b5b9aced7396919c75ffb57e38f08b712b565f5eb10677ee/setuptools-80.3.0.tar.gz", hash = "sha256:ec8308eb180b2312062b1c5523204acf872cd8b0a9e6c2ae76431b22bc4065d7", size = 1314475 }
+sdist = { url = "https://files.pythonhosted.org/packages/70/dc/3976b322de9d2e87ed0007cf04cc7553969b6c7b3f48a565d0333748fbcd/setuptools-80.3.1.tar.gz", hash = "sha256:31e2c58dbb67c99c289f51c16d899afedae292b978f8051efaf6262d8212f927", size = 1315082 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e6/61/a6239ff35d64e55def020335626894895847cc6659c0f8e1b676c58aad3b/setuptools-80.3.0-py3-none-any.whl", hash = "sha256:a65cffc4fb86167e3020b3ef58e08226baad8b29a3b34ce2c9d07e901bac481d", size = 1200273 },
+    { url = "https://files.pythonhosted.org/packages/53/7e/5d8af3317ddbf9519b687bd1c39d8737fde07d97f54df65553faca5cffb1/setuptools-80.3.1-py3-none-any.whl", hash = "sha256:ea8e00d7992054c4c592aeb892f6ad51fe1b4d90cc6947cc45c45717c40ec537", size = 1201172 },
 ]
 
 [[package]]
@@ -2142,15 +2142,15 @@ wheels = [
 
 [[package]]
 name = "sse-starlette"
-version = "2.3.3"
+version = "2.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "starlette" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/86/35/7d8d94eb0474352d55f60f80ebc30f7e59441a29e18886a6425f0bccd0d3/sse_starlette-2.3.3.tar.gz", hash = "sha256:fdd47c254aad42907cfd5c5b83e2282be15be6c51197bf1a9b70b8e990522072", size = 17499 }
+sdist = { url = "https://files.pythonhosted.org/packages/43/be/7e776a29b5f712b5bd13c571256a2470fcf345c562c7b2359f2ee15d9355/sse_starlette-2.3.4.tar.gz", hash = "sha256:0ffd6bed217cdbb74a84816437c609278003998b4991cd2e6872d0b35130e4d5", size = 17522 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/20/52fdb5ebb158294b0adb5662235dd396fc7e47aa31c293978d8d8942095a/sse_starlette-2.3.3-py3-none-any.whl", hash = "sha256:8b0a0ced04a329ff7341b01007580dd8cf71331cc21c0ccea677d500618da1e0", size = 10235 },
+    { url = "https://files.pythonhosted.org/packages/43/a4/ee4a20f0b5ff34c391f3685eff7cdba1178a487766e31b04efb51bbddd87/sse_starlette-2.3.4-py3-none-any.whl", hash = "sha256:b8100694f3f892b133d0f7483acb7aacfcf6ed60f863b31947664b6dc74e529f", size = 10232 },
 ]
 
 [[package]]
@@ -2425,14 +2425,14 @@ wheels = [
 
 [[package]]
 name = "types-setuptools"
-version = "80.1.0.20250503"
+version = "80.3.0.20250505"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "setuptools" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6a/63/973d60e59c70ef6fc98eff4f8fa1ef552c4f7486f79df68f16b3628b8ec1/types_setuptools-80.1.0.20250503.tar.gz", hash = "sha256:3cbdbe42c12e1d9179e6e87644a2cf176259411b5a3cc1d0fb0d824dc711d9ed", size = 43334 }
+sdist = { url = "https://files.pythonhosted.org/packages/f4/1e/9c401fc3aa8f8c1596a9daedbe8d1c70c830e20d78753117d75f7e9b9535/types_setuptools-80.3.0.20250505.tar.gz", hash = "sha256:5fd3d34b8fa3441d68d010fef95e232d1e48f3f5cb578f3477b7aae4f8374502", size = 41205 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f2/c1/9e878008ad0ecac9d89c28831095fb6b1de76f0d59a1765f3d8816fb0694/types_setuptools-80.1.0.20250503-py3-none-any.whl", hash = "sha256:b25bcbfeebae06bc4d2d09231b0c0622e95bdbb36df070cfe40b925fcef97dd3", size = 65979 },
+    { url = "https://files.pythonhosted.org/packages/3f/bf/466fa9faaf6a99dc68c37492693069c99b4f83c73b5bac59649051a74937/types_setuptools-80.3.0.20250505-py3-none-any.whl", hash = "sha256:117c86a82367306388b55310d04da807ff4c3ecdf769656a5fdc0fdd06a2c1b6", size = 63106 },
 ]
 
 [[package]]

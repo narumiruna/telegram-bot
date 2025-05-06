@@ -18,7 +18,7 @@ from kabigon import PttLoader
 from kabigon import ReelLoader
 from kabigon import TwitterLoader
 from kabigon import YoutubeLoader
-from kabigon import YtdlpLoader
+from kabigon import YoutubeYtdlpLoader
 from loguru import logger
 
 
@@ -84,7 +84,7 @@ def get_composed_loader() -> Compose:
             TwitterLoader(),
             YoutubeLoader(),
             ReelLoader(),
-            YtdlpLoader(),
+            YoutubeYtdlpLoader(),
             PDFLoader(),
             FirecrawlLoader(),
             PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
