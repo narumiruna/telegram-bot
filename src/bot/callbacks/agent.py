@@ -92,7 +92,7 @@ class AgentCallback:
             model_settings=get_openai_model_settings(),
             tools=[query_rate_history],
             mcp_servers=[
-                MCPServerStdio(params=cast(MCPServerStdioParams, params.model_dump()), name=name)
+                MCPServerStdio(params=cast(MCPServerStdioParams, params.model_dump()), name=name, client_session_timeout_seconds=300)
                 for name, params in config.items()
             ],
         )
