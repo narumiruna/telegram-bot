@@ -82,6 +82,16 @@ def remove_tool_messages(messages: list[TResponseInputItem]) -> list[TResponseIn
     return filtered_messages
 
 
+def remove_fake_id_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
+    filtered_messages = []
+    for msg in messages:
+        msg_type = msg.get("id")
+        if msg_type == "__fake_id__":
+            continue
+        filtered_messages.append(msg)
+    return filtered_messages
+
+
 class AgentCallback:
     @classmethod
     def from_config(cls, config_file: str | Path) -> AgentCallback:
@@ -103,7 +113,7 @@ class AgentCallback:
         )
         return cls(agent)
 
-    def __init__(self, agent: Agent, max_cache_size: int = 100) -> None:
+    def __init__(self, agent: Agent, max_cache_size: int = 50) -> None:
         self.agent = agent
 
         # max_cache_size is the maximum number of messages to keep in the cache
@@ -155,6 +165,7 @@ class AgentCallback:
 
         # remove all tool messages from the memory
         messages = remove_tool_messages(messages)
+        messages = remove_fake_id_messages(messages)
 
         # replace the URL with the content
         message_text = await self.load_url_content(message_text)
