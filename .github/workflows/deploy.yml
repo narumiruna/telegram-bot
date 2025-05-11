@@ -39,8 +39,11 @@ jobs:
           echo OPENAI_API_VERSION=${{ vars.OPENAI_API_VERSION }} >> .env
           echo AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }} >> .env
           echo AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }} >> .env
-          echo LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }} >> .env
+          # echo LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }} >> .env
           echo LOGFIRE_ENVIRONMENT=prod >> .env
+          echo LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }} >> .env
+          echo LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }} >> .env
+          echo LANGFUSE_HOST=${{ vars.LANGFUSE_HOST }} >> .env
           echo FFMPEG_PATH=/opt/homebrew/bin/ffmpeg >> .env
           echo FIRECRAWL_API_KEY=${{ secrets.FIRECRAWL_API_KEY }} >> .env
       - name: Copy files
