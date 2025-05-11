@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import os
 from functools import cache
+from typing import Literal
 
 import logfire
+from agents import Model
 from agents import ModelSettings
 from agents import OpenAIChatCompletionsModel
+from agents import OpenAIResponsesModel
 from agents import set_tracing_disabled
 from openai import AsyncAzureOpenAI
 from openai import AsyncOpenAI
@@ -23,14 +26,20 @@ def get_openai_client() -> AsyncOpenAI:
 
 
 @cache
-def get_openai_model() -> OpenAIChatCompletionsModel:
+def get_openai_model(api_type: Literal["responses", "chat_completions"] = "responses") -> Model:
     model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     client = get_openai_client()
 
     if logfire_is_enabled():
         logfire.instrument_openai(client)
 
-    return OpenAIChatCompletionsModel(model_name, openai_client=client)
+    match api_type:
+        case "responses":
+            return OpenAIResponsesModel(model_name, openai_client=client)
+        case "chat_completions":
+            return OpenAIChatCompletionsModel(model_name, openai_client=client)
+        case _:
+            raise ValueError(f"Invalid API type: {api_type}")
 
 
 @cache
