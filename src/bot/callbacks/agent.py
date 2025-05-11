@@ -9,6 +9,7 @@ from typing import cast
 from agents import Agent
 from agents import Runner
 from agents import TResponseInputItem
+from agents import trace
 from agents.mcp import MCPServerStdio
 from agents.mcp import MCPServerStdioParams
 from loguru import logger
@@ -184,7 +185,8 @@ class AgentCallback:
         if not message:
             return
 
-        await self.handle_message(message, include_reply_to_message=True)
+        with trace("handle_command"):
+            await self.handle_message(message, include_reply_to_message=True)
 
     async def handle_reply(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         # TODO: Implement filters.MessageFilter for reply to bot
@@ -204,4 +206,5 @@ class AgentCallback:
         if not from_user.is_bot:
             return
 
-        await self.handle_message(message, include_reply_to_message=True)
+        with trace("handle_reply"):
+            await self.handle_message(message, include_reply_to_message=True)
