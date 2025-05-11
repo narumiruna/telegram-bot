@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from ..lazy import parse
+from ..lazy import lazy_run
 
 
 class InstructionStep(BaseModel):
@@ -37,7 +37,7 @@ class Recipe(BaseModel):
 
 async def generate_recipe(text: str, fabricate: bool = False) -> str:
     if fabricate:
-        recipe = await parse(
+        recipe = await lazy_run(
             text,
             instructions="你是位專業的廚師，精通各式料理，熟悉各種食材的搭配。使用繁體中文回答，確保回答符合台灣用語習慣。",
             output_type=Recipe,
@@ -52,7 +52,7 @@ async def generate_recipe(text: str, fabricate: bool = False) -> str:
         {text}
         ```
         """
-        recipe = await parse(
+        recipe = await lazy_run(
             prompt,
             output_type=Recipe,
         )

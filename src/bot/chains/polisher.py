@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from pydantic import Field
 
-from ..lazy import parse
+from ..lazy import lazy_run
 
 
 class PolishedText(BaseModel):
@@ -34,7 +34,7 @@ SYSTEM_PROMPT = """Your task is to **polish** the input text in any language to 
 
 async def polish(text: str) -> str:
     return str(
-        await parse(
+        await lazy_run(
             input=f"Polish the following text:\n{text}",
             instructions=SYSTEM_PROMPT,
             output_type=PolishedText,

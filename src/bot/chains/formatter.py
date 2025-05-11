@@ -5,7 +5,7 @@ from typing import cast
 from loguru import logger
 from pydantic import BaseModel
 
-from ..lazy import parse
+from ..lazy import lazy_run
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
 
@@ -47,7 +47,7 @@ async def _format(text: str, lang: str = "台灣中文") -> Article:
     """.strip()  # noqa: E501
     response = cast(
         Article,
-        await parse(
+        await lazy_run(
             dedent(prompt),
             output_type=Article,
         ),

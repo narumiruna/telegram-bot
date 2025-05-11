@@ -1,6 +1,7 @@
 import inspect
+from typing import cast
 
-from ..lazy import send
+from ..lazy import lazy_run
 
 
 async def translate_to_taiwanese(text: str) -> str:
@@ -9,7 +10,7 @@ async def translate_to_taiwanese(text: str) -> str:
 
     {text}
     """
-    return await send(inspect.cleandoc(prompt))
+    return await lazy_run(inspect.cleandoc(prompt))
 
 
 async def translate(text: str, lang: str) -> str:
@@ -18,7 +19,7 @@ async def translate(text: str, lang: str) -> str:
     system_prompt = f"""
     Translate the text delimited by triple quotation marks into {lang}.
     """.strip()
-    result = await send(user_prompt, instructions=system_prompt)
+    result = await lazy_run(user_prompt, instructions=system_prompt)
     return result.strip('"')
 
 
@@ -29,5 +30,5 @@ async def translate_and_explain(text: str, lang: str) -> str:
     Translate the text delimited by triple quotation marks into {lang}, and provide a concise explanation of grammar and usage in {lang}, along with example sentences to enhance understanding."
     """.strip()  # noqa
 
-    result = await send(user_prompt, instructions=system_prompt)
+    result = cast(str, await lazy_run(user_prompt, instructions=system_prompt))
     return result.strip('"')
