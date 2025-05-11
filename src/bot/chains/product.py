@@ -3,7 +3,7 @@ from typing import cast
 from pydantic import BaseModel
 from pydantic import Field
 
-from ..lazy import parse
+from ..lazy import lazy_run
 
 
 class Price(BaseModel):
@@ -45,7 +45,7 @@ class Products(BaseModel):
 
 
 async def extract_product(text: str) -> Products:
-    response = await parse(
+    response = await lazy_run(
         text,
         instructions="Use only the information directly provided in the context—do not fabricate or include placeholders.",  # noqa: E501
         output_type=Products,

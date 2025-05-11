@@ -2,10 +2,11 @@ import asyncio
 from textwrap import dedent
 from typing import cast
 
+from agents import trace
 from loguru import logger
 from pydantic import BaseModel
 
-from ..lazy import parse
+from ..lazy import lazy_run
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
 
@@ -45,13 +46,15 @@ async def _format(text: str, lang: str = "台灣中文") -> Article:
     {text}
     ```
     """.strip()  # noqa: E501
-    response = cast(
-        Article,
-        await parse(
-            dedent(prompt),
-            output_type=Article,
-        ),
-    )
+
+    with trace("format"):
+        response = cast(
+            Article,
+            await lazy_run(
+                dedent(prompt),
+                output_type=Article,
+            ),
+        )
 
     logger.info("Formatted response: {response}", response=response)
     return response

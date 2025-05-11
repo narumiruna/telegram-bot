@@ -4,7 +4,7 @@ import markdown2
 from pydantic import BaseModel
 from pydantic import Field
 
-from ..lazy import parse
+from ..lazy import lazy_run
 from ..utils import create_page
 
 PROMPT_TEMPLATE = """
@@ -101,7 +101,7 @@ async def summarize(text: str) -> str:
         str: A formatted string containing the summary, key points, takeaways, and hashtags.
     """
     return str(
-        await parse(
+        await lazy_run(
             input=PROMPT_TEMPLATE.format(text=text),
             output_type=Summary,
         )
