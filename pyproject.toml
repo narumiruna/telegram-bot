@@ -18,7 +18,6 @@ dependencies = [
     "markdown2>=2.5.1",
     "rich>=13.9.4",
     "yfinance>=0.2.59",
-    "openai-agents>=0.0.3",
     "duckduckgo-search>=7.5.1",
     "aiocache[redis]>=0.12.3",
     "typer>=0.15.2",
@@ -26,6 +25,8 @@ dependencies = [
     "loguru>=0.7.3",
     "twse>=0.3.3",
     "kabigon[all]>=0.8.2",
+    "nest-asyncio>=1.6.0",
+    "openai-agents>=0.0.14",
 ]
 
 [project.scripts]
