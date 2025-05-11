@@ -26,6 +26,7 @@ dependencies = [
     "loguru>=0.7.3",
     "twse>=0.3.3",
     "kabigon[all]>=0.8.2",
+    "nest-asyncio>=1.6.0",
 ]
 
 [project.scripts]
