@@ -150,3 +150,5 @@ def configure_langfuse(service_name: str | None = None) -> None:
         send_to_logfire=False,
     )
     logfire.instrument_openai_agents()
+
+    logger.configure(handlers=[logfire.loguru_handler()])
