@@ -96,8 +96,9 @@ def get_composed_loader() -> Compose:
 
 
 async def async_load_url(url: str) -> str:
-    loader = get_composed_loader()
-    return await loader.async_load(url)
+    with logfire.span("load_url"):
+        loader = get_composed_loader()
+        return await loader.async_load(url)
 
 
 def logfire_is_enabled() -> bool:
@@ -109,6 +110,7 @@ def configure_logfire() -> None:
         return
 
     logfire.configure()
+    logfire.instrument_openai_agents()
     logger.configure(handlers=[logfire.loguru_handler()])
 
 
