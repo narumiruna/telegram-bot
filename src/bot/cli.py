@@ -3,7 +3,7 @@ from dotenv import find_dotenv
 from dotenv import load_dotenv
 
 from .bot import run_bot
-from .utils import configure_langfuse
+from .utils import configure_logfire
 
 
 def main():
@@ -14,5 +14,5 @@ def main():
         ),
         override=True,
     )
-    configure_langfuse()
+    configure_logfire()
     typer.run(run_bot)
