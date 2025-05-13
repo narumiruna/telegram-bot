@@ -802,7 +802,7 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.8.9"
+version = "0.8.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aioytt" },
@@ -817,7 +817,7 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/04/28/b0ac86320dc1b194159277abddd22caa2ebb00ef3a7d81e9f5b690cac6db/kabigon-0.8.9-py3-none-any.whl", hash = "sha256:f54ada089047e86f3ef3cbafb5662a7bd389671ca13560b276e497455dde41d1", size = 10755 },
+    { url = "https://files.pythonhosted.org/packages/14/77/3490397d1ce14551e06e4c7339d2eec865c2787c4b32d5b3d042ca9903c6/kabigon-0.8.10-py3-none-any.whl", hash = "sha256:ec9b4070a1a198a50c01b41ba6eae6751df70f2756f9eb1892748a51dced5429", size = 10768 },
 ]
 
 [package.optional-dependencies]
