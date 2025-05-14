@@ -154,7 +154,7 @@ dependencies = [
     { name = "aiocache", extra = ["redis"] },
     { name = "duckduckgo-search" },
     { name = "kabigon", extra = ["all"] },
-    { name = "logfire", extra = ["httpx"] },
+    { name = "logfire", extra = ["httpx", "redis", "requests"] },
     { name = "loguru" },
     { name = "lxml" },
     { name = "markdown2" },
@@ -198,7 +198,7 @@ requires-dist = [
     { name = "aiocache", extras = ["redis"], specifier = ">=0.12.3" },
     { name = "duckduckgo-search", specifier = ">=7.5.1" },
     { name = "kabigon", extras = ["all"], specifier = ">=0.8.2" },
-    { name = "logfire", extras = ["httpx"], specifier = ">=3.12.0" },
+    { name = "logfire", extras = ["httpx", "redis", "requests"], specifier = ">=3.12.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "lxml", specifier = ">=5.3.0" },
     { name = "markdown2", specifier = ">=2.5.1" },
@@ -866,6 +866,12 @@ wheels = [
 httpx = [
     { name = "opentelemetry-instrumentation-httpx" },
 ]
+redis = [
+    { name = "opentelemetry-instrumentation-redis" },
+]
+requests = [
+    { name = "opentelemetry-instrumentation-requests" },
+]
 
 [[package]]
 name = "loguru"
@@ -1523,6 +1529,36 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/04/8d/b8d027f6a5e884ea5a66eca0d63449562f9142a017b221f226486816a240/opentelemetry_instrumentation_httpx-0.54b0.tar.gz", hash = "sha256:1db2e949d627654462dd129e6342cc8119bed6cd376df60ae7e92f6a47bede26", size = 17734 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2e/d0/092d6262fecae59bc6c31b9f35d004dc6d1f62d04f07b8127e05f50e8f70/opentelemetry_instrumentation_httpx-0.54b0-py3-none-any.whl", hash = "sha256:6d744c50018ad5c781c76ceeff96d5ff9826647a7e5eade2bae309bd873d6b4a", size = 14129 },
+]
+
+[[package]]
+name = "opentelemetry-instrumentation-redis"
+version = "0.54b0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-instrumentation" },
+    { name = "opentelemetry-semantic-conventions" },
+    { name = "wrapt" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0f/b3/212e7382dc0b5d85a82427e75fc71bd2bcc89600fd0bd3cf79d031fbfc28/opentelemetry_instrumentation_redis-0.54b0.tar.gz", hash = "sha256:1365af42c2953b5f8a164d318df1eb5cc9c205fd7266c5d040223ba8489ca2b8", size = 13910 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/26/948791be31f8ac94e32489f7bded95516f0421f454ba5e26b716b4a62e49/opentelemetry_instrumentation_redis-0.54b0-py3-none-any.whl", hash = "sha256:6c2b3d63bf34a3713c35ed9170ab0a20b3ae71704af9a64cac171665ded5747c", size = 14924 },
+]
+
+[[package]]
+name = "opentelemetry-instrumentation-requests"
+version = "0.54b0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-instrumentation" },
+    { name = "opentelemetry-semantic-conventions" },
+    { name = "opentelemetry-util-http" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e0/20/2ef61cc45a44f1d865d0a57c84c65649799d1d22fcb69f78c3133dd8fcba/opentelemetry_instrumentation_requests-0.54b0.tar.gz", hash = "sha256:abc604d58a0da9cbfad2e9439df2b85437ec00bf550753cf64bf6d61e2b98bdd", size = 15148 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e1/46/0507f3f64683f8cf4aef9483c1b760418f9f17a2480fa970db6225ea42da/opentelemetry_instrumentation_requests-0.54b0-py3-none-any.whl", hash = "sha256:c05324b3a5a047b28cd7bccf1f506d7ebadbfd8faefc2661fe7d40c3218d9a8c", size = 12967 },
 ]
 
 [[package]]
