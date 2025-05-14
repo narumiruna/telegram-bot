@@ -154,7 +154,7 @@ dependencies = [
     { name = "aiocache", extra = ["redis"] },
     { name = "duckduckgo-search" },
     { name = "kabigon", extra = ["all"] },
-    { name = "logfire" },
+    { name = "logfire", extra = ["httpx"] },
     { name = "loguru" },
     { name = "lxml" },
     { name = "markdown2" },
@@ -198,7 +198,7 @@ requires-dist = [
     { name = "aiocache", extras = ["redis"], specifier = ">=0.12.3" },
     { name = "duckduckgo-search", specifier = ">=7.5.1" },
     { name = "kabigon", extras = ["all"], specifier = ">=0.8.2" },
-    { name = "logfire", specifier = ">=3.12.0" },
+    { name = "logfire", extras = ["httpx"], specifier = ">=3.12.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "lxml", specifier = ">=5.3.0" },
     { name = "markdown2", specifier = ">=2.5.1" },
@@ -862,6 +862,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/fc/43/13d7f326a47eb3751bad8e4b417c695c3f7e4a1bb237a5aa439e5cb85188/logfire-3.15.1-py3-none-any.whl", hash = "sha256:97550d5e7d9689cbce014a1858db83be7ed4f97a52e52e99269b2592aa233515", size = 193245 },
 ]
 
+[package.optional-dependencies]
+httpx = [
+    { name = "opentelemetry-instrumentation-httpx" },
+]
+
 [[package]]
 name = "loguru"
 version = "0.7.3"
@@ -1026,9 +1031,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ba/c3/c0a439e3b8d340edf48ee38653ad15812afd4b9bac6444672990e08fc4d7/mlx-0.25.2-cp312-cp312-macosx_13_0_arm64.whl", hash = "sha256:c9d35eac8d3224c9e005e7d469dd927dbdecd3d01b2e23390fd0d496e0010b7f", size = 30935677 },
     { url = "https://files.pythonhosted.org/packages/a9/ab/cb2749c8cc5044501d0ef467bf787505652abbe2d54897915cc207c2425b/mlx-0.25.2-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:c965289d64814005f85c4b121d5df00889a0ea5160883a62edb396b360bf5736", size = 30395510 },
     { url = "https://files.pythonhosted.org/packages/71/d9/4dce04ba004973879110ba6d62d4fdbc19d01d2b4ad40584d36c1b743586/mlx-0.25.2-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:24055a8fba9a6261d94dbfd31c37ede75106c7a832cb0609cb5b65e7e903e1fb", size = 30396327 },
+    { url = "https://files.pythonhosted.org/packages/e5/6c/5804da36d1db2df78b8e0298d6ea1d1aa543c0f943450f56ab6a08adfa47/mlx-0.25.2-cp312-cp312-manylinux_2_31_x86_64.whl", hash = "sha256:d7cc749e66e759ccad70d736896e0bc71d15f99fdbccfaa292da65fd6988bab8", size = 14608584 },
     { url = "https://files.pythonhosted.org/packages/d5/3f/5a3d036be09c32e76178eef7e51f4a9d1aef212f967927b62a9e49e2e4b0/mlx-0.25.2-cp313-cp313-macosx_13_0_arm64.whl", hash = "sha256:836e224efabbcdd55340c59148a6f36c69bd80e08b2e73fe6f6a6b02a00888b1", size = 30935605 },
     { url = "https://files.pythonhosted.org/packages/8d/f9/afbe659c623ae07755f1c0e63172eed60ed0b749745c428a6e035336c196/mlx-0.25.2-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:a39fef63444a7642f090ee09aaed8c59592962104d91bc655f330169dfacb8c0", size = 30395624 },
     { url = "https://files.pythonhosted.org/packages/56/0c/b673061779e332e84f6bc864c66fa7c940bcc3977f9dffc23942124d5b1c/mlx-0.25.2-cp313-cp313-macosx_15_0_arm64.whl", hash = "sha256:20f36ebf454b12a77d8b82a7a510dd235ab2cb24ef83011e9dd1daef1933617d", size = 30396305 },
+    { url = "https://files.pythonhosted.org/packages/cd/a0/296b3588cff579bebda296ee6bf3c617a595f60263786e6eb0bb361f8b31/mlx-0.25.2-cp313-cp313-manylinux_2_31_x86_64.whl", hash = "sha256:7af0708c8b80f71d5a6f583d788e2d6086b7dc37019ed5419e0143cc7c7e7002", size = 14608529 },
 ]
 
 [[package]]
@@ -1503,6 +1510,22 @@ wheels = [
 ]
 
 [[package]]
+name = "opentelemetry-instrumentation-httpx"
+version = "0.54b0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-instrumentation" },
+    { name = "opentelemetry-semantic-conventions" },
+    { name = "opentelemetry-util-http" },
+    { name = "wrapt" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/04/8d/b8d027f6a5e884ea5a66eca0d63449562f9142a017b221f226486816a240/opentelemetry_instrumentation_httpx-0.54b0.tar.gz", hash = "sha256:1db2e949d627654462dd129e6342cc8119bed6cd376df60ae7e92f6a47bede26", size = 17734 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2e/d0/092d6262fecae59bc6c31b9f35d004dc6d1f62d04f07b8127e05f50e8f70/opentelemetry_instrumentation_httpx-0.54b0-py3-none-any.whl", hash = "sha256:6d744c50018ad5c781c76ceeff96d5ff9826647a7e5eade2bae309bd873d6b4a", size = 14129 },
+]
+
+[[package]]
 name = "opentelemetry-proto"
 version = "1.33.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1539,6 +1562,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/92/8c/bc970d1599ff40b7913c953a95195addf11c81a27cc85d5ed568e9f8c57f/opentelemetry_semantic_conventions-0.54b0.tar.gz", hash = "sha256:467b739977bdcb079af1af69f73632535cdb51099d5e3c5709a35d10fe02a9c9", size = 118646 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c8/aa/f7c46c19aee189e0123ef7209eaafc417e242b2073485dfb40523d6d8612/opentelemetry_semantic_conventions-0.54b0-py3-none-any.whl", hash = "sha256:fad7c1cf8908fd449eb5cf9fbbeefb301acf4bc995101f85277899cec125d823", size = 194937 },
+]
+
+[[package]]
+name = "opentelemetry-util-http"
+version = "0.54b0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/14/51f18a82e858a06332e56fb523afbd5e5ff2dac5511a8c4ca64d163f15ca/opentelemetry_util_http-0.54b0.tar.gz", hash = "sha256:2b5fe7157928bdbde194d38df7cbd35a679631fe5b6c23b2c4a271229f7e42b5", size = 8041 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/25/e0/b53c6af5f2a44c301290e7853829e5a3b195d1057a1ff24ab165f18f67ce/opentelemetry_util_http-0.54b0-py3-none-any.whl", hash = "sha256:40598360e08ee7f8ea563f40dee5e30b1c15be54615e11497aaf190930e94250", size = 7302 },
 ]
 
 [[package]]
