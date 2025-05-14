@@ -111,6 +111,9 @@ def configure_logfire() -> None:
 
     logfire.configure()
     logfire.instrument_openai_agents()
+    logfire.instrument_httpx()
+    logfire.instrument_requests()
+    logfire.instrument_redis()
     logger.configure(handlers=[logfire.loguru_handler()])
 
 
