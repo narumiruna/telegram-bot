@@ -178,25 +178,16 @@ class AgentCallback:
         )
         return message_text
 
-    async def handle_message(
-        self,
-        message: Message,
-        include_reply_to_message: bool = False,
-    ) -> None:
-        message_text = get_message_text(
-            message,
-            include_reply_to_message=include_reply_to_message,
-            include_user_name=True,
-        )
+    async def handle_message(self, message: Message) -> None:
+        message_text = get_message_text(message, include_reply_to_message=True, include_user_name=True)
         if not message_text:
             return
 
-        # Get the memory for the current chat (group or user)
-        key = f"bot:{message.chat.id}"
-        messages = await self.cache.get(key)
-        if messages is None:
-            messages = []
-            logger.info("No key found for {key}", key=key)
+        # if the message is a reply to another message, get the previous messages
+        messages = []
+        if message.reply_to_message:
+            key = f"bot:{message.reply_to_message.id}:{message.chat.id}"
+            messages = await self.cache.get(key, default=[])
 
         # remove all tool messages from the memory
         messages = remove_tool_messages(messages)
@@ -206,12 +197,7 @@ class AgentCallback:
         message_text = await self.load_url_content(message_text)
 
         # add the user message to the list of messages
-        messages.append(
-            {
-                "role": "user",
-                "content": message_text,
-            }
-        )
+        messages.append({"role": "user", "content": message_text})
 
         # send the messages to the agent
         result = await Runner.run(self.agent, input=messages)
@@ -222,9 +208,10 @@ class AgentCallback:
         input_items = result.to_input_list()
         if len(input_items) > self.max_cache_size:
             input_items = input_items[-self.max_cache_size :]
-        await self.cache.set(key, input_items)
 
-        await message.reply_text(result.final_output)
+        new_message = await message.reply_text(result.final_output)
+        new_key = f"bot:{new_message.id}:{message.chat.id}"
+        await self.cache.set(new_key, input_items)
 
     async def handle_command(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         message = update.message
@@ -232,7 +219,7 @@ class AgentCallback:
             return
 
         with trace("handle_command"):
-            await self.handle_message(message, include_reply_to_message=True)
+            await self.handle_message(message)
 
     async def handle_reply(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         # TODO: Implement filters.MessageFilter for reply to bot
@@ -253,4 +240,4 @@ class AgentCallback:
             return
 
         with trace("handle_reply"):
-            await self.handle_message(message, include_reply_to_message=True)
+            await self.handle_message(message)
