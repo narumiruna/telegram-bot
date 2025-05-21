@@ -26,17 +26,6 @@ from ..utils import load_json
 from ..utils import parse_url
 from .utils import get_message_text
 
-# INSTRUCTIONS = dedent(
-#     """
-# - 使用台灣繁體中文
-# - 不捏造任何事實，不提供錯誤資訊
-# - 會使用適當的工具來取得所需的資訊
-# - 回答問題前一定會先查詢資訊
-# - 若查不到所需的資訊，或不知道怎麼查詢，先向使用者釐清問題
-# - Think step by step, but only keep a minimum draft for each thinking step, with 5 words at most.
-# - 將所有內容以純文字格式呈現，不使用粗體、斜體、標題或清單符號。每個段落應該以適當的表情符號和簡潔的標題開始
-# """.strip()
-# )
 INSTRUCTIONS = """
 你是一位台灣繁體中文的資訊查詢助理，目標是根據使用者問題，查詢並提供正確、可靠且經查證的資訊，絕不捏造或猜測答案，並協助釐清需求。
 
@@ -185,7 +174,7 @@ class AgentCallback:
 
         # if the message is a reply to another message, get the previous messages
         messages = []
-        if message.reply_to_message:
+        if message.reply_to_message is not None:
             key = f"bot:{message.reply_to_message.id}:{message.chat.id}"
             messages = await self.cache.get(key, default=[])
 
@@ -201,7 +190,6 @@ class AgentCallback:
 
         # send the messages to the agent
         result = await Runner.run(self.agent, input=messages)
-
         logger.info("New items: {new_items}", new_items=result.new_items)
 
         # update the memory
@@ -214,30 +202,21 @@ class AgentCallback:
         await self.cache.set(new_key, input_items)
 
     async def handle_command(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
-        message = update.message
-        if not message:
+        if update.message is None:
             return
 
         with trace("handle_command"):
-            await self.handle_message(message)
+            await self.handle_message(update.message)
 
     async def handle_reply(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         # TODO: Implement filters.MessageFilter for reply to bot
-
-        message = update.message
-        if not message:
-            return
-
-        reply_to_message = message.reply_to_message
-        if not reply_to_message:
-            return
-
-        from_user = reply_to_message.from_user
-        if not from_user:
-            return
-
-        if not from_user.is_bot:
+        if (
+            update.message is None
+            or update.message.reply_to_message is None
+            or update.message.reply_to_message.from_user is None
+            or not update.message.reply_to_message.from_user.is_bot
+        ):
             return
 
         with trace("handle_reply"):
-            await self.handle_message(message)
+            await self.handle_message(update.message)
