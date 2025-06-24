@@ -209,7 +209,6 @@ class AgentCallback:
             await self.handle_message(update.message)
 
     async def handle_reply(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
-        # TODO: Implement filters.MessageFilter for reply to bot
         if (
             update.message is None
             or update.message.reply_to_message is None
