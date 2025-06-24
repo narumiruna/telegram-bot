@@ -1,8 +1,8 @@
 format:
-	uv run ruff format src
+	uv run ruff format .
 
 lint:
-	uv run ruff check src
+	uv run ruff check .
 
 type:
 	uv run mypy --install-types --non-interactive src
