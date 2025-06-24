@@ -60,16 +60,16 @@ def get_telegraph_client() -> telegraph.Telegraph:
     return client
 
 
-def create_page(title: str, **kwargs) -> str:
+def create_page(title: str, **kwargs: Any) -> str:
     client = get_telegraph_client()
 
     resp = client.create_page(title=title, **kwargs)
     return resp["url"]
 
 
-def async_wrapper(func):
+def async_wrapper(func: Any) -> Any:
     @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
         loop = asyncio.get_running_loop()
         with concurrent.futures.ThreadPoolExecutor() as executor:
             result = await loop.run_in_executor(executor, func, *args, **kwargs)
@@ -111,6 +111,7 @@ def configure_logfire() -> None:
 
     logfire.configure()
     logfire.instrument_openai_agents()
+    # Note: httpx and requests instrumentation disabled to reduce noise
     # logfire.instrument_httpx()
     # logfire.instrument_requests()
     logfire.instrument_redis()

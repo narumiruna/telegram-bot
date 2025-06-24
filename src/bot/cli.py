@@ -6,7 +6,7 @@ from .bot import run_bot
 from .utils import configure_logfire
 
 
-def main():
+def main() -> None:
     load_dotenv(
         find_dotenv(
             raise_error_if_not_found=True,

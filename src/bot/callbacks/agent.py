@@ -89,31 +89,35 @@ def shorten_text(text: str, width: int = 100, placeholder: str = "...") -> str:
 
 
 def remove_tool_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
-    filtered_messages = []
-    tool_types = [
+    """Remove tool-related messages from the message list.
+
+    Args:
+        messages: List of response input items
+
+    Returns:
+        Filtered list without tool messages
+    """
+    tool_types = {
         "function_call",
         "function_call_output",
         "computer_call",
         "computer_call_output",
         "file_search_call",
         "web_search_call",
-    ]
-    for msg in messages:
-        msg_type = msg.get("type")
-        if msg_type in tool_types:
-            continue
-        filtered_messages.append(msg)
-    return filtered_messages
+    }
+    return [msg for msg in messages if msg.get("type") not in tool_types]
 
 
 def remove_fake_id_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
-    filtered_messages = []
-    for msg in messages:
-        msg_type = msg.get("id")
-        if msg_type == "__fake_id__":
-            continue
-        filtered_messages.append(msg)
-    return filtered_messages
+    """Remove messages with fake IDs from the message list.
+
+    Args:
+        messages: List of response input items
+
+    Returns:
+        Filtered list without fake ID messages
+    """
+    return [msg for msg in messages if msg.get("id") != "__fake_id__"]
 
 
 class AgentCallback:

@@ -41,6 +41,6 @@ def get_openai_model(api_type: Literal["responses", "chat_completions"] = "chat_
 
 
 @cache
-def get_openai_model_settings():
+def get_openai_model_settings() -> ModelSettings:
     temperature = float(os.getenv("OPENAI_TEMPERATURE", 0.0))
     return ModelSettings(temperature=temperature)

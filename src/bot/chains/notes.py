@@ -22,7 +22,7 @@ class ResearchReport(BaseModel):
     abstract: str
     introduction: str
     methodology: str
-    hightlights: list[str]
+    highlights: list[str]
     causal_relationships: list[CausalRelationship]
     conclusion: str
 

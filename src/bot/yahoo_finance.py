@@ -1,7 +1,7 @@
 import re
 from typing import Any
 
-import yfinance as yf  # type: ignore
+import yfinance as yf
 from loguru import logger
 
 
@@ -88,7 +88,7 @@ def query_tickers(symbols: str | list[str]) -> str:
     return "\n\n".join(results).strip()
 
 
-def get_info(ticker: yf.Ticker) -> dict:
+def get_info(ticker: yf.Ticker) -> dict[str, Any]:
     """Get ticker information safely.
 
     Args:
