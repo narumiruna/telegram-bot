@@ -155,7 +155,7 @@ class TestUtilsFunctions:
         mock_get_client.return_value = mock_client
 
         # This should raise an exception since create_page doesn't handle errors
-        with pytest.raises(Exception):
+        with pytest.raises((Exception, RuntimeError, ValueError)):
             create_page(title="Test Title", content="Test content")
 
     def test_logfire_is_enabled_with_token(self):

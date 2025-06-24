@@ -20,15 +20,19 @@ class TestBotModule:
 
     def test_get_bot_token_missing(self):
         """Test error when BOT_TOKEN is not set"""
-        with patch.dict(os.environ, {}, clear=True):
-            with pytest.raises(ValueError, match="BOT_TOKEN is not set"):
-                get_bot_token()
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            pytest.raises(ValueError, match="BOT_TOKEN is not set"),
+        ):
+            get_bot_token()
 
     def test_get_bot_token_empty(self):
         """Test error when BOT_TOKEN is empty"""
-        with patch.dict(os.environ, {"BOT_TOKEN": ""}):
-            with pytest.raises(ValueError, match="BOT_TOKEN is not set"):
-                get_bot_token()
+        with (
+            patch.dict(os.environ, {"BOT_TOKEN": ""}),
+            pytest.raises(ValueError, match="BOT_TOKEN is not set"),
+        ):
+            get_bot_token()
 
     def test_get_chat_filter_no_whitelist(self):
         """Test chat filter when no whitelist is specified"""
@@ -66,9 +70,11 @@ class TestBotModule:
 
     def test_get_chat_filter_invalid_chat_id(self):
         """Test error handling for invalid chat IDs"""
-        with patch.dict(os.environ, {"BOT_WHITELIST": "invalid_id"}):
-            with pytest.raises(ValueError):
-                get_chat_filter()
+        with (
+            patch.dict(os.environ, {"BOT_WHITELIST": "invalid_id"}),
+            pytest.raises(ValueError),
+        ):
+            get_chat_filter()
 
     @patch("bot.bot.AgentCallback")
     @patch("bot.bot.Application")

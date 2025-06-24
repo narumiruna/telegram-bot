@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 from unittest.mock import AsyncMock
@@ -17,7 +18,10 @@ from bot.callbacks.agent import shorten_text
 class TestAgentHelperFunctions:
     def test_shorten_text_default(self):
         """Test text shortening with default parameters"""
-        long_text = "This is a very long text that should be shortened because it exceeds the default width and needs to be truncated with placeholder"
+        long_text = (
+            "This is a very long text that should be shortened because it exceeds "
+            "the default width and needs to be truncated with placeholder"
+        )
         result = shorten_text(long_text)
         assert len(result) <= 100
         assert result.endswith("...")
@@ -164,7 +168,7 @@ class TestLoadMcpConfig:
             temp_path = f.name
 
         try:
-            with pytest.raises(Exception):
+            with pytest.raises((json.JSONDecodeError, ValueError)):
                 load_mcp_config(temp_path)
         finally:
             os.unlink(temp_path)
@@ -292,7 +296,10 @@ class TestAgentCallback:
         message_text = "Check this out: https://example.com"
         result = await callback.load_url_content(message_text)
 
-        expected = "Check this out: [URL content from https://example.com]:\n'''\nURL content here\n'''\n[END of URL content]\n"
+        expected = (
+            "Check this out: [URL content from https://example.com]:\n'''"
+            "\nURL content here\n'''\n[END of URL content]\n"
+        )
         assert result == expected
         mock_async_load_url.assert_called_once_with("https://example.com")
 

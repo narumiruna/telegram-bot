@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -141,7 +142,7 @@ class TestAgentConfig:
             temp_path = f.name
 
         try:
-            with pytest.raises(Exception):  # Should raise JSON decode error
+            with pytest.raises((json.JSONDecodeError, ValueError)):
                 AgentConfig.from_json(temp_path)
         finally:
             os.unlink(temp_path)
