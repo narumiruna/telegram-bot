@@ -6,9 +6,8 @@ from loguru import logger
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.utils import async_load_url
-
 from .. import chains
+from ..utils import async_load_url
 from ..utils import create_page
 from ..utils import parse_url
 from .utils import get_message_text

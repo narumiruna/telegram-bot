@@ -1,6 +1,6 @@
 from agents import function_tool
 
-from bot.utils import async_load_url
+from ..utils import async_load_url
 
 
 @function_tool
