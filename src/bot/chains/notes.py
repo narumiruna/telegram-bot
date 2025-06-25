@@ -34,8 +34,8 @@ class ResearchReport(BaseModel):
         lines.append(f"🔍 介紹\n{self.introduction}")
         lines.append(f"⚙️ 方法\n{self.methodology}")
 
-        if self.hightlights:
-            lines.append("\n".join(["✨ 重點"] + [f"- {highlight}" for highlight in self.hightlights]))
+        if self.highlights:
+            lines.append("\n".join(["✨ 重點"] + [f"- {highlight}" for highlight in self.highlights]))
 
         if self.causal_relationships:
             lines.append(
