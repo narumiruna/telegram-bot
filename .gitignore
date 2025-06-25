@@ -131,4 +131,7 @@ dmypy.json
 # ruff
 .ruff_cache/
 
+# Claude
+.claude/
+
 coverage.json
