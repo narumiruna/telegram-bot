@@ -5,8 +5,12 @@ from agents import function_tool
 from bs4 import BeautifulSoup
 from duckduckgo_search import DDGS
 
+from bot.retry import NETWORK_API_CONFIG
+from bot.retry import robust_api_call
+
 
 @function_tool
+@robust_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError, Exception))
 def extract_content(url: str) -> str:
     """Extract the main content from a webpage.
 
@@ -17,7 +21,8 @@ def extract_content(url: str) -> str:
         The extracted content as a string.
     """
     try:
-        response = httpx.get(url, timeout=5)
+        response = httpx.get(url, timeout=NETWORK_API_CONFIG.timeout)
+        response.raise_for_status()
 
         soup = BeautifulSoup(response.content, "html.parser")
 

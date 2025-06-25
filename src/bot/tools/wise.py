@@ -10,6 +10,10 @@ from loguru import logger
 from pydantic import BaseModel
 from pydantic import field_validator
 
+from bot.retry import NETWORK_API_CONFIG
+from bot.retry import robust_api_call
+from bot.retry import robust_async_api_call
+
 
 # {"source":"EUR","target":"USD","value":1.05425,"time":1697653800557}
 class Rate(BaseModel):
@@ -49,16 +53,19 @@ class RateRequest(BaseModel):
     source: str
     target: str
 
+    @robust_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError,))
     def do(self) -> Rate:
         resp = httpx.get(
             url="https://wise.com/rates/live",
             params=self.model_dump(),
+            timeout=NETWORK_API_CONFIG.timeout,
         )
         resp.raise_for_status()
         return Rate.model_validate(resp.json())
 
+    @robust_async_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError,))
     async def async_do(self) -> Rate:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=NETWORK_API_CONFIG.timeout) as client:
             resp = await client.get(
                 url="https://wise.com/rates/live",
                 params=self.model_dump(),
@@ -75,16 +82,19 @@ class RateHistoryRequest(BaseModel):
     resolution: Resolution
     unit: Unit
 
+    @robust_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError,))
     def do(self) -> list[Rate]:
         resp = httpx.get(
             url="https://wise.com/rates/history",
             params=self.model_dump(mode="json"),
+            timeout=NETWORK_API_CONFIG.timeout,
         )
         resp.raise_for_status()
         return [Rate.model_validate(data) for data in resp.json()]
 
+    @robust_async_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError,))
     async def async_do(self) -> list[Rate]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=NETWORK_API_CONFIG.timeout) as client:
             resp = await client.get(
                 url="https://wise.com/rates/history",
                 params=self.model_dump(mode="json"),
