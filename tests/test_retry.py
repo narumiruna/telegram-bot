@@ -113,7 +113,7 @@ class TestErrorCategorization:
         # Server errors should be retryable
         mock_request = Mock()
         server_error = APIError("Server error", request=mock_request, body=None)
-        server_error.status_code = 500
+        server_error.status_code = 500  # type: ignore[attr-defined]
         assert is_retryable_error(server_error)
 
     def test_non_retryable_openai_errors(self):
@@ -121,7 +121,7 @@ class TestErrorCategorization:
         # Client errors should not be retryable
         mock_request = Mock()
         client_error = APIError("Invalid API key", request=mock_request, body=None)
-        client_error.status_code = 401
+        client_error.status_code = 401  # type: ignore[attr-defined]
         assert not is_retryable_error(client_error)
 
     def test_connection_error_detection(self):
@@ -189,27 +189,25 @@ class TestDelayCalculation:
 class TestSyncRetryDecorator:
     def test_successful_call_no_retry(self):
         """Test that successful calls don't trigger retry"""
-        call_count = 0
+        call_count = [0]
 
         @retry_on_failure(RetryConfig(max_attempts=3))
         def successful_function():
-            nonlocal call_count
-            call_count += 1
+            call_count[0] += 1
             return "success"
 
         result = successful_function()
         assert result == "success"
-        assert call_count == 1
+        assert call_count[0] == 1
 
     def test_retry_on_retryable_error(self):
         """Test retry behavior on retryable errors"""
-        call_count = 0
+        call_count = [0]
 
         @retry_on_failure(RetryConfig(max_attempts=3, base_delay=0.1))
         def failing_function():
-            nonlocal call_count
-            call_count += 1
-            if call_count < 3:
+            call_count[0] += 1
+            if call_count[0] < 3:
                 raise httpx.NetworkError("Network error")
             return "success"
 
@@ -218,57 +216,54 @@ class TestSyncRetryDecorator:
         elapsed_time = time.time() - start_time
 
         assert result == "success"
-        assert call_count == 3
+        assert call_count[0] == 3
         assert elapsed_time >= 0.1  # Should have waited for retry
 
     def test_non_retryable_error_immediate_failure(self):
         """Test that non-retryable errors fail immediately"""
-        call_count = 0
+        call_count = [0]
 
         @retry_on_failure(RetryConfig(max_attempts=3))
         def failing_function():
-            nonlocal call_count
-            call_count += 1
+            call_count[0] += 1
             response = Mock(status_code=400)
             raise httpx.HTTPStatusError("Bad request", request=Mock(), response=response)
 
         with pytest.raises(httpx.HTTPStatusError):
             failing_function()
 
-        assert call_count == 1  # Should not retry
+        assert call_count[0] == 1  # Should not retry
 
     def test_retry_exhaustion_raises_retry_error(self):
         """Test that exhausted retries raise RetryError"""
-        call_count = 0
+        call_count = [0]
 
         @retry_on_failure(RetryConfig(max_attempts=2, base_delay=0.1))
         def always_failing_function():
-            nonlocal call_count
-            call_count += 1
+            call_count[0] += 1
             raise httpx.NetworkError("Network error")
 
         with pytest.raises(RetryError) as exc_info:
             always_failing_function()
 
-        assert call_count == 2
+        assert call_count[0] == 2
         assert exc_info.value.attempts == 2
         assert isinstance(exc_info.value.original_error, httpx.NetworkError)
 
     def test_custom_exception_types(self):
         """Test retry with custom exception types"""
-        call_count = 0
+        call_count = [0]
 
         @retry_on_failure(RetryConfig(max_attempts=2, base_delay=0.1), exceptions=(httpx.NetworkError,))
         def custom_error_function():
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
+            call_count[0] += 1
+            if call_count[0] == 1:
                 raise httpx.NetworkError("Custom network error")
             return "success"
 
         result = custom_error_function()
         assert result == "success"
-        assert call_count == 2
+        assert call_count[0] == 2
 
     def test_unhandled_exception_not_caught(self):
         """Test that unspecified exception types are not caught"""
@@ -285,28 +280,26 @@ class TestAsyncRetryDecorator:
     @pytest.mark.asyncio
     async def test_successful_async_call_no_retry(self):
         """Test that successful async calls don't trigger retry"""
-        call_count = 0
+        call_count = [0]
 
         @async_retry_on_failure(RetryConfig(max_attempts=3))
         async def successful_async_function():
-            nonlocal call_count
-            call_count += 1
+            call_count[0] += 1
             return "success"
 
         result = await successful_async_function()
         assert result == "success"
-        assert call_count == 1
+        assert call_count[0] == 1
 
     @pytest.mark.asyncio
     async def test_async_retry_on_retryable_error(self):
         """Test async retry behavior on retryable errors"""
-        call_count = 0
+        call_count = [0]
 
         @async_retry_on_failure(RetryConfig(max_attempts=3, base_delay=0.1))
         async def failing_async_function():
-            nonlocal call_count
-            call_count += 1
-            if call_count < 3:
+            call_count[0] += 1
+            if call_count[0] < 3:
                 raise httpx.NetworkError("Network error")
             return "success"
 
@@ -315,24 +308,23 @@ class TestAsyncRetryDecorator:
         elapsed_time = time.time() - start_time
 
         assert result == "success"
-        assert call_count == 3
+        assert call_count[0] == 3
         assert elapsed_time >= 0.1  # Should have waited for retry
 
     @pytest.mark.asyncio
     async def test_async_retry_exhaustion(self):
         """Test async retry exhaustion raises RetryError"""
-        call_count = 0
+        call_count = [0]
 
         @async_retry_on_failure(RetryConfig(max_attempts=2, base_delay=0.1))
         async def always_failing_async_function():
-            nonlocal call_count
-            call_count += 1
+            call_count[0] += 1
             raise httpx.NetworkError("Network error")
 
         with pytest.raises(RetryError) as exc_info:
             await always_failing_async_function()
 
-        assert call_count == 2
+        assert call_count[0] == 2
         assert exc_info.value.attempts == 2
 
 
@@ -376,36 +368,34 @@ class TestTimeoutDecorators:
 class TestRobustApiCallDecorators:
     def test_robust_api_call_combines_retry_and_timeout(self):
         """Test that robust_api_call combines retry and timeout"""
-        call_count = 0
+        call_count = [0]
 
         @robust_api_call(RetryConfig(max_attempts=2, base_delay=0.1, timeout=1.0))
         def api_function():
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
+            call_count[0] += 1
+            if call_count[0] == 1:
                 raise httpx.NetworkError("Network error")
             return "success"
 
         result = api_function()
         assert result == "success"
-        assert call_count == 2
+        assert call_count[0] == 2
 
     @pytest.mark.asyncio
     async def test_robust_async_api_call_combines_retry_and_timeout(self):
         """Test that robust_async_api_call combines retry and timeout"""
-        call_count = 0
+        call_count = [0]
 
         @robust_async_api_call(RetryConfig(max_attempts=2, base_delay=0.1, timeout=1.0))
         async def async_api_function():
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
+            call_count[0] += 1
+            if call_count[0] == 1:
                 raise httpx.NetworkError("Network error")
             return "success"
 
         result = await async_api_function()
         assert result == "success"
-        assert call_count == 2
+        assert call_count[0] == 2
 
 
 class TestIntegrationScenarios:
@@ -446,12 +436,12 @@ class TestIntegrationScenarios:
             elif "server_error" in prompt:
                 mock_request = Mock()
                 error = APIError("Server error", request=mock_request, body=None)
-                error.status_code = 500
+                error.status_code = 500  # type: ignore[attr-defined]
                 raise error
             elif "auth_error" in prompt:
                 mock_request = Mock()
                 error = APIError("Invalid API key", request=mock_request, body=None)
-                error.status_code = 401
+                error.status_code = 401  # type: ignore[attr-defined]
                 raise error
             return f"Response for: {prompt}"
 
