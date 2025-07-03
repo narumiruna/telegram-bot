@@ -10,20 +10,7 @@ from tenacity import stop_after_attempt
 from tenacity import wait_exponential
 from tenacity import wait_random
 
-
-def is_retryable_error(error: BaseException) -> bool:
-    """Determine if an error should trigger a retry attempt."""
-    # Network and timeout errors
-    if isinstance(error, httpx.TimeoutException | httpx.ConnectTimeout | httpx.ReadTimeout):
-        return True
-    if isinstance(error, httpx.NetworkError):
-        return True
-    # HTTP errors - retry on 5xx and 429
-    if isinstance(error, httpx.HTTPStatusError):
-        status_code = error.response.status_code
-        return status_code >= 500 or status_code == 429
-    # Connection errors from other libraries
-    return "connection" in str(error).lower() or "timeout" in str(error).lower()
+from bot.retry_utils import is_retryable_error
 
 
 @function_tool
