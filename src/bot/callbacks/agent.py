@@ -9,8 +9,8 @@ from agents import Agent
 from agents import Runner
 from agents import TResponseInputItem
 from agents import trace
-from agents.mcp import MCPServerStdio
-from agents.mcp import MCPServerStdioParams
+from agents.mcp.server import MCPServerStdio
+from agents.mcp.server import MCPServerStdioParams
 from loguru import logger
 from mcp.client.stdio import StdioServerParameters
 from telegram import Message
