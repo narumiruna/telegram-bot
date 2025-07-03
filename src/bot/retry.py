@@ -151,6 +151,7 @@ def retry_on_failure(
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             last_error: Exception | None = None
+            func_name = getattr(func, "__name__", repr(func))
 
             for attempt in range(config.max_attempts):
                 try:
@@ -159,16 +160,16 @@ def retry_on_failure(
                     last_error = error
 
                     if not is_retryable_error(error):
-                        logger.warning(f"Non-retryable error in {func.__name__}: {error}")
+                        logger.warning(f"Non-retryable error in {func_name}: {error}")
                         raise error
 
                     if attempt == config.max_attempts - 1:
-                        logger.error(f"All retry attempts exhausted for {func.__name__}: {error}")
+                        logger.error(f"All retry attempts exhausted for {func_name}: {error}")
                         raise RetryError(error, config.max_attempts) from error
 
                     delay = calculate_delay(attempt, config)
                     logger.warning(
-                        f"Attempt {attempt + 1}/{config.max_attempts} failed for {func.__name__}: {error}. "
+                        f"Attempt {attempt + 1}/{config.max_attempts} failed for {func_name}: {error}. "
                         f"Retrying in {delay:.2f}s"
                     )
                     time.sleep(delay)
@@ -202,6 +203,7 @@ def async_retry_on_failure(
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             last_error: Exception | None = None
+            func_name = getattr(func, "__name__", repr(func))
 
             for attempt in range(config.max_attempts):
                 try:
@@ -210,16 +212,16 @@ def async_retry_on_failure(
                     last_error = error
 
                     if not is_retryable_error(error):
-                        logger.warning(f"Non-retryable error in {func.__name__}: {error}")
+                        logger.warning(f"Non-retryable error in {func_name}: {error}")
                         raise error
 
                     if attempt == config.max_attempts - 1:
-                        logger.error(f"All retry attempts exhausted for {func.__name__}: {error}")
+                        logger.error(f"All retry attempts exhausted for {func_name}: {error}")
                         raise RetryError(error, config.max_attempts) from error
 
                     delay = calculate_delay(attempt, config)
                     logger.warning(
-                        f"Attempt {attempt + 1}/{config.max_attempts} failed for {func.__name__}: {error}. "
+                        f"Attempt {attempt + 1}/{config.max_attempts} failed for {func_name}: {error}. "
                         f"Retrying in {delay:.2f}s"
                     )
                     await asyncio.sleep(delay)
@@ -272,11 +274,12 @@ def async_with_timeout(timeout: float) -> Callable:
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            func_name = getattr(func, "__name__", repr(func))
             try:
                 return await asyncio.wait_for(func(*args, **kwargs), timeout=timeout)
             except TimeoutError as error:
-                logger.error(f"Timeout ({timeout}s) exceeded for {func.__name__}")
-                raise TimeoutError(f"Function {func.__name__} timed out after {timeout}s") from error
+                logger.error(f"Timeout ({timeout}s) exceeded for {func_name}")
+                raise TimeoutError(f"Function {func_name} timed out after {timeout}s") from error
 
         return wrapper
 
