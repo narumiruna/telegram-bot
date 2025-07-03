@@ -17,7 +17,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `make lint` or `uv run ruff check src` - Run code linting
 - `make type` or `uv run mypy --install-types --non-interactive src` - Run type checking
 - `make test` or `uv run pytest -v -s --cov=src tests` - Run tests with coverage
-- `make cover` - Run tests with XML coverage report
+- `make format` - Format code with ruff
+- `make all` - Run format, lint, type check, and test in sequence
 
 ### Build and Publish
 - `make publish` - Build wheel and publish to PyPI
@@ -37,6 +38,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `firecrawl-mcp` - Web scraping capabilities
   - `yfmcp` - Yahoo Finance market data
   - `twsemcp` - Taiwan Stock Exchange data
+  - `lymcp` - Additional MCP server tool
 
 - `triage.json` - Multi-agent orchestration system using OpenAI Agents handoff pattern:
   - `triage_agent` - Main routing agent that delegates to specialists
@@ -53,7 +55,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Tools and Chains**:
 - `tools/` - Utility functions for specific data sources:
   - `yahoo_finance.py` - Stock market data
-  - `twrate.py` - Taiwan exchange rate history
   - `weblio.py` - Japanese dictionary integration
   - `wise.py` - Currency exchange rates
   - `duckduckgo.py` - Web search functionality
@@ -77,11 +78,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Key Integration Points**:
 - OpenAI models configured via environment variables (`MODEL`, `OPENAI_API_KEY`)
-- Redis caching via `aiocache` for performance optimization
+- Redis caching via `aiocache` for performance optimization and conversation memory
 - Logfire integration for observability and monitoring
 - Access control via `BOT_WHITELIST` environment variable
 - Multi-platform content loading via `kabigon` library (PTT, Twitter, YouTube, Instagram, PDF)
 - MCP server dependencies requiring Node.js (`npx`) and Python (`uvx`) package managers
+- Retry mechanism using `tenacity` library with exponential backoff for robust API calls
+- Lazy execution via `lazy.py` for simple agent tasks without full configuration
 
 ### Environment Requirements
 
@@ -92,7 +95,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Model Configuration**:
 - `MODEL` - OpenAI model name (default: `gpt-4o-mini`)
-- `OPENAI_MODEL` - Specific model override (default: `gpt-4o`)
+- `OPENAI_MODEL` - Specific model override (default: `gpt-4.1`)
 - `OPENAI_TEMPERATURE` - Model temperature (default: `0.0`)
 
 **Alternative AI Providers**:
@@ -117,6 +120,8 @@ Tests are located in `tests/` directory with structure mirroring `src/`. The cod
 1. Always run linting and type checking after code changes: `make lint && make type`
 2. For new features, add corresponding tests in `tests/` with matching directory structure
 3. Use `uv run pytest tests/path/to/test.py::test_function -v -s` for focused testing during development
+4. When modifying retry behavior, ensure tools use `tenacity` library with proper error categorization
+5. For agent modifications, test both single-agent (default.json) and multi-agent (triage.json) configurations
 
 ## Project Structure
 
@@ -125,3 +130,5 @@ Tests are located in `tests/` directory with structure mirroring `src/`. The cod
 - **Configuration**: `src/bot/config.py` - Loads and validates JSON configurations
 - **Caching**: `src/bot/cache.py` - Redis-based caching with aiocache
 - **Model Management**: `src/bot/model.py` - OpenAI model configuration and initialization
+- **Retry System**: `src/bot/retry.py` - Error handling and retry logic using tenacity
+- **Lazy Execution**: `src/bot/lazy.py` - Simple agent tasks without full configuration
