@@ -4,13 +4,35 @@ import httpx
 from agents import function_tool
 from bs4 import BeautifulSoup
 from duckduckgo_search import DDGS
+from tenacity import retry
+from tenacity import retry_if_exception
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
+from tenacity import wait_random
 
-from bot.retry import NETWORK_API_CONFIG
-from bot.retry import robust_api_call
+
+def is_retryable_error(error: BaseException) -> bool:
+    """Determine if an error should trigger a retry attempt."""
+    # Network and timeout errors
+    if isinstance(error, httpx.TimeoutException | httpx.ConnectTimeout | httpx.ReadTimeout):
+        return True
+    if isinstance(error, httpx.NetworkError):
+        return True
+    # HTTP errors - retry on 5xx and 429
+    if isinstance(error, httpx.HTTPStatusError):
+        status_code = error.response.status_code
+        return status_code >= 500 or status_code == 429
+    # Connection errors from other libraries
+    return "connection" in str(error).lower() or "timeout" in str(error).lower()
 
 
 @function_tool
-@robust_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError, Exception))
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, max=30) + wait_random(0, 0.1),
+    retry=retry_if_exception(is_retryable_error),
+    reraise=True,
+)
 def extract_content(url: str) -> str:
     """Extract the main content from a webpage.
 
@@ -21,7 +43,7 @@ def extract_content(url: str) -> str:
         The extracted content as a string.
     """
     try:
-        response = httpx.get(url, timeout=NETWORK_API_CONFIG.timeout)
+        response = httpx.get(url, timeout=30.0)
         response.raise_for_status()
 
         soup = BeautifulSoup(response.content, "html.parser")
