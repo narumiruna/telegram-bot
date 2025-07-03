@@ -24,8 +24,8 @@ def get_openai_client() -> AsyncOpenAI:
 
 
 @cache
-def get_openai_model(api_type: Literal["responses", "chat_completions"] = "chat_completions") -> Model:
-    model_name = os.getenv("OPENAI_MODEL", "gpt-4o")
+def get_openai_model(api_type: Literal["responses", "chat_completions"] = "responses") -> Model:
+    model_name = os.getenv("OPENAI_MODEL", "gpt-4.1")
     client = get_openai_client()
 
     if logfire_is_enabled():
