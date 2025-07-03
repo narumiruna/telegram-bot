@@ -8,11 +8,11 @@
   },
   "yfmcp": {
     "command": "uvx",
-    "args": ["yfmcp"]
+    "args": ["yfmcp@latest"]
   },
   "twsemcp": {
     "command": "uvx",
-    "args": ["twsemcp"]
+    "args": ["twsemcp@latest"]
   },
   "lymcp": {
     "command": "uvx",
