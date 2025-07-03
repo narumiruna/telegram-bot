@@ -9,10 +9,13 @@ from agents import function_tool
 from loguru import logger
 from pydantic import BaseModel
 from pydantic import field_validator
+from tenacity import retry
+from tenacity import retry_if_exception
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
+from tenacity import wait_random
 
-from bot.retry import NETWORK_API_CONFIG
-from bot.retry import robust_api_call
-from bot.retry import robust_async_api_call
+from bot.retry_utils import is_retryable_error
 
 
 # {"source":"EUR","target":"USD","value":1.05425,"time":1697653800557}
@@ -53,19 +56,29 @@ class RateRequest(BaseModel):
     source: str
     target: str
 
-    @robust_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError,))
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=30) + wait_random(0, 0.1),
+        retry=retry_if_exception(is_retryable_error),
+        reraise=True,
+    )
     def do(self) -> Rate:
         resp = httpx.get(
             url="https://wise.com/rates/live",
             params=self.model_dump(),
-            timeout=NETWORK_API_CONFIG.timeout,
+            timeout=30.0,
         )
         resp.raise_for_status()
         return Rate.model_validate(resp.json())
 
-    @robust_async_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError,))
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=30) + wait_random(0, 0.1),
+        retry=retry_if_exception(is_retryable_error),
+        reraise=True,
+    )
     async def async_do(self) -> Rate:
-        async with httpx.AsyncClient(timeout=NETWORK_API_CONFIG.timeout) as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.get(
                 url="https://wise.com/rates/live",
                 params=self.model_dump(),
@@ -82,19 +95,29 @@ class RateHistoryRequest(BaseModel):
     resolution: Resolution
     unit: Unit
 
-    @robust_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError,))
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=30) + wait_random(0, 0.1),
+        retry=retry_if_exception(is_retryable_error),
+        reraise=True,
+    )
     def do(self) -> list[Rate]:
         resp = httpx.get(
             url="https://wise.com/rates/history",
             params=self.model_dump(mode="json"),
-            timeout=NETWORK_API_CONFIG.timeout,
+            timeout=30.0,
         )
         resp.raise_for_status()
         return [Rate.model_validate(data) for data in resp.json()]
 
-    @robust_async_api_call(NETWORK_API_CONFIG, exceptions=(httpx.HTTPError,))
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=30) + wait_random(0, 0.1),
+        retry=retry_if_exception(is_retryable_error),
+        reraise=True,
+    )
     async def async_do(self) -> list[Rate]:
-        async with httpx.AsyncClient(timeout=NETWORK_API_CONFIG.timeout) as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.get(
                 url="https://wise.com/rates/history",
                 params=self.model_dump(mode="json"),
