@@ -23,12 +23,12 @@ dependencies = [
     "typer>=0.15.2",
     "loguru>=0.7.3",
     "twse>=0.3.3",
-    "kabigon[all]>=0.8.2",
     "nest-asyncio>=1.6.0",
     "openai-agents>=0.1.0",
     "logfire[httpx,redis,requests]>=3.22.0",
     "openai>=1.93.0",
     "tenacity>=9.1.2",
+    "kabigon>=0.8.11",
 ]
 
 [project.scripts]
