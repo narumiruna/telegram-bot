@@ -29,6 +29,7 @@ dependencies = [
     "openai>=1.93.0",
     "tenacity>=9.1.2",
     "playwright[all]>=1.53.0",
+    "kabigon[all]>=0.8.11",
 ]
 
 [project.scripts]
