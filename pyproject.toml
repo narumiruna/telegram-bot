@@ -28,8 +28,8 @@ dependencies = [
     "logfire[httpx,redis,requests]>=3.22.0",
     "openai>=1.93.0",
     "tenacity>=9.1.2",
-    "kabigon[all]>=0.8.11",
     "playwright>=1.54.0",
+    "kabigon[all]>=0.8.12",
 ]
 
 [project.scripts]
