@@ -90,3 +90,9 @@ asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.bumpversion]
+current_version = "0.1.0"
+tag = true
+commit = true
+pre_commit_hooks = ["uv lock", "git add uv.lock"]
