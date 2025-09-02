@@ -112,7 +112,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **External Services**:
 - `FIRECRAWL_API_KEY` - For web scraping via Firecrawl MCP server
 
-## Testing Strategy
+## CICD & Testing Strategy
+
+### CI/CD Pipelines
+
+This repository uses GitHub Actions for continuous integration and deployment. Key workflows in `.github/workflows/`:
+
+- **python.yml**: Main CI pipeline, runs on push/PR (main). Installs dependencies with uv, runs lint (ruff), tests (pytest + coverage), type-checks (mypy), uploads coverage to Codecov.
+- **deploy.yml**: Deploy workflow, triggered on main push/dispatch, stops old service, installs dependencies, sets up .env, copies files, starts the bot on self-hosted runner via launchctl (macOS).
+- **bump-version.yml**: Manual semantic version bumper (major/minor/patch), tags the version using bump-my-version.
+- **publish.yml**: Manual PyPI release workflow—builds a wheel with uv, publishes to PyPI using a secret token.
+
+All workflows use uv as Python package/dependency manager and workflow/testing environment is based on Python 3.12.
+
 
 Tests are located in `tests/` directory with structure mirroring `src/`. The codebase uses pytest with coverage reporting and type checking via mypy.
 
