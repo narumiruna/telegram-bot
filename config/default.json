@@ -9,9 +9,5 @@
   "yfmcp": {
     "command": "uvx",
     "args": ["yfmcp@latest"]
-  },
-  "twsemcp": {
-    "command": "uvx",
-    "args": ["twsemcp@latest"]
   }
 }
