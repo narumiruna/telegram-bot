@@ -13,9 +13,5 @@
   "twsemcp": {
     "command": "uvx",
     "args": ["twsemcp@latest"]
-  },
-  "lymcp": {
-    "command": "uvx",
-    "args": ["lymcp@latest"]
   }
 }
