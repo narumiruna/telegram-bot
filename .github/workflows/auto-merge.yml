@@ -3,10 +3,6 @@ name: Dependabot auto-approve & auto-merge
 on:
   pull_request:
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   dependabot:
     runs-on: ubuntu-latest
