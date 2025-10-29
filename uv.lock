@@ -190,7 +190,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiocache", extra = ["redis"] },
     { name = "duckduckgo-search" },
-    { name = "kabigon", extra = ["all"] },
+    { name = "kabigon" },
     { name = "logfire", extra = ["httpx", "redis", "requests"] },
     { name = "loguru" },
     { name = "lxml" },
@@ -238,7 +238,7 @@ mlx = [
 requires-dist = [
     { name = "aiocache", extras = ["redis"], specifier = ">=0.12.3" },
     { name = "duckduckgo-search", specifier = ">=7.5.1" },
-    { name = "kabigon", extras = ["all"], specifier = ">=0.9.3" },
+    { name = "kabigon", specifier = ">=0.9.3" },
     { name = "logfire", extras = ["httpx", "redis", "requests"], specifier = ">=3.22.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "lxml", specifier = ">=5.3.0" },
@@ -1099,7 +1099,7 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.9.3"
+version = "0.9.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aioytt" },
@@ -1107,6 +1107,8 @@ dependencies = [
     { name = "httpx" },
     { name = "loguru" },
     { name = "markdownify" },
+    { name = "openai-whisper" },
+    { name = "playwright" },
     { name = "pypdf" },
     { name = "rich" },
     { name = "typer" },
@@ -1114,13 +1116,7 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/fe/82f2e58d67f5c27c687a224e60c1e57f15030773619e3296a8110156a840/kabigon-0.9.3-py3-none-any.whl", hash = "sha256:2a5532bcd7ea82331c0801642d511a0b1497077683c5b97d5eade154ae60f040", size = 10858, upload-time = "2025-10-29T16:42:10.82Z" },
-]
-
-[package.optional-dependencies]
-all = [
-    { name = "openai-whisper" },
-    { name = "playwright" },
+    { url = "https://files.pythonhosted.org/packages/2a/4e/9e085be3601448e28119f6bf3d505da6d236e1cf50504f64ea607dd273cd/kabigon-0.9.4-py3-none-any.whl", hash = "sha256:e2a314bec40b3f1ccf3981c42d51a66bccb29d25c142db74a858115fe05e939a", size = 10806, upload-time = "2025-10-29T18:18:34.941Z" },
 ]
 
 [[package]]
