@@ -12,7 +12,6 @@ dependencies = [
     "python-telegram-bot>=21.6",
     "telegraph>=2.2.0",
     "youtube-search>=2.1.2",
-    "numba>=0.60.0",
     "tripplus",
     "mortgage>=1.0.5",
     "markdown2>=2.5.1",
@@ -28,7 +27,6 @@ dependencies = [
     "logfire[httpx,redis,requests]>=3.22.0",
     "openai>=1.93.0",
     "tenacity>=9.1.2",
-    "playwright>=1.54.0",
     "kabigon>=0.9.3",
 ]
 
