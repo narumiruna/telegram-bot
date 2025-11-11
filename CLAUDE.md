@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Quality Assurance
 - `make lint` or `uv run ruff check src` - Run code linting
-- `make type` or `uv run mypy --install-types --non-interactive src` - Run type checking
+- `make type` or `uv run ty check src` - Run type checking
 - `make test` or `uv run pytest -v -s --cov=src tests` - Run tests with coverage
 - `make format` - Format code with ruff
 - `make all` - Run format, lint, type check, and test in sequence
@@ -118,7 +118,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This repository uses GitHub Actions for continuous integration and deployment. Key workflows in `.github/workflows/`:
 
-- **python.yml**: Main CI pipeline, runs on push/PR (main). Installs dependencies with uv, runs lint (ruff), tests (pytest + coverage), type-checks (mypy), uploads coverage to Codecov.
+- **python.yml**: Main CI pipeline, runs on push/PR (main). Installs dependencies with uv, runs lint (ruff), tests (pytest + coverage), type-checks (ty), uploads coverage to Codecov.
 - **deploy.yml**: Deploy workflow, triggered on main push/dispatch, stops old service, installs dependencies, sets up .env, copies files, starts the bot on self-hosted runner via launchctl (macOS).
 - **bump-version.yml**: Manual semantic version bumper (major/minor/patch), tags the version using bump-my-version.
 - **publish.yml**: Manual PyPI release workflow—builds a wheel with uv, publishes to PyPI using a secret token.
@@ -126,7 +126,7 @@ This repository uses GitHub Actions for continuous integration and deployment. K
 All workflows use uv as Python package/dependency manager and workflow/testing environment is based on Python 3.12.
 
 
-Tests are located in `tests/` directory with structure mirroring `src/`. The codebase uses pytest with coverage reporting and type checking via mypy.
+Tests are located in `tests/` directory with structure mirroring `src/`. The codebase uses pytest with coverage reporting and type checking via ty.
 
 ### Development Workflow
 1. Always run linting and type checking after code changes: `make lint && make type`

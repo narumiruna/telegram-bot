@@ -27,7 +27,7 @@ jobs:
       - name: Test
         run: uv run pytest -v -s --cov=src --cov-report=xml tests
       - name: Type check
-        run: uv run mypy --install-types --non-interactive .
+        run: uv run ty check src
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:

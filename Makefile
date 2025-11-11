@@ -5,7 +5,7 @@ lint:
 	uv run ruff check .
 
 type:
-	uv run mypy --install-types --non-interactive src
+	uv run ty check src
 
 test:
 	uv run pytest -v -s --cov=src tests
