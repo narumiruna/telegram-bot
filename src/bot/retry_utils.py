@@ -5,7 +5,6 @@ Provides shared retry logic and error categorization functions.
 """
 
 import httpx
-from openai import APIError
 from openai import RateLimitError
 
 
