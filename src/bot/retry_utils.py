@@ -35,9 +35,5 @@ def is_retryable_error(error: BaseException) -> bool:
     if isinstance(error, RateLimitError):
         return True
 
-    if isinstance(error, APIError):
-        # Only retry on server errors, not client errors
-        return hasattr(error, "status_code") and error.status_code >= 500
-
     # Connection errors from other libraries (string matching)
     return "connection" in str(error).lower() or "timeout" in str(error).lower()
