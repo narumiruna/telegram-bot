@@ -18,7 +18,7 @@ jobs:
       matrix:
         python-version: ["3.12"]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Stop and disable service
         continue-on-error: true
         working-directory: ${{ env.PLIST_DIR }}
