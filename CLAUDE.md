@@ -1,13 +1,13 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding assistants (Claude Code / GitHub Copilot / etc.) when working in this repository.
 
 ## Development Commands
 
 ### Core Development
-- `uv run bot` - Start the Telegram bot with default configuration
-- `uv run bot -c config/triage.json` - Start bot with alternative configuration (multi-agent setup)
 - `uv sync` - Install/sync project dependencies
+- `uv run bot` - Start the Telegram bot (requires a `.env` file; see Environment Variables)
+- `uv run bot --config config/default.json` - Start the bot with an explicit MCP server config
 
 ### Single Test Execution
 - `uv run pytest tests/specific_test.py -v -s` - Run individual test file
@@ -30,22 +30,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Bot Framework**: Built on `python-telegram-bot` with callback-based handlers for different commands and message types.
 
-**Agent System**: Uses `openai-agents` library with MCP (Model Context Protocol) server integration for external tool access. The main agent is configured via `AgentCallback` class.
+**Agent System**: Uses `openai-agents` with MCP (Model Context Protocol) server integration for external tool access. The main agent is configured via `AgentCallback`.
 
-**Configuration**: JSON-based configuration in `config/` directory determines bot behavior:
+**Configuration**: `-c/--config` points to an MCP server config JSON file (see `AgentCallback.load_mcp_config`).
 
-- `default.json` - Standard single-agent mode with MCP server tools:
-  - `firecrawl-mcp` - Web scraping capabilities
-  - `yfmcp` - Yahoo Finance market data
-  - `twsemcp` - Taiwan Stock Exchange data
-  - `lymcp` - Additional MCP server tool
+The file must be a JSON object mapping server name to stdio server parameters, e.g.:
 
-- `triage.json` - Multi-agent orchestration system using OpenAI Agents handoff pattern:
-  - `triage_agent` - Main routing agent that delegates to specialists
-  - `thinking_agent` - Logic and reasoning specialist (responds in Traditional Chinese)
-  - `browser_agent` - Web browsing with Playwright MCP server
-  - `financial_agent` - Stock/finance specialist with Yahoo Finance + Taiwan Stock Exchange tools
-  - `reading_agent` - Document processing and summarization with fetch MCP server
+```json
+{
+  "firecrawl-mcp": {
+    "command": "npx",
+    "args": ["-y", "firecrawl-mcp"],
+    "env": { "FIRECRAWL_API_KEY": "" }
+  },
+  "yfmcp": {
+    "command": "uvx",
+    "args": ["yfmcp@latest"]
+  }
+}
+```
+
+If a value in `env` is the empty string (`""`), the bot will replace it with the corresponding environment variable at runtime.
+
+Note: `config/triage.json` exists but is not consumed by the current runtime path in `src/bot/bot.py`.
 
 **Callbacks Structure**:
 - `callbacks/` - Individual command handlers (format, translate, summarize, ticker, etc.)
@@ -77,7 +84,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `notes.py` - Note processing
 
 **Key Integration Points**:
-- OpenAI models configured via environment variables (`MODEL`, `OPENAI_API_KEY`)
+- OpenAI models configured via environment variables (`OPENAI_MODEL`, `OPENAI_API_KEY`)
 - Redis caching via `aiocache` for performance optimization and conversation memory
 - Logfire integration for observability and monitoring
 - Access control via `BOT_WHITELIST` environment variable
@@ -88,18 +95,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Environment Requirements
 
+The entrypoint (`src/bot/cli.py`) requires a `.env` file to exist (it uses `find_dotenv(..., raise_error_if_not_found=True)`), so local runs should include one.
+
 **Essential Variables** (`.env` file):
 - `BOT_TOKEN` - Telegram bot token
 - `BOT_WHITELIST` - Comma-separated user IDs for access control
 - `OPENAI_API_KEY` - OpenAI API key
 
 **Model Configuration**:
-- `MODEL` - OpenAI model name (default: `gpt-4o-mini`)
-- `OPENAI_MODEL` - Specific model override (default: `gpt-4.1`)
+- `OPENAI_MODEL` - Model name (default: `gpt-4.1`)
 - `OPENAI_TEMPERATURE` - Model temperature (default: `0.0`)
 
 **Alternative AI Providers**:
 - `AZURE_OPENAI_API_KEY` - For Azure OpenAI integration
+- `LITELLM_API_KEY` - If set, routes through LiteLLM via `openai-agents`
 - `LANGFUSE_PUBLIC_KEY` - Langfuse observability platform
 - `LANGFUSE_SECRET_KEY` - Langfuse secret key
 - `LANGFUSE_HOST` - Langfuse host URL
@@ -133,7 +142,7 @@ Tests are located in `tests/` directory with structure mirroring `src/`. The cod
 2. For new features, add corresponding tests in `tests/` with matching directory structure
 3. Use `uv run pytest tests/path/to/test.py::test_function -v -s` for focused testing during development
 4. When modifying retry behavior, ensure tools use `tenacity` library with proper error categorization
-5. For agent modifications, test both single-agent (default.json) and multi-agent (triage.json) configurations
+5. For agent modifications, validate the MCP config you changed is a plain server-name map (like `config/default.json`)
 
 ## Project Structure
 
@@ -144,3 +153,10 @@ Tests are located in `tests/` directory with structure mirroring `src/`. The cod
 - **Model Management**: `src/bot/model.py` - OpenAI model configuration and initialization
 - **Retry System**: `src/bot/retry.py` - Error handling and retry logic using tenacity
 - **Lazy Execution**: `src/bot/lazy.py` - Simple agent tasks without full configuration
+
+## Repo Conventions (for assistants)
+
+- Prefer small, surgical changes; avoid unrelated refactors.
+- Keep code compatible with Python 3.12+.
+- Use `make format` (ruff) before committing formatting changes.
+- Use `make lint`, `make type`, and focused `uv run pytest ...` runs to validate changes.
