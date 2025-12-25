@@ -18,4 +18,4 @@ from .youtube_ytdlp import YoutubeYtdlpLoader
 from .ytdlp import YtdlpLoader
 
 LOGURU_LEVEL: Final[str] = os.getenv("LOGURU_LEVEL", "INFO")
-logger.configure(handlers=[{"sink": sys.stderr, "level": LOGURU_LEVEL}])
+logger.configure(handlers=[{"sink": sys.stderr, "level": LOGURU_LEVEL}])  # ty:ignore[invalid-argument-type]

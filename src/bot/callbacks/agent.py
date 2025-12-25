@@ -190,7 +190,7 @@ class AgentCallback:
         message_text = await self.load_url_content(message_text)
 
         # add the user message to the list of messages
-        messages.append({"role": "user", "content": message_text})
+        messages.append({"role": "user", "content": message_text})  # ty:ignore[invalid-argument-type]
 
         # send the messages to the agent
         result = await Runner.run(self.agent, input=messages)
