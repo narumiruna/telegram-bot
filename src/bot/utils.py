@@ -12,6 +12,8 @@ from typing import Any
 import logfire
 import nest_asyncio
 import telegraph
+from loguru import logger
+
 from kabigon import Compose
 from kabigon import FirecrawlLoader
 from kabigon import PDFLoader
@@ -21,7 +23,6 @@ from kabigon import ReelLoader
 from kabigon import TwitterLoader
 from kabigon import YoutubeLoader
 from kabigon import YoutubeYtdlpLoader
-from loguru import logger
 
 
 def save_text(text: str, f: str) -> None:
