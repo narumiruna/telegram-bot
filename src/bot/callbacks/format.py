@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-from typing import Final
-
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from .. import chains
+from ..constants import MAX_MESSAGE_LENGTH
 from ..utils import async_load_url
 from ..utils import create_page
 from ..utils import parse_url
 from .utils import get_message_text
-
-MAX_LENGTH: Final[int] = 1_000
 
 
 async def format_callback(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
@@ -29,7 +26,7 @@ async def format_callback(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
 
     result = await chains.format(message_text)
 
-    if len(str(result)) > MAX_LENGTH:
+    if len(str(result)) > MAX_MESSAGE_LENGTH:
         text = create_page(title=result.title, html_content=str(result).replace("\n", "<br>"))
     else:
         text = str(result)

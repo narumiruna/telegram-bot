@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import Final
 
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -10,9 +9,8 @@ from kabigon.pdf import read_pdf_content
 from kabigon.utils import read_html_content
 
 from .. import chains
+from ..constants import MAX_MESSAGE_LENGTH
 from ..utils import create_page
-
-MAX_LENGTH: Final[int] = 1_000
 
 
 async def file_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -39,7 +37,7 @@ async def file_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return
 
     result = await chains.format(text)
-    if len(str(result)) > MAX_LENGTH:
+    if len(str(result)) > MAX_MESSAGE_LENGTH:
         text = create_page(title=result.title, html_content=str(result).replace("\n", "<br>"))
     else:
         text = str(result)
