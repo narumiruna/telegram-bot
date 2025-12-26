@@ -1,11 +1,12 @@
 # CLAUDE.md
 
-This file provides guidance to AI coding assistants (Claude Code / GitHub Copilot / etc.) when working in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Development Commands
 
 ### Core Development
 - `uv sync` - Install/sync project dependencies
+- `uv run playwright install chromium` - Install Playwright browser (required for some MCP servers)
 - `uv run bot` - Start the Telegram bot (requires a `.env` file; see Environment Variables)
 - `uv run bot --config config/default.json` - Start the bot with an explicit MCP server config
 
@@ -75,7 +76,7 @@ Note: `config/triage.json` exists but is not consumed by the current runtime pat
 - `chains/` - LLM-powered processing chains:
   - `translation.py` - Multi-language translation
   - `summary.py` - Text summarization
-  - `jlpt/` - Japanese language learning system (v1, v2, v3 prompts)
+  - `jlpt/` - Japanese language learning system
   - `formatter.py` - Content formatting
   - `polisher.py` - Text improvement
   - `recipe.py` - Recipe generation
@@ -151,7 +152,7 @@ Tests are located in `tests/` directory with structure mirroring `src/`. The cod
 - **Configuration**: `src/bot/config.py` - Loads and validates JSON configurations
 - **Caching**: `src/bot/cache.py` - Redis-based caching with aiocache
 - **Model Management**: `src/bot/model.py` - OpenAI model configuration and initialization
-- **Retry System**: `src/bot/retry.py` - Error handling and retry logic using tenacity
+- **Retry System**: `src/bot/retry_utils.py` - Error handling and retry logic using tenacity
 - **Lazy Execution**: `src/bot/lazy.py` - Simple agent tasks without full configuration
 
 ## Repo Conventions (for assistants)
