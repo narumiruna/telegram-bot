@@ -12,33 +12,9 @@ from bot.callbacks.agent import AgentCallback
 from bot.callbacks.agent import load_mcp_config
 from bot.callbacks.agent import remove_fake_id_messages
 from bot.callbacks.agent import remove_tool_messages
-from bot.callbacks.agent import shorten_text
 
 
 class TestAgentHelperFunctions:
-    def test_shorten_text_default(self):
-        """Test text shortening with default parameters"""
-        long_text = (
-            "This is a very long text that should be shortened because it exceeds "
-            "the default width and needs to be truncated with placeholder"
-        )
-        result = shorten_text(long_text)
-        assert len(result) <= 100
-        assert result.endswith("...")
-
-    def test_shorten_text_custom_width(self):
-        """Test text shortening with custom width"""
-        text = "This is a medium length text"
-        result = shorten_text(text, width=20, placeholder="---")
-        assert len(result) <= 20
-        assert result.endswith("---")
-
-    def test_shorten_text_no_truncation_needed(self):
-        """Test text that doesn't need shortening"""
-        short_text = "Short text"
-        result = shorten_text(short_text, width=100)
-        assert result == short_text
-
     def test_remove_tool_messages(self):
         """Test removal of tool-related messages"""
         messages = [
