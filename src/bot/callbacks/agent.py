@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import textwrap
 from pathlib import Path
 from typing import cast
 
@@ -16,10 +15,14 @@ from mcp.client.stdio import StdioServerParameters
 from telegram import Message
 from telegram import Update
 from telegram.ext import ContextTypes
+from tenacity import retry
+from tenacity import retry_if_exception
+from tenacity import stop_after_attempt
 
 from ..cache import get_cache_from_env
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
+from ..retry_utils import is_retryable_error
 from ..tools import query_rate_history
 from ..utils import async_load_url
 from ..utils import load_json
@@ -84,10 +87,6 @@ def load_mcp_config(f: str | Path) -> dict[str, StdioServerParameters]:
     return result
 
 
-def shorten_text(text: str, width: int = 100, placeholder: str = "...") -> str:
-    return textwrap.shorten(text, width=width, placeholder=placeholder)
-
-
 def remove_tool_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
     """Remove tool-related messages from the message list.
 
@@ -121,9 +120,34 @@ def remove_fake_id_messages(messages: list[TResponseInputItem]) -> list[TRespons
 
 
 class AgentCallback:
+    def _make_cache_key(self, message_id: int, chat_id: int) -> str:
+        """Generate a cache key for storing conversation history.
+
+        Args:
+            message_id: The Telegram message ID
+            chat_id: The Telegram chat ID
+
+        Returns:
+            A cache key string
+        """
+        return f"bot:{message_id}:{chat_id}"
+
     @classmethod
     def from_config(cls, config_file: str | Path) -> AgentCallback:
+        """Create AgentCallback from MCP server configuration file.
+
+        Args:
+            config_file: Path to the MCP server configuration JSON file
+
+        Returns:
+            Configured AgentCallback instance
+        """
         config = load_mcp_config(config_file)
+
+        # Read configuration from environment variables
+        mcp_timeout = int(os.getenv("MCP_SERVER_TIMEOUT", "300"))
+        max_cache_size = int(os.getenv("AGENT_MAX_CACHE_SIZE", "50"))
+
         agent = Agent(
             name="agent",
             instructions=INSTRUCTIONS,
@@ -134,14 +158,20 @@ class AgentCallback:
                 MCPServerStdio(
                     params=cast(MCPServerStdioParams, params.model_dump()),
                     name=name,
-                    client_session_timeout_seconds=300,
+                    client_session_timeout_seconds=mcp_timeout,
                 )
                 for name, params in config.items()
             ],
         )
-        return cls(agent)
+        return cls(agent, max_cache_size=max_cache_size)
 
     def __init__(self, agent: Agent, max_cache_size: int = 50) -> None:
+        """Initialize AgentCallback.
+
+        Args:
+            agent: The Agent instance to use
+            max_cache_size: Maximum number of messages to keep in cache (default: 50)
+        """
         self.agent = agent
 
         # max_cache_size is the maximum number of messages to keep in the cache
@@ -151,36 +181,107 @@ class AgentCallback:
         self.cache = get_cache_from_env()
 
     async def connect(self) -> None:
+        """Connect to all MCP servers.
+
+        Continues to connect remaining servers even if some fail.
+        """
         for mcp_server in self.agent.mcp_servers:
-            await mcp_server.connect()
+            try:
+                logger.info("Connecting to MCP server: {name}", name=mcp_server.name)
+                await mcp_server.connect()
+                logger.info("Successfully connected to MCP server: {name}", name=mcp_server.name)
+            except Exception as e:
+                logger.error(
+                    "Failed to connect to MCP server {name}: {error}",
+                    name=mcp_server.name,
+                    error=str(e),
+                )
 
     async def cleanup(self) -> None:
+        """Cleanup all MCP servers.
+
+        Continues to cleanup remaining servers even if some fail.
+        """
         for mcp_server in self.agent.mcp_servers:
-            await mcp_server.cleanup()
+            try:
+                logger.info("Cleaning up MCP server: {name}", name=mcp_server.name)
+                await mcp_server.cleanup()
+                logger.info("Successfully cleaned up MCP server: {name}", name=mcp_server.name)
+            except Exception as e:
+                logger.error(
+                    "Failed to cleanup MCP server {name}: {error}",
+                    name=mcp_server.name,
+                    error=str(e),
+                )
+
+    @retry(retry=retry_if_exception(is_retryable_error), stop=stop_after_attempt(3))
+    async def _load_url_with_retry(self, url: str) -> str:
+        """Load URL content with retry mechanism.
+
+        Args:
+            url: The URL to load
+
+        Returns:
+            The loaded content
+
+        Raises:
+            Exception: If all retry attempts fail
+        """
+        return await async_load_url(url)
 
     async def load_url_content(self, message_text: str) -> str:
+        """Load URL content from message text if URL is present.
+
+        Args:
+            message_text: The message text that may contain a URL
+
+        Returns:
+            The message text with URL content replaced (if URL found and loaded successfully)
+        """
         parsed_url = parse_url(message_text)
         if not parsed_url:
             return message_text
 
-        url_content = await async_load_url(parsed_url)
-        message_text = message_text.replace(
-            parsed_url,
-            f"[URL content from {parsed_url}]:\n'''\n{url_content}\n'''\n[END of URL content]\n",
-            1,
-        )
+        try:
+            logger.info("Loading URL content: {url}", url=parsed_url)
+            url_content = await self._load_url_with_retry(parsed_url)
+            logger.info("Successfully loaded URL content: {url}", url=parsed_url)
+
+            message_text = message_text.replace(
+                parsed_url,
+                f"[URL content from {parsed_url}]:\n'''\n{url_content}\n'''\n[END of URL content]\n",
+                1,
+            )
+        except Exception as e:
+            logger.error("Failed to load URL {url}: {error}", url=parsed_url, error=str(e))
+            # Return original message text if URL loading fails
+            logger.info("Falling back to original message text")
+
         return message_text
 
     async def handle_message(self, message: Message) -> None:
+        """Handle incoming message and generate response.
+
+        Args:
+            message: The Telegram message to handle
+        """
         message_text = get_message_text(message, include_reply_to_message=True, include_user_name=True)
         if not message_text:
             return
 
+        logger.info("Handling message from chat {chat_id}", chat_id=message.chat.id)
+
         # if the message is a reply to another message, get the previous messages
         messages = []
         if message.reply_to_message is not None:
-            key = f"bot:{message.reply_to_message.id}:{message.chat.id}"
-            messages = await self.cache.get(key, default=[])
+            key = self._make_cache_key(message.reply_to_message.id, message.chat.id)
+            try:
+                logger.debug("Loading conversation history from cache: {key}", key=key)
+                messages = await self.cache.get(key, default=[])
+                logger.debug("Loaded {count} messages from cache", count=len(messages))
+            except Exception as e:
+                logger.error("Failed to load from cache: {error}", error=str(e))
+                messages = []
 
         # remove all tool messages from the memory
         messages = remove_tool_messages(messages)
@@ -193,17 +294,24 @@ class AgentCallback:
         messages.append({"role": "user", "content": message_text})  # ty:ignore[invalid-argument-type]
 
         # send the messages to the agent
+        logger.info("Running agent with {count} messages", count=len(messages))
         result = await Runner.run(self.agent, input=messages)
-        logger.info("New items: {new_items}", new_items=result.new_items)
+        logger.info("Agent completed. New items: {new_items}", new_items=result.new_items)
 
         # update the memory
         input_items = result.to_input_list()
         if len(input_items) > self.max_cache_size:
+            logger.debug("Trimming conversation history to {size} items", size=self.max_cache_size)
             input_items = input_items[-self.max_cache_size :]
 
         new_message = await message.reply_text(result.final_output)
-        new_key = f"bot:{new_message.id}:{message.chat.id}"
-        await self.cache.set(new_key, input_items)
+        new_key = self._make_cache_key(new_message.id, message.chat.id)
+        try:
+            logger.debug("Saving conversation history to cache: {key}", key=new_key)
+            await self.cache.set(new_key, input_items)
+            logger.debug("Successfully saved conversation history")
+        except Exception as e:
+            logger.error("Failed to save to cache: {error}", error=str(e))
 
     async def handle_command(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         if update.message is None:
