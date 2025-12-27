@@ -473,3 +473,102 @@ class TestAgentCallback:
 
         # Should not call handle_message for non-reply messages
         callback.handle_message.assert_not_called()
+
+    def test_make_cache_key_chat_based(self):
+        """Test that cache key is based on chat_id only"""
+        mock_agent = Mock()
+        callback = AgentCallback(mock_agent)
+
+        key = callback._make_cache_key(chat_id=12345)
+        assert key == "bot:chat:12345"
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
+    @patch("bot.callbacks.agent.get_message_text")
+    @patch("bot.callbacks.agent.Runner")
+    async def test_cache_ttl_is_set(self, mock_runner, mock_get_message_text, mock_get_cache):
+        """Test that cache is saved with TTL"""
+        from bot.constants import CACHE_TTL_SECONDS
+
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_cache.get = AsyncMock(return_value=[])
+        mock_cache.set = AsyncMock()
+        mock_get_cache.return_value = mock_cache
+
+        mock_get_message_text.return_value = "Test message"
+
+        # Mock runner result
+        mock_result = Mock()
+        mock_result.new_items = []
+        mock_result.final_output = "Response"
+        mock_result.to_input_list.return_value = [
+            {"role": "user", "content": "Test message"},
+            {"role": "assistant", "content": "Response"},
+        ]
+        mock_runner.run = AsyncMock(return_value=mock_result)
+
+        # Mock message
+        mock_message = Mock()
+        mock_message.reply_to_message = None
+        mock_message.chat.id = 12345
+        mock_message.reply_text = AsyncMock()
+
+        callback = AgentCallback(mock_agent)
+        await callback.handle_message(mock_message)
+
+        # Verify cache.set was called with TTL
+        mock_cache.set.assert_called_once()
+        call_args = mock_cache.set.call_args
+        assert call_args[0][0] == "bot:chat:12345"  # cache key
+        assert call_args[1]["ttl"] == CACHE_TTL_SECONDS  # TTL parameter
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
+    @patch("bot.callbacks.agent.get_message_text")
+    @patch("bot.callbacks.agent.Runner")
+    async def test_cache_persists_across_messages(self, mock_runner, mock_get_message_text, mock_get_cache):
+        """Test that cache persists conversation history across multiple messages"""
+        mock_agent = Mock()
+        mock_cache = Mock()
+
+        # Simulate existing conversation in cache
+        existing_messages = [
+            {"role": "user", "content": "Previous message"},
+            {"role": "assistant", "content": "Previous response"},
+        ]
+        mock_cache.get = AsyncMock(return_value=existing_messages)
+        mock_cache.set = AsyncMock()
+        mock_get_cache.return_value = mock_cache
+
+        mock_get_message_text.return_value = "New message"
+
+        # Mock runner result
+        mock_result = Mock()
+        mock_result.new_items = []
+        mock_result.final_output = "New response"
+        mock_result.to_input_list.return_value = [
+            {"role": "user", "content": "Previous message"},
+            {"role": "assistant", "content": "Previous response"},
+            {"role": "user", "content": "New message"},
+            {"role": "assistant", "content": "New response"},
+        ]
+        mock_runner.run = AsyncMock(return_value=mock_result)
+
+        # Mock message
+        mock_message = Mock()
+        mock_message.reply_to_message = None
+        mock_message.chat.id = 12345
+        mock_message.reply_text = AsyncMock()
+
+        callback = AgentCallback(mock_agent)
+        await callback.handle_message(mock_message)
+
+        # Verify cache.get was called with chat-based key
+        mock_cache.get.assert_called_once_with("bot:chat:12345", default=[])
+
+        # Verify runner received existing messages plus new message
+        call_args = mock_runner.run.call_args
+        input_messages = call_args[1]["input"]
+        assert len(input_messages) == 3  # 2 existing + 1 new
+        assert input_messages[0]["content"] == "Previous message"
+        assert input_messages[1]["content"] == "Previous response"
+        assert input_messages[2]["content"] == "New message"

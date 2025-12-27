@@ -60,11 +60,9 @@ class TestTranslationCallback:
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.translate.chains.translate")
-    @patch("bot.callbacks.translate.async_load_url")
-    @patch("bot.callbacks.translate.parse_url")
-    async def test_translation_callback_with_url(self, mock_parse_url, mock_load_url, mock_translate):
-        mock_parse_url.return_value = "https://example.com"
-        mock_load_url.return_value = "Content from URL"
+    @patch("bot.callbacks.translate.get_processed_message_text")
+    async def test_translation_callback_with_url(self, mock_get_processed, mock_translate):
+        mock_get_processed.return_value = ("Content from URL", None)
         mock_translate.return_value = "URL內容的翻譯"
 
         message = Mock(spec=Message)
@@ -78,8 +76,7 @@ class TestTranslationCallback:
 
         await self.callback(update, self.context)
 
-        mock_parse_url.assert_called_once_with("Translate this URL: https://example.com")
-        mock_load_url.assert_called_once_with("https://example.com")
+        mock_get_processed.assert_called_once_with(message, require_url=False)
         mock_translate.assert_called_once_with("Content from URL", lang="zh")
         message.reply_text.assert_called_once_with("URL內容的翻譯")
 

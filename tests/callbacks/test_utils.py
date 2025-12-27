@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+from unittest.mock import patch
 
 import pytest
 from telegram import Chat
@@ -7,6 +8,7 @@ from telegram import User
 
 from bot.callbacks.utils import get_message_key
 from bot.callbacks.utils import get_message_text
+from bot.callbacks.utils import get_processed_message_text
 from bot.callbacks.utils import get_user_display_name
 from bot.callbacks.utils import strip_command
 
@@ -105,3 +107,80 @@ class TestGetMessageKey:
 
         result = get_message_key(message)
         assert result == "123:456"
+
+
+class TestGetProcessedMessageText:
+    def setup_method(self):
+        self.user = User(id=123, is_bot=False, first_name="TestUser", username="testuser")
+        self.chat = Chat(id=456, type="private")
+
+    @pytest.mark.asyncio
+    async def test_no_message_text(self):
+        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="")
+
+        text, error = await get_processed_message_text(message, require_url=False)
+        assert text is None
+        assert error is None
+
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.parse_url")
+    async def test_require_url_but_no_url(self, mock_parse_url):
+        mock_parse_url.return_value = ""
+
+        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="No URL here")
+
+        text, error = await get_processed_message_text(message, require_url=True)
+        assert text is None
+        assert error is None
+
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.parse_url")
+    async def test_no_url_returns_original_text(self, mock_parse_url):
+        mock_parse_url.return_value = ""
+
+        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="No URL here")
+
+        text, error = await get_processed_message_text(message, require_url=False)
+        assert text == "No URL here"
+        assert error is None
+
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.async_load_url")
+    @patch("bot.callbacks.utils.parse_url")
+    async def test_url_loading_success(self, mock_parse_url, mock_load_url):
+        mock_parse_url.return_value = "https://example.com"
+        mock_load_url.return_value = "Content from URL"
+
+        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="https://example.com")
+
+        text, error = await get_processed_message_text(message, require_url=False)
+        assert text == "Content from URL"
+        assert error is None
+        mock_load_url.assert_called_once_with("https://example.com")
+
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.async_load_url")
+    @patch("bot.callbacks.utils.parse_url")
+    async def test_url_loading_failure(self, mock_parse_url, mock_load_url):
+        mock_parse_url.return_value = "https://example.com"
+        mock_load_url.side_effect = Exception("Connection error")
+
+        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="https://example.com")
+
+        text, error = await get_processed_message_text(message, require_url=False)
+        assert text is None
+        assert error == "Failed to load URL: https://example.com"
+
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.async_load_url")
+    @patch("bot.callbacks.utils.parse_url")
+    async def test_require_url_with_url_success(self, mock_parse_url, mock_load_url):
+        mock_parse_url.return_value = "https://example.com"
+        mock_load_url.return_value = "Content from URL"
+
+        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="https://example.com")
+
+        text, error = await get_processed_message_text(message, require_url=True)
+        assert text == "Content from URL"
+        assert error is None
+        mock_load_url.assert_called_once_with("https://example.com")

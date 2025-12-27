@@ -5,10 +5,8 @@ from telegram.ext import ContextTypes
 
 from .. import chains
 from ..constants import MAX_MESSAGE_LENGTH
-from ..utils import async_load_url
 from ..utils import create_page
-from ..utils import parse_url
-from .utils import get_message_text
+from .utils import get_processed_message_text
 
 
 async def format_callback(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
@@ -16,13 +14,12 @@ async def format_callback(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     if not message:
         return
 
-    message_text = get_message_text(message)
+    message_text, error = await get_processed_message_text(message, require_url=False)
+    if error:
+        await message.reply_text(error)
+        return
     if not message_text:
         return
-
-    url = parse_url(message_text)
-    if url:
-        message_text = await async_load_url(url)
 
     result = await chains.format(message_text)
 

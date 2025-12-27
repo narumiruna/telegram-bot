@@ -62,11 +62,9 @@ class TestFormatCallback:
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.format.chains.format")
-    @patch("bot.callbacks.format.async_load_url")
-    @patch("bot.callbacks.format.parse_url")
-    async def test_format_callback_with_url(self, mock_parse_url, mock_load_url, mock_format):
-        mock_parse_url.return_value = "https://example.com"
-        mock_load_url.return_value = "Content from URL"
+    @patch("bot.callbacks.format.get_processed_message_text")
+    async def test_format_callback_with_url(self, mock_get_processed, mock_format):
+        mock_get_processed.return_value = ("Content from URL", None)
 
         mock_result = Mock()
         mock_result.title = "Test Title"
@@ -84,8 +82,7 @@ class TestFormatCallback:
 
         await format_callback(update, self.context)
 
-        mock_parse_url.assert_called_once_with("Check this URL: https://example.com")
-        mock_load_url.assert_called_once_with("https://example.com")
+        mock_get_processed.assert_called_once_with(message, require_url=False)
         mock_format.assert_called_once_with("Content from URL")
         message.reply_text.assert_called_once_with("Formatted URL content")
 
