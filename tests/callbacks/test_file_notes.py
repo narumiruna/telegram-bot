@@ -16,10 +16,10 @@ from telegram import File
 from telegram import Message
 from telegram import Update
 
-from bot.callbacks.file_notes import MAX_LENGTH
 from bot.callbacks.file_notes import file_callback
 from bot.chains.formatter import Article
 from bot.chains.formatter import Section
+from bot.constants import MAX_MESSAGE_LENGTH
 
 
 class TestFileCallback:
@@ -341,7 +341,7 @@ class TestFileCallback:
         """Test when Telegraph page creation fails."""
         # Setup mocks for long content
         long_article = Article(
-            title="Long Document", sections=[Section(title="🔍 Long Section", content="A" * MAX_LENGTH)]
+            title="Long Document", sections=[Section(title="🔍 Long Section", content="A" * MAX_MESSAGE_LENGTH)]
         )
 
         test_file_path = Path("/tmp/test.pdf")
@@ -427,21 +427,21 @@ class TestFileCallback:
 
 
 class TestMaxLengthConstant:
-    """Test the MAX_LENGTH constant usage."""
+    """Test the MAX_MESSAGE_LENGTH constant usage."""
 
     def test_max_length_value(self):
-        """Test that MAX_LENGTH has expected value."""
-        assert MAX_LENGTH == 1_000
+        """Test that MAX_MESSAGE_LENGTH has expected value."""
+        assert MAX_MESSAGE_LENGTH == 1_000
 
     def test_max_length_boundary_conditions(self, sample_article):
         """Test length boundary conditions."""
         # Create content exactly at boundary
-        boundary_content = "A" * MAX_LENGTH
-        assert len(boundary_content) == MAX_LENGTH
+        boundary_content = "A" * MAX_MESSAGE_LENGTH
+        assert len(boundary_content) == MAX_MESSAGE_LENGTH
 
         # Create content over boundary
-        over_boundary_content = "A" * (MAX_LENGTH + 1)
-        assert len(over_boundary_content) > MAX_LENGTH
+        over_boundary_content = "A" * (MAX_MESSAGE_LENGTH + 1)
+        assert len(over_boundary_content) > MAX_MESSAGE_LENGTH
 
     @pytest.fixture
     def sample_article(self):
