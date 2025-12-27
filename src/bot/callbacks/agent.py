@@ -121,16 +121,17 @@ def remove_fake_id_messages(messages: list[TResponseInputItem]) -> list[TRespons
 
 
 class AgentCallback:
-    def _make_cache_key(self, chat_id: int) -> str:
+    def _make_cache_key(self, message_id: int, chat_id: int) -> str:
         """Generate a cache key for storing conversation history.
 
         Args:
+            message_id: The Telegram message ID
             chat_id: The Telegram chat ID
 
         Returns:
             A cache key string
         """
-        return f"bot:chat:{chat_id}"
+        return f"bot:{message_id}:{chat_id}"
 
     @classmethod
     def from_config(cls, config_file: str | Path) -> AgentCallback:
@@ -271,16 +272,17 @@ class AgentCallback:
 
         logger.info("Handling message from chat {chat_id}", chat_id=message.chat.id)
 
-        # Load conversation history from cache
-        cache_key = self._make_cache_key(message.chat.id)
+        # if the message is a reply to another message, get the previous messages
         messages = []
-        try:
-            logger.debug("Loading conversation history from cache: {key}", key=cache_key)
-            messages = await self.cache.get(cache_key, default=[])
-            logger.debug("Loaded {count} messages from cache", count=len(messages))
-        except Exception as e:
-            logger.error("Failed to load from cache: {error}", error=str(e))
-            messages = []
+        if message.reply_to_message is not None:
+            key = self._make_cache_key(message.reply_to_message.id, message.chat.id)
+            try:
+                logger.debug("Loading conversation history from cache: {key}", key=key)
+                messages = await self.cache.get(key, default=[])
+                logger.debug("Loaded {count} messages from cache", count=len(messages))
+            except Exception as e:
+                logger.error("Failed to load from cache: {error}", error=str(e))
+                messages = []
 
         # remove all tool messages from the memory
         messages = remove_tool_messages(messages)
@@ -303,16 +305,17 @@ class AgentCallback:
             logger.debug("Trimming conversation history to {size} items", size=self.max_cache_size)
             input_items = input_items[-self.max_cache_size :]
 
-        await message.reply_text(result.final_output)
+        new_message = await message.reply_text(result.final_output)
+        new_key = self._make_cache_key(new_message.id, message.chat.id)
 
         # Save conversation history to cache with TTL
         try:
             logger.debug(
                 "Saving conversation history to cache: {key} with TTL {ttl}s",
-                key=cache_key,
+                key=new_key,
                 ttl=CACHE_TTL_SECONDS,
             )
-            await self.cache.set(cache_key, input_items, ttl=CACHE_TTL_SECONDS)
+            await self.cache.set(new_key, input_items, ttl=CACHE_TTL_SECONDS)
             logger.debug("Successfully saved conversation history")
         except Exception as e:
             logger.error("Failed to save to cache: {error}", error=str(e))

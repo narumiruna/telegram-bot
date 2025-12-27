@@ -474,13 +474,13 @@ class TestAgentCallback:
         # Should not call handle_message for non-reply messages
         callback.handle_message.assert_not_called()
 
-    def test_make_cache_key_chat_based(self):
-        """Test that cache key is based on chat_id only"""
+    def test_make_cache_key_message_based(self):
+        """Test that cache key is based on message_id and chat_id"""
         mock_agent = Mock()
         callback = AgentCallback(mock_agent)
 
-        key = callback._make_cache_key(chat_id=12345)
-        assert key == "bot:chat:12345"
+        key = callback._make_cache_key(message_id=67890, chat_id=12345)
+        assert key == "bot:67890:12345"
 
     @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_message_text")
@@ -511,7 +511,9 @@ class TestAgentCallback:
         mock_message = Mock()
         mock_message.reply_to_message = None
         mock_message.chat.id = 12345
-        mock_message.reply_text = AsyncMock()
+        mock_new_message = Mock()
+        mock_new_message.id = 67890
+        mock_message.reply_text = AsyncMock(return_value=mock_new_message)
 
         callback = AgentCallback(mock_agent)
         await callback.handle_message(mock_message)
@@ -519,14 +521,14 @@ class TestAgentCallback:
         # Verify cache.set was called with TTL
         mock_cache.set.assert_called_once()
         call_args = mock_cache.set.call_args
-        assert call_args[0][0] == "bot:chat:12345"  # cache key
+        assert call_args[0][0] == "bot:67890:12345"  # cache key (new_message.id:chat.id)
         assert call_args[1]["ttl"] == CACHE_TTL_SECONDS  # TTL parameter
 
     @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_message_text")
     @patch("bot.callbacks.agent.Runner")
-    async def test_cache_persists_across_messages(self, mock_runner, mock_get_message_text, mock_get_cache):
-        """Test that cache persists conversation history across multiple messages"""
+    async def test_cache_persists_in_reply_thread(self, mock_runner, mock_get_message_text, mock_get_cache):
+        """Test that cache persists conversation history when replying to a message"""
         mock_agent = Mock()
         mock_cache = Mock()
 
@@ -553,17 +555,21 @@ class TestAgentCallback:
         ]
         mock_runner.run = AsyncMock(return_value=mock_result)
 
-        # Mock message
+        # Mock message with reply_to_message
+        mock_reply_to = Mock()
+        mock_reply_to.id = 11111
         mock_message = Mock()
-        mock_message.reply_to_message = None
+        mock_message.reply_to_message = mock_reply_to
         mock_message.chat.id = 12345
-        mock_message.reply_text = AsyncMock()
+        mock_new_message = Mock()
+        mock_new_message.id = 67890
+        mock_message.reply_text = AsyncMock(return_value=mock_new_message)
 
         callback = AgentCallback(mock_agent)
         await callback.handle_message(mock_message)
 
-        # Verify cache.get was called with chat-based key
-        mock_cache.get.assert_called_once_with("bot:chat:12345", default=[])
+        # Verify cache.get was called with reply_to_message's key
+        mock_cache.get.assert_called_once_with("bot:11111:12345", default=[])
 
         # Verify runner received existing messages plus new message
         call_args = mock_runner.run.call_args

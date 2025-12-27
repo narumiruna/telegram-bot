@@ -342,35 +342,33 @@ class MCPConnectionPool:
 
 ---
 
-#### ✅ Issue #2: Cache 無界增長與策略改進
+#### ✅ Issue #2: Cache TTL 設定防止無界增長
 
 **問題**：
-1. Cache 無 TTL，永久保留對話記錄
-2. 使用 `message_id` 作為 key，每個訊息獨立，無法持續對話
-3. 只有回覆訊息時才載入 context，新對話無上下文
+1. Cache 無 TTL，永久保留對話記錄，導致記憶體無限增長
+2. 沒有自動過期機制
 
 **實作內容**：
 1. 在 `src/bot/constants.py` 新增 `CACHE_TTL_SECONDS = 86400` (24 小時)
 
-2. 重構 `src/bot/callbacks/agent.py` cache 策略：
-   - **Cache key 改變**：從 `bot:{message_id}:{chat_id}` → `bot:chat:{chat_id}`
+2. 修改 `src/bot/callbacks/agent.py` cache 策略：
    - **Cache TTL**：所有 `cache.set()` 加入 `ttl=CACHE_TTL_SECONDS`
-   - **持續對話**：同一 chat 的所有訊息共用 context，無需回覆也能維持上下文
+   - **保留原有架構**：維持 `bot:{message_id}:{chat_id}` key 格式，支援 thread-based 對話
 
 3. 測試覆蓋：
-   - 新增 `test_make_cache_key_chat_based()` - 驗證 key 格式
+   - 新增 `test_make_cache_key_message_based()` - 驗證 key 格式
    - 新增 `test_cache_ttl_is_set()` - 驗證 TTL 參數
-   - 新增 `test_cache_persists_across_messages()` - 驗證持續對話
+   - 新增 `test_cache_persists_in_reply_thread()` - 驗證 reply thread 中的對話持續性
 
 **影響**：
 - ✅ Cache 自動過期（24 小時），防止無限增長
-- ✅ 支援連續對話，無需每次回覆
-- ✅ 改善用戶體驗（記住對話歷史）
+- ✅ 維持 thread-based 對話模式（不同主題使用不同 threads）
+- ✅ 回覆訊息時自動載入該 thread 的對話歷史
 - ✅ 所有測試通過 (26 個測試)
 
-**行為變更**：
-- ⚠️ **Breaking Change**: Cache key 格式改變，舊的 cache entries 不會被讀取（但會自動過期）
-- 用戶可以在同一 chat 中進行連續對話，無需回覆舊訊息
+**設計考量**：
+- 使用 message-based key 而非 chat-based key，允許在同一 chat 中進行多個獨立的對話串
+- 用戶可以透過回覆不同的訊息來切換不同的討論主題
 
 ---
 
