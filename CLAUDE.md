@@ -260,22 +260,10 @@ This repository maintains several documentation files for different purposes:
 **Target audience**: Maintainers planning refactoring work, contributors understanding architectural decisions
 
 **Status tracking**:
-- ✅ Completed: Issues #1 (URL loading), #2 (Cache TTL), #3 (Error handling), #4 (Callback unification), #7 (Constants)
-- ⬜ Pending: Issues #5 (Test coverage), #6 (Presentation layer), #8 (MCP timeout), #9 (Async optimization), #10 (Code quality)
+- ✅ Completed: Issues #1 (URL loading), #2 (Cache TTL), #3 (Error handling), #4 (Callback unification), #7 (Constants), #9 (Async optimization)
+- ⬜ Pending: Issues #5 (Test coverage), #6 (Presentation layer), #8 (MCP timeout), #10 (Code quality)
 
-### ISSUE_4_SUMMARY.md
-**Purpose**: Detailed documentation for Issue #4 (Callback Pattern Unification)
-
-**Contents**:
-- Problem analysis and solution design
-- Hybrid callback architecture (Protocol + BaseCallback + functions)
-- Implementation details and code examples
-- Decision guide for choosing callback patterns
-- Test results and impact metrics
-
-**Why it exists**: Issue #4 was a significant architectural change requiring comprehensive documentation for future reference
-
-**Target audience**: Developers implementing new callbacks, understanding the callback architecture
+**Note**: All issue details, including comprehensive documentation for significant changes like Issue #4, are maintained within IMPROVEMENTS.md to keep all improvement-related information centralized.
 
 ### README.md
 **Purpose**: Public-facing project documentation

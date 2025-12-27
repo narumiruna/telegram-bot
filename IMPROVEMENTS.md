@@ -392,43 +392,161 @@ class MCPConnectionPool:
 
 #### ✅ Issue #4: Callback 模式統一
 
-**問題**：混用函數式和類別式 callback，缺乏統一介面。
+**問題分析**：混用函數式和類別式 callback，缺乏統一介面
+
+**現況**：
+- **函數式 callbacks** (6個): `summarize_callback`, `format_callback`, `echo_callback`, `query_ticker_callback`, `file_callback`, `search_youtube_callback`
+- **類別式 callbacks** (4個): `HelpCallback`, `ErrorCallback`, `TranslationCallback`, `AgentCallback`
+
+**核心問題**：
+1. 沒有統一的型別定義
+2. 不同的實作模式造成理解困難
+3. 缺乏清晰的架構指引
+
+---
+
+**解決方案**：採用 **混合式架構 (Hybrid Approach)**
+
+**1. CallbackProtocol (Protocol)**
+
+定義統一的 callback 介面，支援函數和類別兩種實作方式：
+
+```python
+class CallbackProtocol(Protocol):
+    """Protocol for all bot callbacks."""
+    async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        ...
+```
+
+**優點**：
+- 型別安全
+- 支援函數式和類別式實作
+- 非侵入式，不需修改現有代碼
+
+**2. BaseCallback (Abstract Base Class)**
+
+為需要狀態管理的 callback 提供可選的基類：
+
+```python
+class BaseCallback(ABC):
+    """Abstract base class for class-based callbacks."""
+    @abstractmethod
+    async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        pass
+```
+
+**適用場景**：
+- 需要狀態管理（如 `TranslationCallback` 的 `lang`）
+- 複雜初始化邏輯
+- 共享功能
+
+**3. 保留函數式 Callbacks**
+
+對於簡單、無狀態的 callback，繼續使用函數式實作。
+
+**4. 特殊案例：AgentCallback**
+
+不繼承 `BaseCallback`，因為它使用 `handle_command()` 和 `handle_reply()` 方法，而非標準的 `__call__` 模式。
+
+---
 
 **實作內容**：
-1. 建立 `src/bot/callbacks/base.py`
-   - 定義 `CallbackProtocol` - Protocol 介面支援函數和類別
-   - 定義 `BaseCallback` - 可選的抽象基類供類別式 callback 使用
-   - 完整的文檔說明使用時機
 
-2. 遷移現有類別式 callbacks 繼承 `BaseCallback`：
-   - `HelpCallback` - 管理 help 訊息列表
-   - `ErrorCallback` - 管理開發者聊天 ID
-   - `TranslationCallback` - 管理目標語言
+**新增檔案**：
+- `src/bot/callbacks/base.py` (58 行)
+  - `CallbackProtocol` 定義
+  - `BaseCallback` 抽象基類
+  - 完整文檔說明
 
-3. 保留函數式 callbacks（無狀態操作）：
-   - `summarize_callback`, `format_callback`, `echo_callback`
-   - `query_ticker_callback`, `file_callback`, `search_youtube_callback`
+- `tests/callbacks/test_base.py` (78 行)
+  - 6 個測試案例
+  - 測試 Protocol 相容性
+  - 測試 BaseCallback 抽象行為
 
-4. 特殊處理 `AgentCallback`：
-   - 不繼承 `BaseCallback`（使用 `handle_command()` 和 `handle_reply()` 方法）
-   - 維持其特殊的註冊方式
+**修改檔案**：
+- `src/bot/callbacks/__init__.py` - 匯出新的類別
+- `src/bot/callbacks/help.py` - 繼承 BaseCallback，修正參數符合 LSP
+- `src/bot/callbacks/error.py` - 繼承 BaseCallback
+- `src/bot/callbacks/translate.py` - 繼承 BaseCallback
 
-5. 測試覆蓋：
-   - 新增 `tests/callbacks/test_base.py` (6 個測試)
-   - 測試 Protocol 相容性和 BaseCallback 抽象行為
-   - 所有現有測試繼續通過
+**已遷移的 callbacks**：
+- `HelpCallback` - 管理 help 訊息列表
+- `ErrorCallback` - 管理開發者聊天 ID
+- `TranslationCallback` - 管理目標語言
+
+---
 
 **架構指引**：
-- **函數式**：適用於簡單、無狀態的 callback
-- **類別式（BaseCallback）**：適用於需要狀態管理或複雜初始化的 callback
-- **CallbackProtocol**：統一的型別定義，支援兩種實作方式
 
-**影響**：
-- ✅ 統一 callback 架構，提供清晰指引
-- ✅ 型別安全（透過 Protocol）
-- ✅ 保持靈活性（支援函數和類別）
-- ✅ 向後相容，不破壞現有功能
-- ✅ 所有測試通過 (229 個測試)
+**何時使用函數式**：
+✅ 無狀態操作
+✅ 簡單的單一職責
+✅ 不需要共享邏輯
+
+```python
+@safe_callback
+async def my_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # 簡單處理邏輯
+    pass
+```
+
+**何時使用類別式（BaseCallback）**：
+✅ 需要狀態管理（配置、語言設定等）
+✅ 複雜初始化邏輯
+✅ 需要共享方法或屬性
+
+```python
+class MyCallback(BaseCallback):
+    def __init__(self, config: str) -> None:
+        self.config = config
+
+    async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        # 使用 self.config
+        pass
+```
+
+**型別註解**：
+
+所有 callback 都符合 `CallbackProtocol`，可用於型別檢查：
+
+```python
+def register_callback(callback: CallbackProtocol) -> None:
+    # 接受函數或類別實例
+    pass
+```
+
+---
+
+**測試結果**：
+
+- ✅ Linting: `ruff check .` - All checks passed
+- ✅ Type checking: `ty check src` - All checks passed
+- ✅ Tests: 229/229 passed
+
+**測試覆蓋**：
+- 新增 6 個測試（test_base.py）
+- 所有現有測試繼續通過
+
+---
+
+**影響與效益**：
+
+**向後相容性**：
+- ✅ 所有現有 callback 繼續正常運作
+- ✅ 函數式 callback 不需修改
+- ✅ 類別式 callback 只需添加基類繼承
+
+**可維護性**：
+- ✅ 清晰的架構指引
+- ✅ 型別安全
+- ✅ 統一的介面規範
+
+**擴展性**：
+- ✅ 新 callback 可選擇最適合的實作方式
+- ✅ `BaseCallback` 可擴展共享功能
+- ✅ `CallbackProtocol` 確保型別一致性
+
+---
 
 **設計考量**：
 - 採用混合式架構平衡一致性與實用性
@@ -436,7 +554,13 @@ class MCPConnectionPool:
 - BaseCallback 為選用，避免過度工程化
 - 保留函數式 callback 的簡潔性
 
-詳細文檔：參見 `ISSUE_4_SUMMARY.md`
+**未來可選改進**：
+1. 將常見的 callback 邏輯（如訊息驗證、錯誤處理）移到 `BaseCallback`
+2. 建立 callback 工具函數庫（如 `ensure_message()`, `extract_args()` 等）
+
+**不建議的改進**：
+- ❌ 強制所有 callback 繼承 `BaseCallback`（會失去靈活性）
+- ❌ 轉換所有 callback 為同一種模式（工程量大且無必要）
 
 ---
 
@@ -457,7 +581,6 @@ class MCPConnectionPool:
 **Phase 3 - Issue #4 完成（Callback 模式統一）**：
 - 新增：`src/bot/callbacks/base.py` (58 行)
 - 新增：`tests/callbacks/test_base.py` (78 行)
-- 新增：`ISSUE_4_SUMMARY.md` (詳細文檔)
 - 修改：4 個 callback 檔案（help, error, translate, __init__）
 - 測試結果：229 個測試全部通過
 
