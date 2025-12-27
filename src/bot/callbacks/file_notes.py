@@ -10,7 +10,7 @@ from kabigon.utils import read_html_content
 
 from .. import chains
 from ..constants import MAX_MESSAGE_LENGTH
-from ..utils import create_page
+from ..utils import async_create_page
 from .utils import safe_callback
 
 
@@ -40,7 +40,7 @@ async def file_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
     result = await chains.format(text)
     if len(str(result)) > MAX_MESSAGE_LENGTH:
-        text = create_page(title=result.title, html_content=str(result).replace("\n", "<br>"))
+        text = await async_create_page(title=result.title, html_content=str(result).replace("\n", "<br>"))
     else:
         text = str(result)
 

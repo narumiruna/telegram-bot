@@ -5,7 +5,7 @@ from telegram.ext import ContextTypes
 
 from .. import chains
 from ..constants import MAX_MESSAGE_LENGTH
-from ..utils import create_page
+from ..utils import async_create_page
 from .utils import get_processed_message_text
 from .utils import safe_callback
 
@@ -26,7 +26,7 @@ async def format_callback(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     result = await chains.format(message_text)
 
     if len(str(result)) > MAX_MESSAGE_LENGTH:
-        text = create_page(title=result.title, html_content=str(result).replace("\n", "<br>"))
+        text = await async_create_page(title=result.title, html_content=str(result).replace("\n", "<br>"))
     else:
         text = str(result)
 
