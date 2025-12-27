@@ -268,7 +268,7 @@ class MCPConnectionPool:
 | 🔴 Critical | 1. URL 載入重複 | 可維護性 | 中 | ✅ 2025-12-27 |
 | 🔴 Critical | 2. Cache 無界增長 | 穩定性、效能 | 中 | ✅ 2025-12-27 |
 | 🔴 Critical | 3. 錯誤靜默失敗 | 用戶體驗 | 小 | ✅ 2025-12-27 |
-| 🔴 Critical | 4. Callback 模式不一致 | 可維護性 | 大 | ⬜ |
+| 🔴 Critical | 4. Callback 模式不一致 | 可維護性 | 大 | ✅ 2025-12-27 |
 | ⚠️ Important | 5. 測試覆蓋不完整 | 品質保證 | 大 | ⬜ |
 | ⚠️ Important | 6. UI 邏輯混入 | 關注點分離 | 中 | ⬜ |
 | ⚠️ Important | 7. 常數重複定義 | 可維護性 | 小 | ✅ 2025-12-27 |
@@ -291,7 +291,7 @@ class MCPConnectionPool:
 - [ ] Issue #6: Presentation layer 抽取
 
 ### Phase 3: 長期優化（2-3 週）
-- [ ] Issue #4: Callback 模式統一
+- [x] Issue #4: Callback 模式統一 ✅ 2025-12-27
 - [ ] Issue #5: 補充測試覆蓋
 - [ ] Issue #8: MCP 連線池
 
@@ -389,9 +389,59 @@ class MCPConnectionPool:
 
 ---
 
+#### ✅ Issue #4: Callback 模式統一
+
+**問題**：混用函數式和類別式 callback，缺乏統一介面。
+
+**實作內容**：
+1. 建立 `src/bot/callbacks/base.py`
+   - 定義 `CallbackProtocol` - Protocol 介面支援函數和類別
+   - 定義 `BaseCallback` - 可選的抽象基類供類別式 callback 使用
+   - 完整的文檔說明使用時機
+
+2. 遷移現有類別式 callbacks 繼承 `BaseCallback`：
+   - `HelpCallback` - 管理 help 訊息列表
+   - `ErrorCallback` - 管理開發者聊天 ID
+   - `TranslationCallback` - 管理目標語言
+
+3. 保留函數式 callbacks（無狀態操作）：
+   - `summarize_callback`, `format_callback`, `echo_callback`
+   - `query_ticker_callback`, `file_callback`, `search_youtube_callback`
+
+4. 特殊處理 `AgentCallback`：
+   - 不繼承 `BaseCallback`（使用 `handle_command()` 和 `handle_reply()` 方法）
+   - 維持其特殊的註冊方式
+
+5. 測試覆蓋：
+   - 新增 `tests/callbacks/test_base.py` (6 個測試)
+   - 測試 Protocol 相容性和 BaseCallback 抽象行為
+   - 所有現有測試繼續通過
+
+**架構指引**：
+- **函數式**：適用於簡單、無狀態的 callback
+- **類別式（BaseCallback）**：適用於需要狀態管理或複雜初始化的 callback
+- **CallbackProtocol**：統一的型別定義，支援兩種實作方式
+
+**影響**：
+- ✅ 統一 callback 架構，提供清晰指引
+- ✅ 型別安全（透過 Protocol）
+- ✅ 保持靈活性（支援函數和類別）
+- ✅ 向後相容，不破壞現有功能
+- ✅ 所有測試通過 (229 個測試)
+
+**設計考量**：
+- 採用混合式架構平衡一致性與實用性
+- Protocol 提供型別檢查而不強制繼承
+- BaseCallback 為選用，避免過度工程化
+- 保留函數式 callback 的簡潔性
+
+詳細文檔：參見 `ISSUE_4_SUMMARY.md`
+
+---
+
 ### 📊 統計資訊
 
-**改動檔案**：
+**Phase 1 完成（Issues #1, #2, #3, #7）**：
 - 新增：`src/bot/constants.py` (11 行)
 - 修改：8 個檔案
   - `src/bot/callbacks/utils.py` (+45 行)
@@ -401,21 +451,20 @@ class MCPConnectionPool:
   - `src/bot/callbacks/format.py` (-5 行)
   - `src/bot/callbacks/file_notes.py` (-3 行)
 - 測試更新：5 個測試檔案 (+95 行測試)
+- 測試結果：65 個測試全部通過
 
-**測試結果**：
-- ✅ Lint: 通過
-- ✅ Type check: 通過
-- ✅ Tests: 65 個測試全部通過
-  - test_utils.py: 23 個測試
-  - test_agent.py: 26 個測試
-  - test_summary.py: 5 個測試
-  - test_format.py: 5 個測試
-  - test_translate.py: 6 個測試
+**Phase 3 - Issue #4 完成（Callback 模式統一）**：
+- 新增：`src/bot/callbacks/base.py` (58 行)
+- 新增：`tests/callbacks/test_base.py` (78 行)
+- 新增：`ISSUE_4_SUMMARY.md` (詳細文檔)
+- 修改：4 個 callback 檔案（help, error, translate, __init__）
+- 測試結果：229 個測試全部通過
 
-**淨效果**：
+**總計淨效果**：
 - 減少重複代碼：~50 行
-- 新增測試：~95 行
-- 改善可維護性與穩定性
+- 新增架構代碼：~136 行（base.py + 文檔）
+- 新增測試：~173 行
+- 改善可維護性、穩定性與架構一致性
 
 ---
 

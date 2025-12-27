@@ -7,11 +7,12 @@ from telegram.ext import ContextTypes
 from .. import chains
 from ..constants import MAX_MESSAGE_LENGTH
 from ..utils import create_page
+from .base import BaseCallback
 from .utils import get_processed_message_text
 from .utils import safe_callback
 
 
-class TranslationCallback:
+class TranslationCallback(BaseCallback):
     def __init__(self, lang: str) -> None:
         self.lang = lang
 

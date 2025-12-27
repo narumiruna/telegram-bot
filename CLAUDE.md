@@ -57,8 +57,67 @@ Note: `config/triage.json` exists but is not consumed by the current runtime pat
 
 **Callbacks Structure**:
 - `callbacks/` - Individual command handlers (format, translate, summarize, ticker, etc.)
+- `callbacks/base.py` - Unified callback architecture (CallbackProtocol, BaseCallback)
 - `callbacks/agent.py` - Main agent callback using OpenAI models with MCP tools
+- `callbacks/utils.py` - Shared utilities (safe_callback decorator, message processing)
 - Each callback handles specific Telegram commands and message processing
+
+**Callback Architecture** (unified as of 2025-12-27):
+
+This codebase uses a **hybrid callback architecture** that supports both function-based and class-based patterns:
+
+1. **CallbackProtocol** - Type-safe protocol that accepts both functions and classes
+   ```python
+   from src.bot.callbacks import CallbackProtocol
+   # Both functions and callable classes conform to this protocol
+   ```
+
+2. **BaseCallback** - Optional abstract base class for stateful callbacks
+   ```python
+   from src.bot.callbacks import BaseCallback
+
+   class MyCallback(BaseCallback):
+       def __init__(self, config: str) -> None:
+           self.config = config
+
+       async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+           # Implementation using self.config
+           pass
+   ```
+
+3. **Function-based callbacks** - For simple, stateless operations
+   ```python
+   from src.bot.callbacks.utils import safe_callback
+
+   @safe_callback
+   async def my_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+       # Simple implementation
+       pass
+   ```
+
+**When to use each pattern**:
+
+- **Function-based** (preferred for simplicity):
+  - ✅ Stateless operations
+  - ✅ Single responsibility
+  - ✅ No shared logic needed
+  - Examples: `summarize_callback`, `format_callback`, `echo_callback`
+
+- **Class-based (BaseCallback)** (use when needed):
+  - ✅ State management required (config, language settings, etc.)
+  - ✅ Complex initialization logic
+  - ✅ Shared methods or properties
+  - Examples: `TranslationCallback` (manages target language), `HelpCallback` (manages help messages)
+
+- **Special cases**:
+  - `AgentCallback` does NOT inherit BaseCallback (uses `handle_command()` and `handle_reply()` methods instead of `__call__`)
+  - `ErrorCallback` inherits BaseCallback (manages developer chat ID for error reporting)
+
+**Callback utilities** (`callbacks/utils.py`):
+- `@safe_callback` - Decorator for unified error handling (notifies users, logs errors)
+- `get_processed_message_text()` - Extracts and processes message text, handles URL loading
+- `get_message_text()` - Extracts raw text from messages
+- `strip_command()` - Removes command prefix from message text
 
 **Tools and Chains**:
 - `tools/` - Utility functions for specific data sources:
@@ -144,16 +203,27 @@ Tests are located in `tests/` directory with structure mirroring `src/`. The cod
 3. Use `uv run pytest tests/path/to/test.py::test_function -v -s` for focused testing during development
 4. When modifying retry behavior, ensure tools use `tenacity` library with proper error categorization
 5. For agent modifications, validate the MCP config you changed is a plain server-name map (like `config/default.json`)
+6. When creating new callbacks:
+   - Use function-based callbacks for simple, stateless operations (decorate with `@safe_callback`)
+   - Use class-based callbacks (inherit from `BaseCallback`) only when state management is needed
+   - Always implement the signature: `async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None`
+   - Use `get_processed_message_text()` helper for consistent message text extraction and URL loading
+   - Add tests in `tests/callbacks/` following existing patterns
 
 ## Project Structure
 
 - **Entry Point**: `src/bot/cli.py` - Main CLI interface using Typer
 - **Bot Core**: `src/bot/bot.py` - Telegram bot setup and callback registration
 - **Configuration**: `src/bot/config.py` - Loads and validates JSON configurations
-- **Caching**: `src/bot/cache.py` - Redis-based caching with aiocache
+- **Constants**: `src/bot/constants.py` - Centralized constants (message lengths, cache TTL, etc.)
+- **Caching**: `src/bot/cache.py` - Redis-based caching with aiocache (uses constants for TTL)
 - **Model Management**: `src/bot/model.py` - OpenAI model configuration and initialization
 - **Retry System**: `src/bot/retry_utils.py` - Error handling and retry logic using tenacity
 - **Lazy Execution**: `src/bot/lazy.py` - Simple agent tasks without full configuration
+- **Callbacks**: `src/bot/callbacks/` - Command handlers (see Callback Architecture above)
+  - `base.py` - CallbackProtocol and BaseCallback
+  - `utils.py` - Shared utilities (@safe_callback, message processing)
+  - Individual handlers: `summarize.py`, `translate.py`, `format.py`, `ticker.py`, etc.
 
 ## Repo Conventions (for assistants)
 
