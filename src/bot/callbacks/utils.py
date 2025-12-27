@@ -1,6 +1,9 @@
 from loguru import logger
 from telegram import Message
 
+from ..utils import async_load_url
+from ..utils import parse_url
+
 
 def get_user_display_name(message: Message) -> str | None:
     """Get the user's display name.
@@ -70,3 +73,43 @@ def strip_command(text: str) -> str:
 
 def get_message_key(message: Message) -> str:
     return f"{message.message_id}:{message.chat.id}"
+
+
+async def get_processed_message_text(
+    message: Message,
+    require_url: bool = False,
+) -> tuple[str | None, str | None]:
+    """取得訊息文字，並處理 URL 載入（如果存在）
+
+    Args:
+        message: Telegram message
+        require_url: 是否必須包含 URL
+
+    Returns:
+        (處理後的文字, 錯誤訊息)
+        如果成功: (text, None)
+        如果失敗: (None, error_message)
+    """
+    message_text = get_message_text(message)
+    if not message_text:
+        return None, None
+
+    url = parse_url(message_text)
+
+    # 如果要求 URL 但沒有找到
+    if require_url and not url:
+        return None, None
+
+    # 如果沒有 URL，直接返回原始文字
+    if not url:
+        return message_text, None
+
+    # 嘗試載入 URL
+    logger.info("Parsed URL: {url}", url=url)
+    try:
+        content = await async_load_url(url)
+        return content, None
+    except Exception as e:
+        error_msg = f"Failed to load URL: {url}"
+        logger.warning("{error}, got error: {exception}", error=error_msg, exception=e)
+        return None, error_msg

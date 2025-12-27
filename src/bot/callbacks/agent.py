@@ -20,6 +20,7 @@ from tenacity import retry_if_exception
 from tenacity import stop_after_attempt
 
 from ..cache import get_cache_from_env
+from ..constants import CACHE_TTL_SECONDS
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
 from ..retry_utils import is_retryable_error
@@ -306,9 +307,15 @@ class AgentCallback:
 
         new_message = await message.reply_text(result.final_output)
         new_key = self._make_cache_key(new_message.id, message.chat.id)
+
+        # Save conversation history to cache with TTL
         try:
-            logger.debug("Saving conversation history to cache: {key}", key=new_key)
-            await self.cache.set(new_key, input_items)
+            logger.debug(
+                "Saving conversation history to cache: {key} with TTL {ttl}s",
+                key=new_key,
+                ttl=CACHE_TTL_SECONDS,
+            )
+            await self.cache.set(new_key, input_items, ttl=CACHE_TTL_SECONDS)
             logger.debug("Successfully saved conversation history")
         except Exception as e:
             logger.error("Failed to save to cache: {error}", error=str(e))

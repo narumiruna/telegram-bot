@@ -6,10 +6,8 @@ from telegram.ext import ContextTypes
 
 from .. import chains
 from ..constants import MAX_MESSAGE_LENGTH
-from ..utils import async_load_url
 from ..utils import create_page
-from ..utils import parse_url
-from .utils import get_message_text
+from .utils import get_processed_message_text
 
 
 class TranslationCallback:
@@ -21,13 +19,12 @@ class TranslationCallback:
         if not message:
             return
 
-        message_text = get_message_text(message)
+        message_text, error = await get_processed_message_text(message, require_url=False)
+        if error:
+            await message.reply_text(error)
+            return
         if not message_text:
             return
-
-        url = parse_url(message_text)
-        if url:
-            message_text = await async_load_url(url)
 
         reply_text = await chains.translate(message_text, lang=self.lang)
         logger.info("Translated text to {lang}: {text}", lang=self.lang, text=reply_text)

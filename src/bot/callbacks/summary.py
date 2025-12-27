@@ -6,9 +6,7 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from .. import chains
-from ..utils import async_load_url
-from ..utils import parse_url
-from .utils import get_message_text
+from .utils import get_processed_message_text
 
 
 async def summarize_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -16,21 +14,11 @@ async def summarize_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if not message:
         return
 
-    message_text = get_message_text(message)
-    if not message_text:
+    text, error = await get_processed_message_text(message, require_url=True)
+    if error:
+        await message.reply_text(error)
         return
-    logger.info("Message text: {text}", text=message_text)
-
-    url = parse_url(message_text)
-    if not url:
-        return
-    logger.info("Parsed URL: {url}", url=url)
-
-    try:
-        text = await async_load_url(url)
-    except Exception as e:
-        logger.warning("Failed to load URL: {url}, got error: {error}", url=url, error=e)
-        await message.reply_text(f"Failed to load URL: {url}")
+    if not text:
         return
 
     result = await chains.summarize(text)

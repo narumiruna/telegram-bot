@@ -40,9 +40,9 @@ class TestSummarizeCallback:
         assert result is None
 
     @pytest.mark.asyncio
-    @patch("bot.callbacks.summary.parse_url")
-    async def test_summarize_callback_no_url(self, mock_parse_url):
-        mock_parse_url.return_value = None
+    @patch("bot.callbacks.summary.get_processed_message_text")
+    async def test_summarize_callback_no_url(self, mock_get_processed):
+        mock_get_processed.return_value = (None, None)
 
         message = Mock(spec=Message)
         message.text = "This message has no URL"
@@ -54,15 +54,13 @@ class TestSummarizeCallback:
 
         result = await summarize_callback(update, self.context)
         assert result is None
-        mock_parse_url.assert_called_once_with("This message has no URL")
+        mock_get_processed.assert_called_once_with(message, require_url=True)
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.summary.chains.summarize")
-    @patch("bot.callbacks.summary.async_load_url")
-    @patch("bot.callbacks.summary.parse_url")
-    async def test_summarize_callback_success(self, mock_parse_url, mock_load_url, mock_summarize):
-        mock_parse_url.return_value = "https://example.com"
-        mock_load_url.return_value = "Content from URL to summarize"
+    @patch("bot.callbacks.summary.get_processed_message_text")
+    async def test_summarize_callback_success(self, mock_get_processed, mock_summarize):
+        mock_get_processed.return_value = ("Content from URL to summarize", None)
         mock_summarize.return_value = "This is a summary of the content"
 
         message = Mock(spec=Message)
@@ -76,19 +74,16 @@ class TestSummarizeCallback:
 
         await summarize_callback(update, self.context)
 
-        mock_parse_url.assert_called_once_with("Summarize this: https://example.com")
-        mock_load_url.assert_called_once_with("https://example.com")
+        mock_get_processed.assert_called_once_with(message, require_url=True)
         mock_summarize.assert_called_once_with("Content from URL to summarize")
         message.reply_text.assert_called_once_with(
             "This is a summary of the content", parse_mode=ParseMode.HTML, disable_web_page_preview=True
         )
 
     @pytest.mark.asyncio
-    @patch("bot.callbacks.summary.async_load_url")
-    @patch("bot.callbacks.summary.parse_url")
-    async def test_summarize_callback_url_load_error(self, mock_parse_url, mock_load_url):
-        mock_parse_url.return_value = "https://example.com"
-        mock_load_url.side_effect = Exception("Connection error")
+    @patch("bot.callbacks.summary.get_processed_message_text")
+    async def test_summarize_callback_url_load_error(self, mock_get_processed):
+        mock_get_processed.return_value = (None, "Failed to load URL: https://example.com")
 
         message = Mock(spec=Message)
         message.text = "Summarize this: https://example.com"
@@ -101,6 +96,5 @@ class TestSummarizeCallback:
 
         await summarize_callback(update, self.context)
 
-        mock_parse_url.assert_called_once_with("Summarize this: https://example.com")
-        mock_load_url.assert_called_once_with("https://example.com")
+        mock_get_processed.assert_called_once_with(message, require_url=True)
         message.reply_text.assert_called_once_with("Failed to load URL: https://example.com")
