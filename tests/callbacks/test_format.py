@@ -88,15 +88,15 @@ class TestFormatCallback:
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.format.chains.format")
-    @patch("bot.callbacks.format.create_page")
-    async def test_format_callback_long_content(self, mock_create_page, mock_format):
+    @patch("bot.callbacks.format.async_create_page")
+    async def test_format_callback_long_content(self, mock_async_create_page, mock_format):
         long_content = "x" * 1500  # Longer than MAX_LENGTH (1000)
         mock_result = Mock()
         mock_result.title = "Long Title"
         mock_result.__str__ = Mock(return_value=long_content)
         mock_format.return_value = mock_result
 
-        mock_create_page.return_value = "HTML page content"
+        mock_async_create_page.return_value = "HTML page content"
 
         message = Mock(spec=Message)
         message.text = "Long message to format"
@@ -110,5 +110,7 @@ class TestFormatCallback:
         await format_callback(update, self.context)
 
         mock_format.assert_called_once_with("Long message to format")
-        mock_create_page.assert_called_once_with(title="Long Title", html_content=long_content.replace("\n", "<br>"))
+        mock_async_create_page.assert_called_once_with(
+            title="Long Title", html_content=long_content.replace("\n", "<br>")
+        )
         message.reply_text.assert_called_once_with("HTML page content")

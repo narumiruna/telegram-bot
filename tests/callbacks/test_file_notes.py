@@ -151,10 +151,10 @@ class TestFileCallback:
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_pdf_content")
     @patch("bot.callbacks.file_notes.chains.format")
-    @patch("bot.callbacks.file_notes.create_page")
+    @patch("bot.callbacks.file_notes.async_create_page")
     @patch("bot.callbacks.file_notes.os.remove")
     async def test_file_callback_pdf_success_long_content(
-        self, mock_remove, mock_create_page, mock_format, mock_read_pdf, mock_update, mock_context
+        self, mock_remove, mock_async_create_page, mock_format, mock_read_pdf, mock_update, mock_context
     ):
         """Test successful PDF processing with long content that requires Telegraph page."""
         # Setup mocks for long content
@@ -168,7 +168,7 @@ class TestFileCallback:
         mock_context.bot.get_file.return_value.download_to_drive.return_value = test_file_path
         mock_read_pdf.return_value = "Long PDF content for testing"
         mock_format.return_value = long_article
-        mock_create_page.return_value = "https://telegra.ph/test-page-123"
+        mock_async_create_page.return_value = "https://telegra.ph/test-page-123"
 
         # Execute
         await file_callback(mock_update, mock_context)
@@ -179,7 +179,7 @@ class TestFileCallback:
 
         # Verify Telegraph page creation for long content
         expected_html = str(long_article).replace("\n", "<br>")
-        mock_create_page.assert_called_once_with(title=long_article.title, html_content=expected_html)
+        mock_async_create_page.assert_called_once_with(title=long_article.title, html_content=expected_html)
 
         # Verify response with Telegraph URL
         mock_update.message.reply_text.assert_called_once_with("https://telegra.ph/test-page-123")
@@ -342,10 +342,10 @@ class TestFileCallback:
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_pdf_content")
     @patch("bot.callbacks.file_notes.chains.format")
-    @patch("bot.callbacks.file_notes.create_page")
+    @patch("bot.callbacks.file_notes.async_create_page")
     @patch("bot.callbacks.file_notes.os.remove")
     async def test_file_callback_telegraph_creation_error(
-        self, mock_remove, mock_create_page, mock_format, mock_read_pdf, mock_update, mock_context
+        self, mock_remove, mock_async_create_page, mock_format, mock_read_pdf, mock_update, mock_context
     ):
         """Test when Telegraph page creation fails."""
         # Setup mocks for long content
@@ -357,7 +357,7 @@ class TestFileCallback:
         mock_context.bot.get_file.return_value.download_to_drive.return_value = test_file_path
         mock_read_pdf.return_value = "Long PDF content"
         mock_format.return_value = long_article
-        mock_create_page.side_effect = Exception("Telegraph creation failed")
+        mock_async_create_page.side_effect = Exception("Telegraph creation failed")
 
         # Execute - should raise exception and notify user
         with pytest.raises(Exception, match="Telegraph creation failed"):
@@ -366,7 +366,7 @@ class TestFileCallback:
         # Verify processing
         mock_read_pdf.assert_called_once_with(test_file_path)
         mock_format.assert_called_once_with("Long PDF content")
-        mock_create_page.assert_called_once()
+        mock_async_create_page.assert_called_once()
 
         # Verify file cleanup happens before Telegraph creation
         mock_remove.assert_called_once_with(test_file_path)
@@ -521,10 +521,10 @@ class TestIntegrationScenarios:
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_html_content")
     @patch("bot.callbacks.file_notes.chains.format")
-    @patch("bot.callbacks.file_notes.create_page")
+    @patch("bot.callbacks.file_notes.async_create_page")
     @patch("bot.callbacks.file_notes.os.remove")
     async def test_complete_html_workflow_with_telegraph(
-        self, mock_remove, mock_create_page, mock_format, mock_read_html
+        self, mock_remove, mock_async_create_page, mock_format, mock_read_html
     ):
         """Test complete HTML processing workflow with Telegraph page creation."""
         # Setup mocks
@@ -557,7 +557,7 @@ class TestIntegrationScenarios:
             ],
         )
         mock_format.return_value = long_article
-        mock_create_page.return_value = "https://telegra.ph/long-html-document-789"
+        mock_async_create_page.return_value = "https://telegra.ph/long-html-document-789"
 
         # Execute workflow
         await file_callback(update, context)
@@ -569,7 +569,7 @@ class TestIntegrationScenarios:
 
         # Verify Telegraph page creation for long content
         expected_html = str(long_article).replace("\n", "<br>")
-        mock_create_page.assert_called_once_with(title="Long HTML Document", html_content=expected_html)
+        mock_async_create_page.assert_called_once_with(title="Long HTML Document", html_content=expected_html)
 
         # Verify response with Telegraph URL
         message.reply_text.assert_called_once_with("https://telegra.ph/long-html-document-789")

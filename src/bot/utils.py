@@ -1,6 +1,5 @@
 import asyncio
 import base64
-import concurrent.futures
 import functools
 import json
 import os
@@ -62,21 +61,33 @@ def get_telegraph_client() -> telegraph.Telegraph:
 
 
 def create_page(title: str, **kwargs: Any) -> str:
-    client = get_telegraph_client()
+    """Create a Telegraph page synchronously.
 
+    Note: This blocks the event loop. Use async_create_page() in async contexts.
+
+    Args:
+        title: Page title
+        **kwargs: Additional arguments passed to Telegraph API
+
+    Returns:
+        URL of the created page
+    """
+    client = get_telegraph_client()
     resp = client.create_page(title=title, **kwargs)
     return resp["url"]
 
 
-def async_wrapper(func: Any) -> Any:
-    @functools.wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
-        loop = asyncio.get_running_loop()
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            result = await loop.run_in_executor(executor, func, *args, **kwargs)
-            return result
+async def async_create_page(title: str, **kwargs: Any) -> str:
+    """Create a Telegraph page asynchronously without blocking the event loop.
 
-    return wrapper
+    Args:
+        title: Page title
+        **kwargs: Additional arguments passed to Telegraph API
+
+    Returns:
+        URL of the created page
+    """
+    return await asyncio.to_thread(create_page, title, **kwargs)
 
 
 @cache

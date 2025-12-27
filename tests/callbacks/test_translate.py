@@ -82,11 +82,11 @@ class TestTranslationCallback:
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.translate.chains.translate")
-    @patch("bot.callbacks.translate.create_page")
-    async def test_translation_callback_long_content(self, mock_create_page, mock_translate):
+    @patch("bot.callbacks.translate.async_create_page")
+    async def test_translation_callback_long_content(self, mock_async_create_page, mock_translate):
         long_translation = "這是一個很長的翻譯內容" * 100  # Longer than MAX_LENGTH (1000)
         mock_translate.return_value = long_translation
-        mock_create_page.return_value = "HTML page content"
+        mock_async_create_page.return_value = "HTML page content"
 
         message = Mock(spec=Message)
         message.text = "Long message to translate"
@@ -100,7 +100,7 @@ class TestTranslationCallback:
         await self.callback(update, self.context)
 
         mock_translate.assert_called_once_with("Long message to translate", lang="zh")
-        mock_create_page.assert_called_once_with(
+        mock_async_create_page.assert_called_once_with(
             title="Translation", html_content=long_translation.replace("\n", "<br>")
         )
         message.reply_text.assert_called_once_with("HTML page content")

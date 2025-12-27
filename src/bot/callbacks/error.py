@@ -8,7 +8,7 @@ from loguru import logger
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from ..utils import create_page
+from ..utils import async_create_page
 
 
 class ErrorCallback:
@@ -35,6 +35,6 @@ class ErrorCallback:
             tb_string = "".join(tb_list)
             html_content += f"<pre>Traceback (most recent call last):\n{html.escape(tb_string)}</pre>"
 
-        page_url = create_page(title="Error", html_content=html_content)
+        page_url = await async_create_page(title="Error", html_content=html_content)
 
         await context.bot.send_message(chat_id=self.chat_id, text=page_url)
