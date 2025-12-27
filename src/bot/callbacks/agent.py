@@ -29,6 +29,7 @@ from ..utils import async_load_url
 from ..utils import load_json
 from ..utils import parse_url
 from .utils import get_message_text
+from .utils import safe_callback
 
 INSTRUCTIONS = """
 你是一位台灣繁體中文的資訊查詢助理，目標是根據使用者問題，查詢並提供正確、可靠且經查證的資訊，絕不捏造或猜測答案，並協助釐清需求。
@@ -320,6 +321,7 @@ class AgentCallback:
         except Exception as e:
             logger.error("Failed to save to cache: {error}", error=str(e))
 
+    @safe_callback
     async def handle_command(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         if update.message is None:
             return
@@ -327,6 +329,7 @@ class AgentCallback:
         with trace("handle_command"):
             await self.handle_message(update.message)
 
+    @safe_callback
     async def handle_reply(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         if (
             update.message is None

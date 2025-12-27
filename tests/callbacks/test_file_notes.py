@@ -266,7 +266,7 @@ class TestFileCallback:
         mock_context.bot.get_file.return_value.download_to_drive.return_value = test_file_path
         mock_read_pdf.side_effect = Exception("PDF reading failed")
 
-        # Execute - should raise exception since no error handling
+        # Execute - should raise exception and notify user
         with pytest.raises(Exception, match="PDF reading failed"):
             await file_callback(mock_update, mock_context)
 
@@ -276,8 +276,11 @@ class TestFileCallback:
         # File cleanup happens after content reading, so it won't be called if reading fails
         mock_remove.assert_not_called()
 
-        # Verify no reply due to error
-        mock_update.message.reply_text.assert_not_called()
+        # Verify user was notified of error
+        mock_update.message.reply_text.assert_called_once()
+        call_args = mock_update.message.reply_text.call_args[0][0]
+        assert "抱歉" in call_args
+        assert "錯誤" in call_args
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_html_content")
@@ -289,7 +292,7 @@ class TestFileCallback:
         mock_context.bot.get_file.return_value.download_to_drive.return_value = test_file_path
         mock_read_html.side_effect = FileNotFoundError("HTML file not found")
 
-        # Execute - should raise exception since no error handling
+        # Execute - should raise exception and notify user
         with pytest.raises(FileNotFoundError, match="HTML file not found"):
             await file_callback(mock_update, mock_context)
 
@@ -299,8 +302,11 @@ class TestFileCallback:
         # File cleanup happens after content reading, so it won't be called if reading fails
         mock_remove.assert_not_called()
 
-        # Verify no reply due to error
-        mock_update.message.reply_text.assert_not_called()
+        # Verify user was notified of error
+        mock_update.message.reply_text.assert_called_once()
+        call_args = mock_update.message.reply_text.call_args[0][0]
+        assert "抱歉" in call_args
+        assert "錯誤" in call_args
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_pdf_content")
@@ -316,7 +322,7 @@ class TestFileCallback:
         mock_read_pdf.return_value = "Valid PDF content"
         mock_format.side_effect = Exception("Format chain failed")
 
-        # Execute - should raise exception since no error handling
+        # Execute - should raise exception and notify user
         with pytest.raises(Exception, match="Format chain failed"):
             await file_callback(mock_update, mock_context)
 
@@ -327,8 +333,11 @@ class TestFileCallback:
         # Verify file cleanup happens before format chain
         mock_remove.assert_called_once_with(test_file_path)
 
-        # Verify no reply due to format error
-        mock_update.message.reply_text.assert_not_called()
+        # Verify user was notified of error
+        mock_update.message.reply_text.assert_called_once()
+        call_args = mock_update.message.reply_text.call_args[0][0]
+        assert "抱歉" in call_args
+        assert "錯誤" in call_args
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_pdf_content")
@@ -350,7 +359,7 @@ class TestFileCallback:
         mock_format.return_value = long_article
         mock_create_page.side_effect = Exception("Telegraph creation failed")
 
-        # Execute - should raise exception since no error handling
+        # Execute - should raise exception and notify user
         with pytest.raises(Exception, match="Telegraph creation failed"):
             await file_callback(mock_update, mock_context)
 
@@ -362,8 +371,11 @@ class TestFileCallback:
         # Verify file cleanup happens before Telegraph creation
         mock_remove.assert_called_once_with(test_file_path)
 
-        # Verify no reply due to Telegraph error
-        mock_update.message.reply_text.assert_not_called()
+        # Verify user was notified of error
+        mock_update.message.reply_text.assert_called_once()
+        call_args = mock_update.message.reply_text.call_args[0][0]
+        assert "抱歉" in call_args
+        assert "錯誤" in call_args
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_pdf_content")
@@ -380,14 +392,18 @@ class TestFileCallback:
         mock_format.return_value = sample_article
         mock_update.message.reply_text.side_effect = Exception("Reply failed")
 
-        # Execute - should raise exception since no error handling
+        # Execute - should raise exception
+        # Note: reply_text will be called twice - once for the success message (fails),
+        # then once for the error message (also fails, but error is logged)
         with pytest.raises(Exception, match="Reply failed"):
             await file_callback(mock_update, mock_context)
 
         # Verify processing completed before reply failure
         mock_read_pdf.assert_called_once_with(test_file_path)
         mock_format.assert_called_once_with("PDF content")
-        mock_update.message.reply_text.assert_called_once()
+
+        # Two calls: original reply + error notification attempt
+        assert mock_update.message.reply_text.call_count == 2
 
         # Verify file cleanup happens before reply
         mock_remove.assert_called_once_with(test_file_path)
@@ -398,7 +414,7 @@ class TestFileCallback:
         # Setup mocks
         mock_context.bot.get_file.return_value.download_to_drive.side_effect = Exception("Download failed")
 
-        # Execute - should raise exception since no error handling
+        # Execute - should raise exception and notify user
         with pytest.raises(Exception, match="Download failed"):
             await file_callback(mock_update, mock_context)
 
@@ -406,8 +422,11 @@ class TestFileCallback:
         mock_context.bot.get_file.assert_called_once_with("test_file_id")
         mock_context.bot.get_file.return_value.download_to_drive.assert_called_once()
 
-        # Verify no reply due to download error
-        mock_update.message.reply_text.assert_not_called()
+        # Verify user was notified of error
+        mock_update.message.reply_text.assert_called_once()
+        call_args = mock_update.message.reply_text.call_args[0][0]
+        assert "抱歉" in call_args
+        assert "錯誤" in call_args
 
     @pytest.mark.asyncio
     async def test_file_callback_get_file_error(self, mock_update, mock_context):
@@ -415,15 +434,18 @@ class TestFileCallback:
         # Setup mocks
         mock_context.bot.get_file.side_effect = Exception("Get file failed")
 
-        # Execute - should raise exception since no error handling
+        # Execute - should raise exception and notify user
         with pytest.raises(Exception, match="Get file failed"):
             await file_callback(mock_update, mock_context)
 
         # Verify get_file was attempted
         mock_context.bot.get_file.assert_called_once_with("test_file_id")
 
-        # Verify no reply due to get_file error
-        mock_update.message.reply_text.assert_not_called()
+        # Verify user was notified of error
+        mock_update.message.reply_text.assert_called_once()
+        call_args = mock_update.message.reply_text.call_args[0][0]
+        assert "抱歉" in call_args
+        assert "錯誤" in call_args
 
 
 class TestMaxLengthConstant:

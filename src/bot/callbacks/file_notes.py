@@ -11,8 +11,10 @@ from kabigon.utils import read_html_content
 from .. import chains
 from ..constants import MAX_MESSAGE_LENGTH
 from ..utils import create_page
+from .utils import safe_callback
 
 
+@safe_callback
 async def file_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message = update.message
     if not message:

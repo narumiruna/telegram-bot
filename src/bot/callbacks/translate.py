@@ -8,12 +8,14 @@ from .. import chains
 from ..constants import MAX_MESSAGE_LENGTH
 from ..utils import create_page
 from .utils import get_processed_message_text
+from .utils import safe_callback
 
 
 class TranslationCallback:
     def __init__(self, lang: str) -> None:
         self.lang = lang
 
+    @safe_callback
     async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         message = update.message
         if not message:

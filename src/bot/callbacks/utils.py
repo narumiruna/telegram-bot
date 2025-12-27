@@ -1,3 +1,5 @@
+from functools import wraps
+
 from loguru import logger
 from telegram import Message
 
@@ -113,3 +115,70 @@ async def get_processed_message_text(
         error_msg = f"Failed to load URL: {url}"
         logger.warning("{error}, got error: {exception}", error=error_msg, exception=e)
         return None, error_msg
+
+
+def safe_callback(callback_func):
+    """統一錯誤處理裝飾器
+
+    包裝 callback 函數，捕捉並處理執行期間的例外：
+    1. 通知用戶發生錯誤
+    2. 記錄完整錯誤訊息供除錯
+    3. 重新拋出例外讓全域錯誤處理器可以處理
+
+    Args:
+        callback_func: 要包裝的 async callback 函數或方法
+
+    Returns:
+        包裝後的函數
+
+    Example:
+        @safe_callback
+        async def my_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+            # callback implementation
+            pass
+
+        class MyCallback:
+            @safe_callback
+            async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+                # callback implementation
+                pass
+    """
+
+    @wraps(callback_func)
+    async def wrapper(*args, **kwargs):
+        # Handle both functions and methods
+        # Check if first arg has 'message' attribute (is Update-like)
+        update = None
+        if args and hasattr(args[0], "message"):
+            # Function (first arg is Update or Update-like)
+            update = args[0]
+        elif args and len(args) > 1 and hasattr(args[1], "message"):
+            # Method (first arg is self, second is Update or Update-like)
+            update = args[1]
+
+        try:
+            return await callback_func(*args, **kwargs)
+        except Exception as e:
+            # 記錄錯誤
+            logger.exception(
+                "Error in callback {func}: {error}",
+                func=callback_func.__name__,
+                error=str(e),
+            )
+
+            # 通知用戶
+            if update and hasattr(update, "message") and update.message:
+                try:
+                    await update.message.reply_text(
+                        "抱歉，處理您的請求時發生錯誤，請稍後再試。\n如果問題持續發生，請聯絡管理員。"
+                    )
+                except Exception as reply_error:
+                    logger.error(
+                        "Failed to send error message to user: {error}",
+                        error=str(reply_error),
+                    )
+
+            # 重新拋出例外讓全域錯誤處理器處理
+            raise
+
+    return wrapper

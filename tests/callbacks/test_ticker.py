@@ -179,4 +179,8 @@ class TestQueryTickerCallback:
         result = await query_ticker_callback(update, context)
 
         assert result is None
-        message.reply_text.assert_not_called()
+        # Should notify user that no results were found
+        message.reply_text.assert_called_once()
+        call_args = message.reply_text.call_args[0][0]
+        assert "無法查詢到股票代碼" in call_args
+        assert "INVALID" in call_args

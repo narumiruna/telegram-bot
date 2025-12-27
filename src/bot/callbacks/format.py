@@ -7,8 +7,10 @@ from .. import chains
 from ..constants import MAX_MESSAGE_LENGTH
 from ..utils import create_page
 from .utils import get_processed_message_text
+from .utils import safe_callback
 
 
+@safe_callback
 async def format_callback(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     message = update.message
     if not message:
