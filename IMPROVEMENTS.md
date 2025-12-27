@@ -349,7 +349,7 @@ class MCPConnectionPool:
 2. 沒有自動過期機制
 
 **實作內容**：
-1. 在 `src/bot/constants.py` 新增 `CACHE_TTL_SECONDS = 86400` (24 小時)
+1. 在 `src/bot/constants.py` 新增 `CACHE_TTL_SECONDS = 604800` (1 週)
 
 2. 修改 `src/bot/callbacks/agent.py` cache 策略：
    - **Cache TTL**：所有 `cache.set()` 加入 `ttl=CACHE_TTL_SECONDS`
@@ -361,7 +361,7 @@ class MCPConnectionPool:
    - 新增 `test_cache_persists_in_reply_thread()` - 驗證 reply thread 中的對話持續性
 
 **影響**：
-- ✅ Cache 自動過期（24 小時），防止無限增長
+- ✅ Cache 自動過期（1 週），防止無限增長
 - ✅ 維持 thread-based 對話模式（不同主題使用不同 threads）
 - ✅ 回覆訊息時自動載入該 thread 的對話歷史
 - ✅ 所有測試通過 (26 個測試)
@@ -369,6 +369,7 @@ class MCPConnectionPool:
 **設計考量**：
 - 使用 message-based key 而非 chat-based key，允許在同一 chat 中進行多個獨立的對話串
 - 用戶可以透過回覆不同的訊息來切換不同的討論主題
+- 1 週的 TTL 提供充足的時間繼續長期討論，同時避免記憶體無限增長
 
 ---
 
