@@ -9,9 +9,10 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from ..utils import async_create_page
+from .base import BaseCallback
 
 
-class ErrorCallback:
+class ErrorCallback(BaseCallback):
     def __init__(self, chat_id: str | None = None) -> None:
         self.chat_id = chat_id
 
