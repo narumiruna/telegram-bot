@@ -155,9 +155,85 @@ Tests are located in `tests/` directory with structure mirroring `src/`. The cod
 - **Retry System**: `src/bot/retry_utils.py` - Error handling and retry logic using tenacity
 - **Lazy Execution**: `src/bot/lazy.py` - Simple agent tasks without full configuration
 
+## Documentation
+
+This repository maintains several documentation files for different purposes:
+
+### CLAUDE.md (this file)
+**Purpose**: Development guide for Claude Code (claude.ai/code) and AI assistants
+
+**Contents**:
+- Development commands and workflows
+- Code architecture overview
+- Callback patterns and conventions
+- Environment requirements
+- CI/CD pipelines
+- Project structure
+- Testing strategies
+
+**Target audience**: AI assistants (Claude Code, GitHub Copilot), new developers
+
+### IMPROVEMENTS.md
+**Purpose**: Architecture analysis and improvement roadmap
+
+**Contents**:
+- Identified issues prioritized by severity (🔴 Critical, ⚠️ Important, 💡 Nice-to-have)
+- Completed improvements with implementation details
+- Suggested solutions and approaches
+- Implementation phases and progress tracking
+
+**Key sections**:
+- Issue #1-#10: Detailed problem analysis and solutions
+- Change log: Records of completed improvements with dates
+- Statistics: Impact metrics (lines changed, tests added, etc.)
+
+**Target audience**: Maintainers planning refactoring work, contributors understanding architectural decisions
+
+**Status tracking**:
+- ✅ Completed: Issues #1 (URL loading), #2 (Cache TTL), #3 (Error handling), #4 (Callback unification), #7 (Constants)
+- ⬜ Pending: Issues #5 (Test coverage), #6 (Presentation layer), #8 (MCP timeout), #9 (Async optimization), #10 (Code quality)
+
+### ISSUE_4_SUMMARY.md
+**Purpose**: Detailed documentation for Issue #4 (Callback Pattern Unification)
+
+**Contents**:
+- Problem analysis and solution design
+- Hybrid callback architecture (Protocol + BaseCallback + functions)
+- Implementation details and code examples
+- Decision guide for choosing callback patterns
+- Test results and impact metrics
+
+**Why it exists**: Issue #4 was a significant architectural change requiring comprehensive documentation for future reference
+
+**Target audience**: Developers implementing new callbacks, understanding the callback architecture
+
+### README.md
+**Purpose**: Public-facing project documentation
+
+**Contents**:
+- Project overview and features
+- Installation instructions
+- Environment variables configuration
+- Available bot commands
+- Basic project structure
+- Testing commands
+
+**Target audience**: End users, new contributors, GitHub visitors
+
+### .github/copilot-instructions.md
+**Purpose**: Redirect to CLAUDE.md
+
+**Contents**: Single line pointing to CLAUDE.md
+
+**Note**: GitHub Copilot reads this file for context, but the actual instructions are in CLAUDE.md
+
+---
+
 ## Repo Conventions (for assistants)
 
 - Prefer small, surgical changes; avoid unrelated refactors.
 - Keep code compatible with Python 3.12+.
 - Use `make format` (ruff) before committing formatting changes.
 - Use `make lint`, `make type`, and focused `uv run pytest ...` runs to validate changes.
+- **Before implementing new features or refactoring**, check `IMPROVEMENTS.md` to see if there's a planned approach
+- **When completing items from IMPROVEMENTS.md**, update the status and add a detailed change log entry

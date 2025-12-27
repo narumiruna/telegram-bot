@@ -255,9 +255,10 @@ class MCPConnectionPool:
 
 ### 10. 程式碼品質提升
 **小型改進**：
-- 統一 import 順序（stdlib → 3rd party → local）
-- 使用 `match-case` 取代多層 if-elif（Python 3.10+）
-- 型別註解完整性檢查（`--strict` mode）
+- 使用 `match-case` 取代多層 if-elif（Python 3.10+，提升可讀性）
+- 型別註解完整性檢查（`ty check --strict` mode，更嚴格的型別檢查）
+
+**注意**：Import 順序已由 ruff (isort) 自動處理，`make format` 會自動修正
 
 ---
 
