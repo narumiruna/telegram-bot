@@ -3,12 +3,14 @@ from __future__ import annotations
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from .base import BaseCallback
 
-class HelpCallback:
+
+class HelpCallback(BaseCallback):
     def __init__(self, helps: list[str]) -> None:
         self.helps = helps
 
-    async def __call__(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if not update.message:
             return
 
