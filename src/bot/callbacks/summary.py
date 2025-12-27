@@ -7,8 +7,10 @@ from telegram.ext import ContextTypes
 
 from .. import chains
 from .utils import get_processed_message_text
+from .utils import safe_callback
 
 
+@safe_callback
 async def summarize_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message = update.message
     if not message:

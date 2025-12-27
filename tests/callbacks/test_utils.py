@@ -10,6 +10,7 @@ from bot.callbacks.utils import get_message_key
 from bot.callbacks.utils import get_message_text
 from bot.callbacks.utils import get_processed_message_text
 from bot.callbacks.utils import get_user_display_name
+from bot.callbacks.utils import safe_callback
 from bot.callbacks.utils import strip_command
 
 
@@ -184,3 +185,79 @@ class TestGetProcessedMessageText:
         assert text == "Content from URL"
         assert error is None
         mock_load_url.assert_called_once_with("https://example.com")
+
+
+class TestSafeCallback:
+    def setup_method(self):
+        self.user = User(id=123, is_bot=False, first_name="TestUser", username="testuser")
+        self.chat = Chat(id=456, type="private")
+
+    @pytest.mark.asyncio
+    async def test_normal_execution(self):
+        """Test that decorator doesn't interfere with normal execution"""
+        mock_message = Mock(spec=Message)
+        mock_update = Mock()
+        mock_update.message = mock_message
+        mock_context = Mock()
+
+        @safe_callback
+        async def test_callback(update, context):
+            return "success"
+
+        result = await test_callback(mock_update, mock_context)
+        assert result == "success"
+
+    @pytest.mark.asyncio
+    async def test_exception_handling(self):
+        """Test that exceptions are caught, logged, and user is notified"""
+        mock_message = Mock(spec=Message)
+        mock_update = Mock()
+        mock_update.message = mock_message
+        mock_context = Mock()
+
+        @safe_callback
+        async def test_callback(update, context):
+            raise ValueError("Test error")
+
+        with pytest.raises(ValueError):
+            await test_callback(mock_update, mock_context)
+
+        # Verify user was notified
+        mock_message.reply_text.assert_called_once()
+        call_args = mock_message.reply_text.call_args[0][0]
+        assert "抱歉" in call_args
+        assert "錯誤" in call_args
+
+    @pytest.mark.asyncio
+    async def test_no_message_in_update(self):
+        """Test handling when update has no message"""
+        mock_update = Mock()
+        mock_update.message = None
+        mock_context = Mock()
+
+        @safe_callback
+        async def test_callback(update, context):
+            raise ValueError("Test error")
+
+        with pytest.raises(ValueError):
+            await test_callback(mock_update, mock_context)
+
+    @pytest.mark.asyncio
+    async def test_reply_text_fails(self):
+        """Test handling when reply_text itself fails"""
+        mock_message = Mock(spec=Message)
+        mock_message.reply_text.side_effect = Exception("Reply failed")
+        mock_update = Mock()
+        mock_update.message = mock_message
+        mock_context = Mock()
+
+        @safe_callback
+        async def test_callback(update, context):
+            raise ValueError("Test error")
+
+        # Should still raise the original exception
+        with pytest.raises(ValueError):
+            await test_callback(mock_update, mock_context)
+
+        # Verify reply_text was attempted
+        mock_message.reply_text.assert_called_once()

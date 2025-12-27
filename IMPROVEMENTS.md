@@ -267,7 +267,7 @@ class MCPConnectionPool:
 |--------|------|----------|--------|------|
 | 🔴 Critical | 1. URL 載入重複 | 可維護性 | 中 | ✅ 2025-12-27 |
 | 🔴 Critical | 2. Cache 無界增長 | 穩定性、效能 | 中 | ✅ 2025-12-27 |
-| 🔴 Critical | 3. 錯誤靜默失敗 | 用戶體驗 | 小 | ⬜ |
+| 🔴 Critical | 3. 錯誤靜默失敗 | 用戶體驗 | 小 | ✅ 2025-12-27 |
 | 🔴 Critical | 4. Callback 模式不一致 | 可維護性 | 大 | ⬜ |
 | ⚠️ Important | 5. 測試覆蓋不完整 | 品質保證 | 大 | ⬜ |
 | ⚠️ Important | 6. UI 邏輯混入 | 關注點分離 | 中 | ⬜ |
@@ -284,7 +284,7 @@ class MCPConnectionPool:
 - [x] Issue #7: 常數重複定義 ✅ 2025-12-27
 - [x] Issue #1: URL 載入抽取 ✅ 2025-12-27
 - [x] Issue #2: Cache 重構（TTL + 淘汰策略）✅ 2025-12-27
-- [ ] Issue #3: 錯誤處理（建立統一裝飾器）
+- [x] Issue #3: 錯誤處理（建立統一裝飾器）✅ 2025-12-27
 - [ ] Issue #9: 移除未使用代碼
 
 ### Phase 2: 核心架構（1 週）
@@ -416,3 +416,54 @@ class MCPConnectionPool:
 - 減少重複代碼：~50 行
 - 新增測試：~95 行
 - 改善可維護性與穩定性
+
+---
+
+#### ✅ Issue #3: 統一錯誤處理機制
+
+**問題**：多處捕捉例外後只記錄 log，用戶不知道發生錯誤。
+
+**實作內容**：
+1. 在 `src/bot/callbacks/utils.py` 新增 `safe_callback` 裝飾器
+   - 統一處理所有 callback 的例外
+   - 通知用戶發生錯誤（友善的繁體中文訊息）
+   - 記錄完整錯誤訊息供除錯
+   - 重新拋出例外讓全域錯誤處理器可以處理
+   - 支援函數和類別方法兩種使用方式
+
+2. 應用裝飾器到所有 callbacks：
+   - `src/bot/callbacks/ticker.py` - 股票查詢
+   - `src/bot/callbacks/summary.py` - 摘要
+   - `src/bot/callbacks/format.py` - 格式化
+   - `src/bot/callbacks/translate.py` - 翻譯
+   - `src/bot/callbacks/file_notes.py` - 檔案處理
+   - `src/bot/callbacks/agent.py` - Agent 對話
+
+3. 改善 ticker.py 的錯誤處理：
+   - 當無法查詢到股票資訊時，通知用戶（不再靜默失敗）
+   - 改善錯誤訊息的記錄格式
+
+4. 測試覆蓋：
+   - 新增 `tests/callbacks/test_utils.py::TestSafeCallback` (4 個測試)
+   - 更新現有測試以配合新的錯誤處理行為 (13 個測試檔案)
+
+**影響**：
+- ✅ 所有 callback 錯誤都會通知用戶
+- ✅ 統一的錯誤訊息格式（繁體中文）
+- ✅ 保留完整錯誤記錄供除錯
+- ✅ 全域錯誤處理器仍可接收例外
+- ✅ 所有測試通過 (223 個測試)
+
+**錯誤訊息範例**：
+```
+抱歉，處理您的請求時發生錯誤，請稍後再試。
+如果問題持續發生，請聯絡管理員。
+```
+
+**設計考量**：
+- 使用裝飾器模式，最小化程式碼侵入性
+- 同時支援函數和類別方法（透過 `hasattr` 檢測）
+- 錯誤訊息回覆失敗時不會造成二次錯誤（catch-all 處理）
+- 維持例外鏈，讓全域處理器（ErrorCallback）仍可收到通知
+
+---
