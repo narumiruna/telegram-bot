@@ -578,3 +578,149 @@ class TestAgentCallback:
         assert input_messages[0]["content"] == "Previous message"
         assert input_messages[1]["content"] == "Previous response"
         assert input_messages[2]["content"] == "New message"
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
+    async def test_connect_with_timeout_success(self, mock_get_cache):
+        """Test successful MCP server connection with timeout"""
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_get_cache.return_value = mock_cache
+
+        # Create mock MCP server that connects successfully
+        mock_server = Mock()
+        mock_server.name = "test_server"
+        mock_server.connect = AsyncMock()
+        mock_agent.mcp_servers = [mock_server]
+
+        callback = AgentCallback(mock_agent)
+        await callback.connect()
+
+        # Verify connect was called
+        mock_server.connect.assert_called_once()
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
+    async def test_connect_with_timeout_error(self, mock_get_cache):
+        """Test MCP server connection timeout"""
+        import asyncio
+
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_get_cache.return_value = mock_cache
+
+        # Create mock MCP server that times out
+        mock_server = Mock()
+        mock_server.name = "slow_server"
+
+        async def slow_connect():
+            await asyncio.sleep(100)  # Simulate slow connection
+
+        mock_server.connect = slow_connect
+        mock_agent.mcp_servers = [mock_server]
+
+        callback = AgentCallback(mock_agent)
+
+        # Should not raise, just log the timeout
+        await callback.connect()
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
+    async def test_connect_continues_after_timeout(self, mock_get_cache):
+        """Test that connect continues with other servers after timeout"""
+        import asyncio
+
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_get_cache.return_value = mock_cache
+
+        # Create two mock servers: one slow, one fast
+        mock_slow_server = Mock()
+        mock_slow_server.name = "slow_server"
+
+        async def slow_connect():
+            await asyncio.sleep(100)
+
+        mock_slow_server.connect = slow_connect
+
+        mock_fast_server = Mock()
+        mock_fast_server.name = "fast_server"
+        mock_fast_server.connect = AsyncMock()
+
+        mock_agent.mcp_servers = [mock_slow_server, mock_fast_server]
+
+        callback = AgentCallback(mock_agent)
+        await callback.connect()
+
+        # Verify fast server was still connected even though slow server timed out
+        mock_fast_server.connect.assert_called_once()
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
+    async def test_cleanup_with_timeout_success(self, mock_get_cache):
+        """Test successful MCP server cleanup with timeout"""
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_get_cache.return_value = mock_cache
+
+        # Create mock MCP server that cleans up successfully
+        mock_server = Mock()
+        mock_server.name = "test_server"
+        mock_server.cleanup = AsyncMock()
+        mock_agent.mcp_servers = [mock_server]
+
+        callback = AgentCallback(mock_agent)
+        await callback.cleanup()
+
+        # Verify cleanup was called
+        mock_server.cleanup.assert_called_once()
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
+    async def test_cleanup_with_timeout_error(self, mock_get_cache):
+        """Test MCP server cleanup timeout"""
+        import asyncio
+
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_get_cache.return_value = mock_cache
+
+        # Create mock MCP server that times out during cleanup
+        mock_server = Mock()
+        mock_server.name = "slow_server"
+
+        async def slow_cleanup():
+            await asyncio.sleep(100)  # Simulate slow cleanup
+
+        mock_server.cleanup = slow_cleanup
+        mock_agent.mcp_servers = [mock_server]
+
+        callback = AgentCallback(mock_agent)
+
+        # Should not raise, just log the timeout
+        await callback.cleanup()
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
+    async def test_cleanup_continues_after_timeout(self, mock_get_cache):
+        """Test that cleanup continues with other servers after timeout"""
+        import asyncio
+
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_get_cache.return_value = mock_cache
+
+        # Create two mock servers: one slow, one fast
+        mock_slow_server = Mock()
+        mock_slow_server.name = "slow_server"
+
+        async def slow_cleanup():
+            await asyncio.sleep(100)
+
+        mock_slow_server.cleanup = slow_cleanup
+
+        mock_fast_server = Mock()
+        mock_fast_server.name = "fast_server"
+        mock_fast_server.cleanup = AsyncMock()
+
+        mock_agent.mcp_servers = [mock_slow_server, mock_fast_server]
+
+        callback = AgentCallback(mock_agent)
+        await callback.cleanup()
+
+        # Verify fast server was still cleaned up even though slow server timed out
+        mock_fast_server.cleanup.assert_called_once()

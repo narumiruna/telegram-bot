@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from pathlib import Path
 from typing import cast
@@ -21,6 +22,8 @@ from tenacity import stop_after_attempt
 
 from ..cache import get_cache_from_env
 from ..constants import CACHE_TTL_SECONDS
+from ..constants import MCP_CLEANUP_TIMEOUT
+from ..constants import MCP_CONNECT_TIMEOUT
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
 from ..retry_utils import is_retryable_error
@@ -183,15 +186,26 @@ class AgentCallback:
         self.cache = get_cache_from_env()
 
     async def connect(self) -> None:
-        """Connect to all MCP servers.
+        """Connect to all MCP servers with timeout.
 
         Continues to connect remaining servers even if some fail.
+        Connection timeout is enforced to prevent hanging.
         """
         for mcp_server in self.agent.mcp_servers:
             try:
-                logger.info("Connecting to MCP server: {name}", name=mcp_server.name)
-                await mcp_server.connect()
+                logger.info(
+                    "Connecting to MCP server: {name} (timeout: {timeout}s)",
+                    name=mcp_server.name,
+                    timeout=MCP_CONNECT_TIMEOUT,
+                )
+                await asyncio.wait_for(mcp_server.connect(), timeout=MCP_CONNECT_TIMEOUT)
                 logger.info("Successfully connected to MCP server: {name}", name=mcp_server.name)
+            except TimeoutError:
+                logger.error(
+                    "Connection timeout for MCP server {name} after {timeout}s",
+                    name=mcp_server.name,
+                    timeout=MCP_CONNECT_TIMEOUT,
+                )
             except Exception as e:
                 logger.error(
                     "Failed to connect to MCP server {name}: {error}",
@@ -200,15 +214,26 @@ class AgentCallback:
                 )
 
     async def cleanup(self) -> None:
-        """Cleanup all MCP servers.
+        """Cleanup all MCP servers with timeout.
 
         Continues to cleanup remaining servers even if some fail.
+        Cleanup timeout is enforced to prevent hanging.
         """
         for mcp_server in self.agent.mcp_servers:
             try:
-                logger.info("Cleaning up MCP server: {name}", name=mcp_server.name)
-                await mcp_server.cleanup()
+                logger.info(
+                    "Cleaning up MCP server: {name} (timeout: {timeout}s)",
+                    name=mcp_server.name,
+                    timeout=MCP_CLEANUP_TIMEOUT,
+                )
+                await asyncio.wait_for(mcp_server.cleanup(), timeout=MCP_CLEANUP_TIMEOUT)
                 logger.info("Successfully cleaned up MCP server: {name}", name=mcp_server.name)
+            except TimeoutError:
+                logger.error(
+                    "Cleanup timeout for MCP server {name} after {timeout}s",
+                    name=mcp_server.name,
+                    timeout=MCP_CLEANUP_TIMEOUT,
+                )
             except Exception as e:
                 logger.error(
                     "Failed to cleanup MCP server {name}: {error}",

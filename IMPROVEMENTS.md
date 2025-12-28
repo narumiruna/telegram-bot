@@ -15,11 +15,11 @@
 | ⚠️ Important | 5. 測試覆蓋不完整 | 品質保證 | 🔕 暫不處理 |
 | ⚠️ Important | 6. UI 邏輯混入 | 關注點分離 | ✅ 2025-12-29 |
 | ⚠️ Important | 7. 常數重複定義 | 可維護性 | ✅ 2025-12-27 |
-| ⚠️ Important | 8. MCP Timeout | 穩定性 | ⬜ 待處理 |
+| ⚠️ Important | 8. MCP Timeout | 穩定性 | ✅ 2025-12-29 |
 | 💡 Nice-to-have | 9. Async 優化 | 效能 | ✅ 2025-12-29 |
 | 💡 Nice-to-have | 10. 程式碼品質 | 可讀性 | ⬜ 待處理 |
 
-**進度**: 7/10 完成 (70%)
+**進度**: 8/10 完成 (80%)
 
 ---
 
@@ -120,6 +120,18 @@ except Exception as e:
 
 **狀態**: ✅ 完成於 2025-12-27 (詳見變更紀錄)
 
+---
+
+### ✅ Issue #8: MCP 連線缺少 Timeout 管理
+
+**問題**：MCP server 連線只有 `client_session_timeout_seconds`，缺少明確超時處理。
+
+**位置**：`src/bot/callbacks/agent.py:188-242`
+
+**解決方案**：為 `connect()` 和 `cleanup()` 方法添加 `asyncio.wait_for()` timeout 控制
+
+**狀態**: ✅ 完成於 2025-12-29 (詳見變更紀錄)
+
 </details>
 
 ---
@@ -154,88 +166,6 @@ except Exception as e:
 
 ---
 
-### ⚠️ Issue #6: UI 邏輯混入業務層
-
-**問題**：Telegraph 頁面建立、`MAX_MESSAGE_LENGTH` 判斷散落在業務邏輯中。
-
-**位置**：
-- `src/bot/chains/summary.py` - Telegraph 整合
-- `src/bot/chains/translation.py` - Telegraph 整合
-- `src/bot/chains/formatter.py` - Telegraph 整合
-- `src/bot/callbacks/*.py` - 長度判斷與格式化
-
-**建議方案**：
-1. **抽取 Presentation Layer**：
-```python
-# src/bot/presentation.py
-from dataclasses import dataclass
-
-@dataclass
-class MessageResponse:
-    content: str
-    title: str | None = None
-
-    async def send(self, message: Message) -> None:
-        """自動判斷是否需要建立 Telegraph 頁面"""
-        if len(self.content) > MAX_MESSAGE_LENGTH:
-            url = create_page(
-                title=self.title or "Response",
-                html_content=self.content.replace("\n", "<br>")
-            )
-            await message.reply_text(url)
-        else:
-            await message.reply_text(self.content)
-```
-
-2. **統一回覆介面**：所有 callback 回傳 `MessageResponse` 物件。
-
----
-
-### ⚠️ Issue #8: MCP 連線缺少 Timeout 管理
-
-**問題**：MCP server 連線只有 `client_session_timeout_seconds`，缺少明確超時處理。
-
-**位置**：`src/bot/callbacks/agent.py:88-112`
-
-**建議方案**：
-1. **連線池模式**：
-```python
-class MCPConnectionPool:
-    def __init__(self, max_connections: int = 5, timeout: float = 30.0):
-        self.max_connections = max_connections
-        self.timeout = timeout
-        self._pool: dict[str, MCPClient] = {}
-
-    async def get_client(self, server_name: str) -> MCPClient:
-        """取得或建立 MCP client，帶 timeout"""
-        if server_name not in self._pool:
-            self._pool[server_name] = await asyncio.wait_for(
-                self._connect(server_name),
-                timeout=self.timeout
-            )
-        return self._pool[server_name]
-```
-
-2. **Circuit Breaker 模式**：連線失敗達閾值後暫停重試。
-
-3. **健康檢查**：定期 ping MCP servers。
-
----
-
-### 💡 Issue #9: Async 模式優化
-
-**觀察**：
-- `async_wrapper()` 在 `utils.py` 定義但未使用
-- Telegraph 操作是同步的（阻塞 async context）
-- `get_composed_loader()` 全域快取（thread-safe 疑慮）
-
-**建議**：
-1. 移除未使用的 `async_wrapper()`
-2. 為 Telegraph 操作使用 `asyncio.to_thread()`
-3. 評估 loader 快取的並發安全性
-
----
-
 ### 💡 Issue #10: 程式碼品質提升
 
 **小型改進**：
@@ -258,10 +188,10 @@ class MCPConnectionPool:
 ### Phase 2: 核心架構 ✅ 已完成
 - [x] Issue #6: Presentation layer 抽取 ✅ 2025-12-29
 
-### Phase 3: 長期優化 ⚡ 進行中
+### Phase 3: 長期優化 ✅ 已完成
 - [x] Issue #4: Callback 模式統一 ✅ 2025-12-27
 - [ ] Issue #5: 補充測試覆蓋 🔕 暫不處理（備用 chains 未使用）
-- [ ] Issue #8: MCP 連線池 ⬜ 待處理
+- [x] Issue #8: MCP Timeout 管理 ✅ 2025-12-29
 
 ### Phase 4: 精進（持續）
 - [ ] Issue #10: 程式碼品質提升 ⬜ 待處理
@@ -694,5 +624,57 @@ def register_callback(callback: CallbackProtocol) -> None:
 - `functools.cache` = `lru_cache(maxsize=None)`
 - 內部使用 `threading.RLock()` 保護快取字典
 - 在 async context 中安全使用（GIL 保護）
+
+---
+
+#### ✅ Issue #8: MCP Timeout 管理
+
+**問題**：MCP server 連線和清理操作缺少明確的 timeout 控制，可能導致無限期等待。
+
+**影響範圍**：
+- `src/bot/callbacks/agent.py:188-214` - `connect()` 方法
+- `src/bot/callbacks/agent.py:216-242` - `cleanup()` 方法
+
+**實作內容**：
+
+1. **添加 Timeout 常數** (`src/bot/constants.py`)：
+   - `MCP_CONNECT_TIMEOUT: Final[int] = 30` - 連線超時 30 秒
+   - `MCP_CLEANUP_TIMEOUT: Final[int] = 10` - 清理超時 10 秒
+
+2. **修改 `connect()` 方法**：
+   - 使用 `asyncio.wait_for()` 包裝 `mcp_server.connect()` 調用
+   - 添加 `TimeoutError` 異常處理，記錄超時錯誤但不中斷其他 server 連線
+   - 改進日誌訊息，顯示 timeout 設定
+
+3. **修改 `cleanup()` 方法**：
+   - 使用 `asyncio.wait_for()` 包裝 `mcp_server.cleanup()` 調用
+   - 添加 `TimeoutError` 異常處理，記錄超時錯誤但不中斷其他 server 清理
+   - 改進日誌訊息，顯示 timeout 設定
+
+4. **測試覆蓋** (`tests/callbacks/test_agent.py`)：
+   - 新增 6 個測試案例：
+     - `test_connect_with_timeout_success` - 正常連線
+     - `test_connect_with_timeout_error` - 連線超時
+     - `test_connect_continues_after_timeout` - 超時後繼續連線其他 servers
+     - `test_cleanup_with_timeout_success` - 正常清理
+     - `test_cleanup_with_timeout_error` - 清理超時
+     - `test_cleanup_continues_after_timeout` - 超時後繼續清理其他 servers
+
+**影響**：
+- ✅ 防止連線/清理操作無限期阻塞
+- ✅ 超時不影響其他 MCP servers 的連線/清理
+- ✅ 清楚的錯誤日誌，便於診斷問題
+- ✅ 提升系統穩定性和可靠性
+
+**設計考量**：
+- 連線超時設為 30 秒，給予足夠時間建立連線
+- 清理超時設為 10 秒，因為清理操作通常較快
+- 使用 `asyncio.wait_for()` 而非 `asyncio.timeout()`，保持與 Python 3.10 的相容性
+- 超時後繼續處理其他 servers，避免單一 server 故障影響全部
+
+**測試結果**：
+- ✅ Linting: `ruff check` - All checks passed
+- ✅ Type checking: `ty check` - All checks passed
+- ✅ Tests: 6/6 passed (82.67s)
 
 ---
