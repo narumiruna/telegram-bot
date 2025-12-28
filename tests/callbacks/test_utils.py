@@ -1,3 +1,4 @@
+import datetime
 from unittest.mock import Mock
 from unittest.mock import patch
 
@@ -62,29 +63,41 @@ class TestGetMessageText:
         self.chat = Chat(id=456, type="private")
 
     def test_get_message_text_simple(self):
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="Hello world")
+        message = Message(
+            message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="Hello world"
+        )
 
         result = get_message_text(message)
         assert result == "Hello world"
 
     def test_get_message_text_with_command(self):
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="/translate Hello world")
+        message = Message(
+            message_id=1,
+            date=datetime.datetime.now(),
+            chat=self.chat,
+            from_user=self.user,
+            text="/translate Hello world",
+        )
 
         result = get_message_text(message)
         assert result == "Hello world"
 
     def test_get_message_text_with_user_name(self):
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="Hello world")
+        message = Message(
+            message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="Hello world"
+        )
 
         result = get_message_text(message, include_user_name=True)
         assert result == "TestUser(testuser): Hello world"
 
     def test_get_message_text_with_reply(self):
-        reply_message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="Original message")
+        reply_message = Message(
+            message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="Original message"
+        )
 
         message = Message(
             message_id=2,
-            date=None,
+            date=datetime.datetime.now(),
             chat=self.chat,
             from_user=self.user,
             text="Reply message",
@@ -95,7 +108,7 @@ class TestGetMessageText:
         assert result == "Original message\n\nReply message"
 
     def test_get_message_text_empty(self):
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text=None)
+        message = Message(message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text=None)
 
         result = get_message_text(message)
         assert result == ""
@@ -104,7 +117,8 @@ class TestGetMessageText:
 class TestGetMessageKey:
     def test_get_message_key(self):
         chat = Chat(id=456, type="private")
-        message = Message(message_id=123, date=None, chat=chat)
+
+        message = Message(message_id=123, date=datetime.datetime.now(), chat=chat)
 
         result = get_message_key(message)
         assert result == "123:456"
@@ -117,7 +131,7 @@ class TestGetProcessedMessageText:
 
     @pytest.mark.asyncio
     async def test_no_message_text(self):
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="")
+        message = Message(message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="")
 
         text, error = await get_processed_message_text(message, require_url=False)
         assert text is None
@@ -128,7 +142,9 @@ class TestGetProcessedMessageText:
     async def test_require_url_but_no_url(self, mock_parse_url):
         mock_parse_url.return_value = ""
 
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="No URL here")
+        message = Message(
+            message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="No URL here"
+        )
 
         text, error = await get_processed_message_text(message, require_url=True)
         assert text is None
@@ -139,7 +155,9 @@ class TestGetProcessedMessageText:
     async def test_no_url_returns_original_text(self, mock_parse_url):
         mock_parse_url.return_value = ""
 
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="No URL here")
+        message = Message(
+            message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="No URL here"
+        )
 
         text, error = await get_processed_message_text(message, require_url=False)
         assert text == "No URL here"
@@ -152,7 +170,9 @@ class TestGetProcessedMessageText:
         mock_parse_url.return_value = "https://example.com"
         mock_load_url.return_value = "Content from URL"
 
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="https://example.com")
+        message = Message(
+            message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="https://example.com"
+        )
 
         text, error = await get_processed_message_text(message, require_url=False)
         assert text == "Content from URL"
@@ -166,7 +186,9 @@ class TestGetProcessedMessageText:
         mock_parse_url.return_value = "https://example.com"
         mock_load_url.side_effect = Exception("Connection error")
 
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="https://example.com")
+        message = Message(
+            message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="https://example.com"
+        )
 
         text, error = await get_processed_message_text(message, require_url=False)
         assert text is None
@@ -179,7 +201,9 @@ class TestGetProcessedMessageText:
         mock_parse_url.return_value = "https://example.com"
         mock_load_url.return_value = "Content from URL"
 
-        message = Message(message_id=1, date=None, chat=self.chat, from_user=self.user, text="https://example.com")
+        message = Message(
+            message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="https://example.com"
+        )
 
         text, error = await get_processed_message_text(message, require_url=True)
         assert text == "Content from URL"

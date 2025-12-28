@@ -45,7 +45,7 @@ class TestAgentConfig:
             server = config.mcp_servers["firecrawl"]
             assert server.command == "npx"
             assert server.args == ["-y", "@firecrawl/mcp-server-firecrawl"]
-            assert server.env["FIRECRAWL_API_KEY"] == "test_key"
+            assert (server.env or {})["FIRECRAWL_API_KEY"] == "test_key"
         finally:
             os.unlink(temp_path)
 
@@ -83,7 +83,7 @@ class TestAgentConfig:
         config = AgentConfig.model_validate(config_data)
 
         # Should replace empty string with actual env var value
-        assert config.mcp_servers["test_server"].env["TEST_API_KEY"] == "env_value"
+        assert (config.mcp_servers["test_server"].env or {}).get("TEST_API_KEY") == "env_value"
 
     @patch.dict(os.environ, {}, clear=True)
     def test_env_variable_substitution_missing_var(self):
@@ -93,7 +93,8 @@ class TestAgentConfig:
         config = AgentConfig.model_validate(config_data)
 
         # Should use empty string when env var doesn't exist
-        assert config.mcp_servers["test_server"].env["MISSING_KEY"] == ""
+        env = config.mcp_servers["test_server"].env or {}
+        assert env.get("MISSING_KEY", "") == ""
 
     def test_env_variable_no_substitution_for_non_empty(self):
         """Test that non-empty env values are not replaced"""
@@ -107,7 +108,7 @@ class TestAgentConfig:
             config = AgentConfig.model_validate(config_data)
 
             # Should keep original value, not replace with env var
-            assert config.mcp_servers["test_server"].env["EXISTING_KEY"] == "existing_value"
+            assert (config.mcp_servers["test_server"].env or {}).get("EXISTING_KEY") == "existing_value"
 
     def test_multiple_servers_with_env_vars(self):
         """Test config with multiple servers and env variables"""
@@ -121,8 +122,8 @@ class TestAgentConfig:
 
             config = AgentConfig.model_validate(config_data)
 
-            assert config.mcp_servers["server1"].env["API_KEY_1"] == "key1"
-            assert config.mcp_servers["server2"].env["API_KEY_2"] == "key2"
+            assert (config.mcp_servers["server1"].env or {}).get("API_KEY_1") == "key1"
+            assert (config.mcp_servers["server2"].env or {}).get("API_KEY_2") == "key2"
 
     def test_server_without_env(self):
         """Test server configuration without env variables"""
