@@ -1,5 +1,4 @@
 from .formatter import format
-from .jlpt import learn_japanese
 from .keyword import extract_keywords
 from .notes import create_notes
 from .polisher import polish
