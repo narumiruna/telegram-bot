@@ -9,8 +9,6 @@ from kabigon.pdf import read_pdf_content
 from kabigon.utils import read_html_content
 
 from .. import chains
-from ..constants import MAX_MESSAGE_LENGTH
-from ..utils import async_create_page
 from .utils import safe_callback
 
 
@@ -38,10 +36,7 @@ async def file_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     if not text:
         return
 
-    result = await chains.format(text)
-    if len(str(result)) > MAX_MESSAGE_LENGTH:
-        text = await async_create_page(title=result.title, html_content=str(result).replace("\n", "<br>"))
-    else:
-        text = str(result)
+    article = await chains.format(text)
+    response = article.to_message_response()
 
-    await message.reply_text(text)
+    await response.send(message)

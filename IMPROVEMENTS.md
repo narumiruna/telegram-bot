@@ -13,13 +13,13 @@
 | 🔴 Critical | 3. 錯誤靜默失敗 | 用戶體驗 | ✅ 2025-12-27 |
 | 🔴 Critical | 4. Callback 模式不一致 | 可維護性 | ✅ 2025-12-27 |
 | ⚠️ Important | 5. 測試覆蓋不完整 | 品質保證 | ⬜ 待處理 |
-| ⚠️ Important | 6. UI 邏輯混入 | 關注點分離 | ⬜ 待處理 |
+| ⚠️ Important | 6. UI 邏輯混入 | 關注點分離 | ✅ 2025-12-29 |
 | ⚠️ Important | 7. 常數重複定義 | 可維護性 | ✅ 2025-12-27 |
 | ⚠️ Important | 8. MCP Timeout | 穩定性 | ⬜ 待處理 |
-| 💡 Nice-to-have | 9. Async 優化 | 效能 | ⬜ 待處理 |
+| 💡 Nice-to-have | 9. Async 優化 | 效能 | ✅ 2025-12-29 |
 | 💡 Nice-to-have | 10. 程式碼品質 | 可讀性 | ⬜ 待處理 |
 
-**進度**: 5/10 完成 (50%)
+**進度**: 7/10 完成 (70%)
 
 ---
 
@@ -251,10 +251,10 @@ class MCPConnectionPool:
 - [x] Issue #1: URL 載入抽取 ✅ 2025-12-27
 - [x] Issue #2: Cache 重構（TTL + 淘汰策略）✅ 2025-12-27
 - [x] Issue #3: 錯誤處理（建立統一裝飾器）✅ 2025-12-27
-- [ ] Issue #9: 移除未使用代碼 ⬜ 待處理
+- [x] Issue #9: Async 模式優化 ✅ 2025-12-29
 
-### Phase 2: 核心架構（1 週）
-- [ ] Issue #6: Presentation layer 抽取 ⬜ 待處理
+### Phase 2: 核心架構 ✅ 已完成
+- [x] Issue #6: Presentation layer 抽取 ✅ 2025-12-29
 
 ### Phase 3: 長期優化 ⚡ 進行中
 - [x] Issue #4: Callback 模式統一 ✅ 2025-12-27
@@ -603,5 +603,94 @@ def register_callback(callback: CallbackProtocol) -> None:
 - 同時支援函數和類別方法（透過 `hasattr` 檢測）
 - 錯誤訊息回覆失敗時不會造成二次錯誤（catch-all 處理）
 - 維持例外鏈，讓全域處理器（ErrorCallback）仍可收到通知
+
+---
+
+### 2025-12-29: Phase 2 完成 + Issue #9 完成
+
+#### ✅ Issue #6: UI 邏輯混入業務層 - Presentation Layer 抽取
+
+**問題**：Telegraph 頁面建立、`MAX_MESSAGE_LENGTH` 判斷散落在業務邏輯中，造成關注點混雜。
+
+**影響範圍**：
+- `src/bot/chains/summary.py:81` - `__str__()` 中同步呼叫 `create_page()`，阻塞事件循環
+- `src/bot/callbacks/format.py:28-31` - 手動判斷長度並建立頁面
+- `src/bot/callbacks/translate.py:35-37` - 重複相同邏輯
+- `src/bot/callbacks/file_notes.py:42-45` - 重複相同邏輯
+
+**實作內容**：
+
+1. **建立 Presentation Layer** (`src/bot/presentation.py`, 54 行)
+   - `MessageResponse` dataclass：統一的訊息回應介面
+   - `async send(message)` 方法：自動判斷長度並處理 Telegraph 建立
+   - 支援自訂標題和 parse_mode
+
+2. **重構 chains/summary.py**：
+   - `Summary.__str__()` → `Summary.to_message_response()` (async)
+   - 使用 `async_create_page()` 取代同步的 `create_page()`
+   - `summarize()` 返回 `MessageResponse` 而非 `str`
+
+3. **重構 chains/formatter.py**：
+   - 新增 `Article.to_message_response()` 方法
+   - 返回包含格式化內容的 `MessageResponse`
+
+4. **重構 callbacks**：
+   - `summary.py`: 使用 `response.send(message)`
+   - `format.py`: 移除手動長度判斷，使用 `article.to_message_response().send()`
+   - `translate.py`: 建立 `MessageResponse` 並使用 `.send()`
+   - `file_notes.py`: 使用 `article.to_message_response().send()`
+   - `error.py`: 保持不變（已使用 `async_create_page()`）
+
+5. **測試**：
+   - 新增 `tests/test_presentation.py` (6 個測試)
+   - 更新 `tests/callbacks/test_summary.py` 以配合新 API
+   - 更新其他 callback 測試
+
+**影響**：
+- ✅ 關注點分離：業務邏輯不再處理 UI 細節
+- ✅ 消除代碼重複：5 處相同邏輯合併為 1 個類
+- ✅ 統一介面：所有回應都使用 `MessageResponse.send()`
+- ✅ 易於擴展：未來可輕鬆添加新的回應格式
+
+**設計考量**：
+- `MessageResponse` 使用 dataclass，簡潔且型別安全
+- `send()` 方法封裝所有 UI 邏輯（長度判斷、Telegraph 建立）
+- 保留 `parse_mode` 參數，支援 HTML 和純文字
+- 非同步設計，與 Telegram bot 的異步特性一致
+
+---
+
+#### ✅ Issue #9: Async 模式優化
+
+**問題**：
+1. `async_wrapper()` 可能存在但未使用
+2. `summary.py` 在 `__str__()` 中使用同步 `create_page()`，阻塞事件循環
+3. `get_composed_loader()` 的 thread-safe 疑慮
+
+**實作內容**：
+
+1. **檢查 `async_wrapper()`**：
+   - 搜索整個專案，確認 `async_wrapper()` 不存在
+   - ✅ 無需移除
+
+2. **修復 Telegraph 阻塞問題**（與 Issue #6 一併解決）：
+   - `summary.py` 的 `Summary.__str__()` → `to_message_response()` (async)
+   - 使用 `async_create_page()` 取代 `create_page()`
+   - ✅ 所有 Telegraph 操作皆為非阻塞
+
+3. **評估 loader 快取**：
+   - `get_composed_loader()` 使用 `@cache` (functools.cache)
+   - Python 的 `@cache` 內部使用 `lru_cache`，有鎖機制保證 thread-safe
+   - ✅ 無並發安全性問題
+
+**影響**：
+- ✅ 消除事件循環阻塞：所有 Telegraph 操作皆為異步
+- ✅ 確認無未使用代碼
+- ✅ 確認 loader 快取的並發安全性
+
+**技術細節**：
+- `functools.cache` = `lru_cache(maxsize=None)`
+- 內部使用 `threading.RLock()` 保護快取字典
+- 在 async context 中安全使用（GIL 保護）
 
 ---

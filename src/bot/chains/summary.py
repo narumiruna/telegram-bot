@@ -5,7 +5,8 @@ from pydantic import BaseModel
 from pydantic import Field
 
 from ..lazy import lazy_run
-from ..utils import create_page
+from ..presentation import MessageResponse
+from ..utils import async_create_page
 
 PROMPT_TEMPLATE = """
 請以台灣繁體中文為以下內容生成：
@@ -74,12 +75,25 @@ class Summary(BaseModel):
         description="與文本相關的 Hashtags",
     )
 
-    def __str__(self) -> str:
+    async def to_message_response(self) -> MessageResponse:
+        """Convert summary to a MessageResponse for sending.
+
+        Creates a Telegraph page for the chain of thought and formats
+        the summary, insights, and hashtags into a message.
+
+        Returns:
+            MessageResponse ready to be sent to Telegram
+        """
         insights = "\n".join([f"  • {insight.strip()}" for insight in self.insights])
         hashtags = " ".join(self.hashtags)
 
-        url = create_page(title="推理過程", html_content=markdown2.markdown(str(self.chain_of_thought)))
-        return "\n\n".join(
+        # Create Telegraph page asynchronously
+        url = await async_create_page(
+            title="推理過程",
+            html_content=markdown2.markdown(str(self.chain_of_thought)),
+        )
+
+        content = "\n\n".join(
             [
                 "📝 <b>摘要</b>",
                 self.summary_text.strip(),
@@ -90,19 +104,20 @@ class Summary(BaseModel):
             ]
         )
 
+        return MessageResponse(content=content, title="摘要")
 
-async def summarize(text: str) -> str:
+
+async def summarize(text: str) -> MessageResponse:
     """Generate a summary of the given text.
 
     Args:
         text (str): The text to summarize.
 
     Returns:
-        str: A formatted string containing the summary, key points, takeaways, and hashtags.
+        MessageResponse: A formatted response containing the summary, insights, and hashtags.
     """
-    return str(
-        await lazy_run(
-            input=PROMPT_TEMPLATE.format(text=text),
-            output_type=Summary,
-        )
+    summary = await lazy_run(
+        input=PROMPT_TEMPLATE.format(text=text),
+        output_type=Summary,
     )
+    return await summary.to_message_response()
