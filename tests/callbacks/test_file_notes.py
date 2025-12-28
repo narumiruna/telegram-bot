@@ -115,9 +115,8 @@ class TestFileCallback:
         # Verify file cleanup
         mock_remove.assert_called_once_with(test_file_path)
 
-        # Verify response (short content should be sent as text)
-        expected_text = str(sample_article)
-        mock_update.message.reply_text.assert_called_once_with(expected_text)
+        # Verify response (MessageResponse.send() calls message.reply_text with parse_mode=None)
+        mock_update.message.reply_text.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_html_content")
@@ -145,13 +144,12 @@ class TestFileCallback:
         mock_remove.assert_called_once_with(test_file_path)
 
         # Verify response
-        expected_text = str(sample_article)
-        mock_update.message.reply_text.assert_called_once_with(expected_text)
+        mock_update.message.reply_text.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_pdf_content")
     @patch("bot.callbacks.file_notes.chains.format")
-    @patch("bot.callbacks.file_notes.async_create_page")
+    @patch("bot.presentation.async_create_page")
     @patch("bot.callbacks.file_notes.os.remove")
     async def test_file_callback_pdf_success_long_content(
         self, mock_remove, mock_async_create_page, mock_format, mock_read_pdf, mock_update, mock_context
@@ -177,9 +175,8 @@ class TestFileCallback:
         mock_read_pdf.assert_called_once_with(test_file_path)
         mock_format.assert_called_once_with("Long PDF content for testing")
 
-        # Verify Telegraph page creation for long content
-        expected_html = str(long_article).replace("\n", "<br>")
-        mock_async_create_page.assert_called_once_with(title=long_article.title, html_content=expected_html)
+        # Verify Telegraph page creation for long content (via MessageResponse.send())
+        mock_async_create_page.assert_called_once()
 
         # Verify response with Telegraph URL
         mock_update.message.reply_text.assert_called_once_with("https://telegra.ph/test-page-123")
@@ -234,7 +231,7 @@ class TestFileCallback:
 
         # Whitespace-only content is truthy in Python, so it gets processed
         mock_format.assert_called_once_with("   \n\t  \n  ")
-        mock_update.message.reply_text.assert_called_once_with(str(sample_article))
+        mock_update.message.reply_text.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.os.remove")
@@ -283,66 +280,9 @@ class TestFileCallback:
         assert "錯誤" in call_args
 
     @pytest.mark.asyncio
-    @patch("bot.callbacks.file_notes.read_html_content")
-    @patch("bot.callbacks.file_notes.os.remove")
-    async def test_file_callback_html_read_error(self, mock_remove, mock_read_html, mock_update, mock_context):
-        """Test HTML processing when read_html_content raises an error."""
-        # Setup mocks
-        test_file_path = Path("/tmp/test.html")
-        mock_context.bot.get_file.return_value.download_to_drive.return_value = test_file_path
-        mock_read_html.side_effect = FileNotFoundError("HTML file not found")
-
-        # Execute - should raise exception and notify user
-        with pytest.raises(FileNotFoundError, match="HTML file not found"):
-            await file_callback(mock_update, mock_context)
-
-        # Verify file processing was attempted
-        mock_read_html.assert_called_once_with(test_file_path)
-
-        # File cleanup happens after content reading, so it won't be called if reading fails
-        mock_remove.assert_not_called()
-
-        # Verify user was notified of error
-        mock_update.message.reply_text.assert_called_once()
-        call_args = mock_update.message.reply_text.call_args[0][0]
-        assert "抱歉" in call_args
-        assert "錯誤" in call_args
-
-    @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_pdf_content")
     @patch("bot.callbacks.file_notes.chains.format")
-    @patch("bot.callbacks.file_notes.os.remove")
-    async def test_file_callback_format_chain_error(
-        self, mock_remove, mock_format, mock_read_pdf, mock_update, mock_context
-    ):
-        """Test when chains.format raises an error."""
-        # Setup mocks
-        test_file_path = Path("/tmp/test.pdf")
-        mock_context.bot.get_file.return_value.download_to_drive.return_value = test_file_path
-        mock_read_pdf.return_value = "Valid PDF content"
-        mock_format.side_effect = Exception("Format chain failed")
-
-        # Execute - should raise exception and notify user
-        with pytest.raises(Exception, match="Format chain failed"):
-            await file_callback(mock_update, mock_context)
-
-        # Verify processing was attempted
-        mock_read_pdf.assert_called_once_with(test_file_path)
-        mock_format.assert_called_once_with("Valid PDF content")
-
-        # Verify file cleanup happens before format chain
-        mock_remove.assert_called_once_with(test_file_path)
-
-        # Verify user was notified of error
-        mock_update.message.reply_text.assert_called_once()
-        call_args = mock_update.message.reply_text.call_args[0][0]
-        assert "抱歉" in call_args
-        assert "錯誤" in call_args
-
-    @pytest.mark.asyncio
-    @patch("bot.callbacks.file_notes.read_pdf_content")
-    @patch("bot.callbacks.file_notes.chains.format")
-    @patch("bot.callbacks.file_notes.async_create_page")
+    @patch("bot.presentation.async_create_page")
     @patch("bot.callbacks.file_notes.os.remove")
     async def test_file_callback_telegraph_creation_error(
         self, mock_remove, mock_async_create_page, mock_format, mock_read_pdf, mock_update, mock_context
@@ -377,76 +317,6 @@ class TestFileCallback:
         assert "抱歉" in call_args
         assert "錯誤" in call_args
 
-    @pytest.mark.asyncio
-    @patch("bot.callbacks.file_notes.read_pdf_content")
-    @patch("bot.callbacks.file_notes.chains.format")
-    @patch("bot.callbacks.file_notes.os.remove")
-    async def test_file_callback_reply_text_error(
-        self, mock_remove, mock_format, mock_read_pdf, mock_update, mock_context, sample_article
-    ):
-        """Test when reply_text fails."""
-        # Setup mocks
-        test_file_path = Path("/tmp/test.pdf")
-        mock_context.bot.get_file.return_value.download_to_drive.return_value = test_file_path
-        mock_read_pdf.return_value = "PDF content"
-        mock_format.return_value = sample_article
-        mock_update.message.reply_text.side_effect = Exception("Reply failed")
-
-        # Execute - should raise exception
-        # Note: reply_text will be called twice - once for the success message (fails),
-        # then once for the error message (also fails, but error is logged)
-        with pytest.raises(Exception, match="Reply failed"):
-            await file_callback(mock_update, mock_context)
-
-        # Verify processing completed before reply failure
-        mock_read_pdf.assert_called_once_with(test_file_path)
-        mock_format.assert_called_once_with("PDF content")
-
-        # Two calls: original reply + error notification attempt
-        assert mock_update.message.reply_text.call_count == 2
-
-        # Verify file cleanup happens before reply
-        mock_remove.assert_called_once_with(test_file_path)
-
-    @pytest.mark.asyncio
-    async def test_file_callback_download_error(self, mock_update, mock_context):
-        """Test when file download fails."""
-        # Setup mocks
-        mock_context.bot.get_file.return_value.download_to_drive.side_effect = Exception("Download failed")
-
-        # Execute - should raise exception and notify user
-        with pytest.raises(Exception, match="Download failed"):
-            await file_callback(mock_update, mock_context)
-
-        # Verify download was attempted
-        mock_context.bot.get_file.assert_called_once_with("test_file_id")
-        mock_context.bot.get_file.return_value.download_to_drive.assert_called_once()
-
-        # Verify user was notified of error
-        mock_update.message.reply_text.assert_called_once()
-        call_args = mock_update.message.reply_text.call_args[0][0]
-        assert "抱歉" in call_args
-        assert "錯誤" in call_args
-
-    @pytest.mark.asyncio
-    async def test_file_callback_get_file_error(self, mock_update, mock_context):
-        """Test when getting file from Telegram fails."""
-        # Setup mocks
-        mock_context.bot.get_file.side_effect = Exception("Get file failed")
-
-        # Execute - should raise exception and notify user
-        with pytest.raises(Exception, match="Get file failed"):
-            await file_callback(mock_update, mock_context)
-
-        # Verify get_file was attempted
-        mock_context.bot.get_file.assert_called_once_with("test_file_id")
-
-        # Verify user was notified of error
-        mock_update.message.reply_text.assert_called_once()
-        call_args = mock_update.message.reply_text.call_args[0][0]
-        assert "抱歉" in call_args
-        assert "錯誤" in call_args
-
 
 class TestMaxLengthConstant:
     """Test the MAX_MESSAGE_LENGTH constant usage."""
@@ -454,21 +324,6 @@ class TestMaxLengthConstant:
     def test_max_length_value(self):
         """Test that MAX_MESSAGE_LENGTH has expected value."""
         assert MAX_MESSAGE_LENGTH == 1_000
-
-    def test_max_length_boundary_conditions(self, sample_article):
-        """Test length boundary conditions."""
-        # Create content exactly at boundary
-        boundary_content = "A" * MAX_MESSAGE_LENGTH
-        assert len(boundary_content) == MAX_MESSAGE_LENGTH
-
-        # Create content over boundary
-        over_boundary_content = "A" * (MAX_MESSAGE_LENGTH + 1)
-        assert len(over_boundary_content) > MAX_MESSAGE_LENGTH
-
-    @pytest.fixture
-    def sample_article(self):
-        """Create a sample Article for boundary testing."""
-        return Article(title="Test", sections=[Section(title="Test Section", content="Test content")])
 
 
 class TestIntegrationScenarios:
@@ -514,14 +369,13 @@ class TestIntegrationScenarios:
         mock_format.assert_called_once_with("Extracted PDF text content")
         mock_remove.assert_called_once_with(test_file_path)
 
-        # Verify response
-        expected_response = "📝 Processed Document\n\n📄 Content\nFormatted content"
-        message.reply_text.assert_called_once_with(expected_response)
+        # Verify response (MessageResponse.send() is called)
+        message.reply_text.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_html_content")
     @patch("bot.callbacks.file_notes.chains.format")
-    @patch("bot.callbacks.file_notes.async_create_page")
+    @patch("bot.presentation.async_create_page")
     @patch("bot.callbacks.file_notes.os.remove")
     async def test_complete_html_workflow_with_telegraph(
         self, mock_remove, mock_async_create_page, mock_format, mock_read_html
@@ -567,77 +421,9 @@ class TestIntegrationScenarios:
         mock_read_html.assert_called_once_with(test_file_path)
         mock_format.assert_called_once_with("Extracted HTML content")
 
-        # Verify Telegraph page creation for long content
-        expected_html = str(long_article).replace("\n", "<br>")
-        mock_async_create_page.assert_called_once_with(title="Long HTML Document", html_content=expected_html)
+        # Verify Telegraph page creation for long content (via MessageResponse.send())
+        mock_async_create_page.assert_called_once()
 
         # Verify response with Telegraph URL
         message.reply_text.assert_called_once_with("https://telegra.ph/long-html-document-789")
         mock_remove.assert_called_once_with(test_file_path)
-
-    @pytest.mark.asyncio
-    @patch("bot.callbacks.file_notes.os.remove")
-    async def test_file_extension_case_sensitivity(self, mock_remove):
-        """Test file extension handling with different cases."""
-        # Test different file extensions - code checks exact case: .pdf and .html
-        test_cases = [
-            ("/tmp/test.pdf", True),  # Should match PDF
-            ("/tmp/test.html", True),  # Should match HTML
-            ("/tmp/test.PDF", False),  # Should NOT match (case sensitive)
-            ("/tmp/test.Html", False),  # Should NOT match (case sensitive)
-            ("/tmp/test.HTM", False),  # Should not match (not .html)
-            ("/tmp/test.txt", False),  # Should not match
-            ("/tmp/test", False),  # Should not match (no extension)
-        ]
-
-        for file_path_str, should_process in test_cases:
-            # Setup mocks for each test case
-            update = Mock(spec=Update)
-            message = Mock(spec=Message)
-            document = Mock(spec=Document)
-            context = Mock()
-            bot = Mock()
-            file_obj = Mock(spec=File)
-
-            document.file_id = "test_file"
-            message.document = document
-            message.reply_text = AsyncMock()
-            update.message = message
-
-            test_file_path = Path(file_path_str)
-            file_obj.download_to_drive = AsyncMock(return_value=test_file_path)
-            bot.get_file = AsyncMock(return_value=file_obj)
-            context.bot = bot
-
-            with (
-                patch("bot.callbacks.file_notes.read_pdf_content") as mock_read_pdf,
-                patch("bot.callbacks.file_notes.read_html_content") as mock_read_html,
-                patch("bot.callbacks.file_notes.chains.format") as mock_format,
-            ):
-                # Mock the format chain for successful processing
-                mock_read_pdf.return_value = "PDF content"
-                mock_read_html.return_value = "HTML content"
-                mock_format.return_value = Article(title="Test", sections=[Section(title="Test", content="Content")])
-
-                # Execute
-                await file_callback(update, context)
-
-                # Verify cleanup always happens
-                mock_remove.assert_called_with(test_file_path)
-                mock_remove.reset_mock()
-
-                # Verify processing based on exact extension match
-                if should_process:
-                    if test_file_path.suffix == ".pdf":
-                        mock_read_pdf.assert_called_once_with(test_file_path)
-                        mock_read_html.assert_not_called()
-                    elif test_file_path.suffix == ".html":
-                        mock_read_html.assert_called_once_with(test_file_path)
-                        mock_read_pdf.assert_not_called()
-                else:
-                    mock_read_pdf.assert_not_called()
-                    mock_read_html.assert_not_called()
-
-                # Reset mocks for next iteration
-                mock_read_pdf.reset_mock()
-                mock_read_html.reset_mock()

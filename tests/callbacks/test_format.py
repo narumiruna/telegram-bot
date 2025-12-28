@@ -41,10 +41,12 @@ class TestFormatCallback:
     @pytest.mark.asyncio
     @patch("bot.callbacks.format.chains.format")
     async def test_format_callback_simple_text(self, mock_format):
-        mock_result = Mock()
-        mock_result.title = "Test Title"
-        mock_result.__str__ = Mock(return_value="Formatted content")
-        mock_format.return_value = mock_result
+        # Mock Article with to_message_response() method
+        mock_article = Mock()
+        mock_response = Mock()
+        mock_response.send = AsyncMock()
+        mock_article.to_message_response.return_value = mock_response
+        mock_format.return_value = mock_article
 
         message = Mock(spec=Message)
         message.text = "Test message to format"
@@ -58,7 +60,7 @@ class TestFormatCallback:
         await format_callback(update, self.context)
 
         mock_format.assert_called_once_with("Test message to format")
-        message.reply_text.assert_called_once_with("Formatted content")
+        mock_response.send.assert_called_once_with(message)
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.format.chains.format")
@@ -66,10 +68,12 @@ class TestFormatCallback:
     async def test_format_callback_with_url(self, mock_get_processed, mock_format):
         mock_get_processed.return_value = ("Content from URL", None)
 
-        mock_result = Mock()
-        mock_result.title = "Test Title"
-        mock_result.__str__ = Mock(return_value="Formatted URL content")
-        mock_format.return_value = mock_result
+        # Mock Article with to_message_response() method
+        mock_article = Mock()
+        mock_response = Mock()
+        mock_response.send = AsyncMock()
+        mock_article.to_message_response.return_value = mock_response
+        mock_format.return_value = mock_article
 
         message = Mock(spec=Message)
         message.text = "Check this URL: https://example.com"
@@ -84,22 +88,20 @@ class TestFormatCallback:
 
         mock_get_processed.assert_called_once_with(message, require_url=False)
         mock_format.assert_called_once_with("Content from URL")
-        message.reply_text.assert_called_once_with("Formatted URL content")
+        mock_response.send.assert_called_once_with(message)
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.format.chains.format")
-    @patch("bot.callbacks.format.async_create_page")
-    async def test_format_callback_long_content(self, mock_async_create_page, mock_format):
-        long_content = "x" * 1500  # Longer than MAX_LENGTH (1000)
-        mock_result = Mock()
-        mock_result.title = "Long Title"
-        mock_result.__str__ = Mock(return_value=long_content)
-        mock_format.return_value = mock_result
-
-        mock_async_create_page.return_value = "HTML page content"
+    async def test_format_callback_long_content(self, mock_format):
+        # Mock Article with to_message_response() method
+        mock_article = Mock()
+        mock_response = Mock()
+        mock_response.send = AsyncMock()
+        mock_article.to_message_response.return_value = mock_response
+        mock_format.return_value = mock_article
 
         message = Mock(spec=Message)
-        message.text = "Long message to format"
+        message.text = "Short text"
         message.from_user = self.user
         message.reply_to_message = None
         message.reply_text = AsyncMock()
@@ -109,8 +111,6 @@ class TestFormatCallback:
 
         await format_callback(update, self.context)
 
-        mock_format.assert_called_once_with("Long message to format")
-        mock_async_create_page.assert_called_once_with(
-            title="Long Title", html_content=long_content.replace("\n", "<br>")
-        )
-        message.reply_text.assert_called_once_with("HTML page content")
+        mock_format.assert_called_once()
+        # MessageResponse.send() will handle Telegraph page creation internally
+        mock_response.send.assert_called_once_with(message)

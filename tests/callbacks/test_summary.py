@@ -7,7 +7,6 @@ from telegram import Chat
 from telegram import Message
 from telegram import Update
 from telegram import User
-from telegram.constants import ParseMode
 
 from bot.callbacks.summary import summarize_callback
 
@@ -60,8 +59,15 @@ class TestSummarizeCallback:
     @patch("bot.callbacks.summary.chains.summarize")
     @patch("bot.callbacks.summary.get_processed_message_text")
     async def test_summarize_callback_success(self, mock_get_processed, mock_summarize):
+        from bot.presentation import MessageResponse
+
         mock_get_processed.return_value = ("Content from URL to summarize", None)
-        mock_summarize.return_value = "This is a summary of the content"
+
+        # Mock MessageResponse
+        mock_response = Mock(spec=MessageResponse)
+        mock_response.content = "This is a summary of the content"
+        mock_response.send = AsyncMock()
+        mock_summarize.return_value = mock_response
 
         message = Mock(spec=Message)
         message.text = "Summarize this: https://example.com"
@@ -76,9 +82,7 @@ class TestSummarizeCallback:
 
         mock_get_processed.assert_called_once_with(message, require_url=True)
         mock_summarize.assert_called_once_with("Content from URL to summarize")
-        message.reply_text.assert_called_once_with(
-            "This is a summary of the content", parse_mode=ParseMode.HTML, disable_web_page_preview=True
-        )
+        mock_response.send.assert_called_once_with(message)
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.summary.get_processed_message_text")

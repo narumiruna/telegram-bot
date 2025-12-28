@@ -7,6 +7,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 from ..lazy import lazy_run
+from ..presentation import MessageResponse
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
 
@@ -27,6 +28,18 @@ class Article(BaseModel):
         lines = [f"📝 {self.title}"]
         lines += [str(section) for section in self.sections]
         return "\n\n".join(lines)
+
+    def to_message_response(self) -> MessageResponse:
+        """Convert article to a MessageResponse for sending.
+
+        Returns:
+            MessageResponse ready to be sent to Telegram
+        """
+        return MessageResponse(
+            content=str(self),
+            title=self.title,
+            parse_mode=None,  # Plain text
+        )
 
 
 async def _format(text: str, lang: str = "台灣中文") -> Article:

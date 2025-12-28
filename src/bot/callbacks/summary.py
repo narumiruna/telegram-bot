@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from loguru import logger
 from telegram import Update
-from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from .. import chains
@@ -23,7 +22,7 @@ async def summarize_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if not text:
         return
 
-    result = await chains.summarize(text)
+    response = await chains.summarize(text)
 
-    logger.info("Summarized text: {text}", text=result)
-    await message.reply_text(result, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+    logger.info("Summarized text: {text}", text=response.content)
+    await response.send(message)

@@ -5,8 +5,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from .. import chains
-from ..constants import MAX_MESSAGE_LENGTH
-from ..utils import async_create_page
+from ..presentation import MessageResponse
 from .base import BaseCallback
 from .utils import get_processed_message_text
 from .utils import safe_callback
@@ -29,9 +28,12 @@ class TranslationCallback(BaseCallback):
         if not message_text:
             return
 
-        reply_text = await chains.translate(message_text, lang=self.lang)
-        logger.info("Translated text to {lang}: {text}", lang=self.lang, text=reply_text)
+        translated_text = await chains.translate(message_text, lang=self.lang)
+        logger.info("Translated text to {lang}: {text}", lang=self.lang, text=translated_text)
 
-        if len(reply_text) > MAX_MESSAGE_LENGTH:
-            reply_text = await async_create_page(title="Translation", html_content=reply_text.replace("\n", "<br>"))
-        await message.reply_text(reply_text)
+        response = MessageResponse(
+            content=translated_text,
+            title="Translation",
+            parse_mode=None,  # Plain text
+        )
+        await response.send(message)
