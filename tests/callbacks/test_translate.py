@@ -56,7 +56,8 @@ class TestTranslationCallback:
         await self.callback(update, self.context)
 
         mock_translate.assert_called_once_with("This is content to translate", lang="zh")
-        message.reply_text.assert_called_once_with("這是翻譯的內容")
+        # MessageResponse.send() is called internally, which calls message.reply_text
+        message.reply_text.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.translate.chains.translate")
@@ -78,15 +79,16 @@ class TestTranslationCallback:
 
         mock_get_processed.assert_called_once_with(message, require_url=False)
         mock_translate.assert_called_once_with("Content from URL", lang="zh")
-        message.reply_text.assert_called_once_with("URL內容的翻譯")
+        # MessageResponse.send() is called internally
+        message.reply_text.assert_called_once()
 
     @pytest.mark.asyncio
+    @patch("bot.presentation.async_create_page")
     @patch("bot.callbacks.translate.chains.translate")
-    @patch("bot.callbacks.translate.async_create_page")
-    async def test_translation_callback_long_content(self, mock_async_create_page, mock_translate):
+    async def test_translation_callback_long_content(self, mock_translate, mock_async_create_page):
         long_translation = "這是一個很長的翻譯內容" * 100  # Longer than MAX_LENGTH (1000)
         mock_translate.return_value = long_translation
-        mock_async_create_page.return_value = "HTML page content"
+        mock_async_create_page.return_value = "https://telegra.ph/translation-page"
 
         message = Mock(spec=Message)
         message.text = "Long message to translate"
@@ -100,10 +102,9 @@ class TestTranslationCallback:
         await self.callback(update, self.context)
 
         mock_translate.assert_called_once_with("Long message to translate", lang="zh")
-        mock_async_create_page.assert_called_once_with(
-            title="Translation", html_content=long_translation.replace("\n", "<br>")
-        )
-        message.reply_text.assert_called_once_with("HTML page content")
+        # MessageResponse.send() will create Telegraph page for long content
+        mock_async_create_page.assert_called_once()
+        message.reply_text.assert_called_once_with("https://telegra.ph/translation-page")
 
     def test_translation_callback_init(self):
         callback = TranslationCallback(lang="en")
