@@ -28,13 +28,14 @@ class Rate(BaseModel):
     @field_validator("time")
     @classmethod
     def validate_time(cls, v: int | datetime) -> datetime:
-        if isinstance(v, datetime):
-            return v
-        elif isinstance(v, int):
-            return datetime.fromtimestamp(v // 1000)
-        else:
-            msg = f"invalid time: {v}"
-            raise TypeError(msg)
+        match v:
+            case datetime():
+                return v
+            case int():
+                return datetime.fromtimestamp(v // 1000)
+            case _:
+                msg = f"invalid time: {v}"
+                raise TypeError(msg)
 
     def __str__(self) -> str:
         time_str = self.time.astimezone(ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%d %H:%M:%S")

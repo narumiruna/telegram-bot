@@ -25,11 +25,13 @@ async def file_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     new_file = await context.bot.get_file(document.file_id)
     file_path = await new_file.download_to_drive()
 
-    text = None
-    if file_path.suffix == ".pdf":
-        text = read_pdf_content(file_path)
-    elif file_path.suffix == ".html":
-        text = read_html_content(file_path)
+    match file_path.suffix:
+        case ".pdf":
+            text = read_pdf_content(file_path)
+        case ".html":
+            text = read_html_content(file_path)
+        case _:
+            text = None
 
     os.remove(file_path)
 

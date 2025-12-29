@@ -291,9 +291,8 @@ This repository maintains several documentation files for different purposes:
 **Target audience**: Maintainers planning refactoring work, contributors understanding architectural decisions
 
 **Status tracking**:
-- ✅ Completed (8/10): Issues #1 (URL loading), #2 (Cache TTL), #3 (Error handling), #4 (Callback unification), #6 (Presentation layer), #7 (Constants), #8 (MCP timeout), #9 (Async optimization)
+- ✅ Completed (9/10): Issues #1 (URL loading), #2 (Cache TTL), #3 (Error handling), #4 (Callback unification), #6 (Presentation layer), #7 (Constants), #8 (MCP timeout), #9 (Async optimization), #10 (Code quality - match-case)
 - 🔕 Deferred: Issue #5 (Test coverage for unused chains)
-- ⬜ Pending: Issue #10 (Code quality improvements)
 
 **Note**: All issue details, including comprehensive documentation for significant changes like Issue #4, are maintained within IMPROVEMENTS.md to keep all improvement-related information centralized.
 
