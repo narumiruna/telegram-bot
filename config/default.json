@@ -15,5 +15,9 @@
   "yfmcp": {
     "command": "uvx",
     "args": ["yfmcp@latest"]
+  },
+  "gurume": {
+      "command": "uvx",
+      "args": ["gurume@latest", "mcp"]
   }
 }
