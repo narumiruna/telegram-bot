@@ -226,16 +226,14 @@ This project maintains comprehensive documentation for different audiences:
   - Callback patterns and conventions
   - Environment requirements
   - CI/CD pipelines
-
-- **[IMPROVEMENTS.md](IMPROVEMENTS.md)** - Architecture improvements tracking
-  - Completed improvements (10/10 - 100%)
-  - Implementation details and rationale
-  - Progress tracking and statistics
+  - Completed architecture improvements (10/10 - 100%)
 
 - **README.md** (this file) - Public-facing project documentation
   - Quick start guide
   - Features overview
   - Basic usage instructions
+
+**Note**: Detailed implementation history and architecture improvement details are available in git commit logs and CLAUDE.md.
 
 ## Development
 

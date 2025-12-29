@@ -274,29 +274,21 @@ This repository maintains several documentation files for different purposes:
 
 **Target audience**: AI assistants (Claude Code, GitHub Copilot), new developers
 
-### IMPROVEMENTS.md
-**Purpose**: Architecture analysis and improvement roadmap
+### Architecture Improvements
 
-**Contents**:
-- Identified issues prioritized by severity (🔴 Critical, ⚠️ Important, 💡 Nice-to-have)
-- Completed improvements with implementation details
-- Suggested solutions and approaches
-- Implementation phases and progress tracking
+**Completed improvements (10/10 - 100%)**:
+- ✅ #1: URL loading - Extracted common logic to `get_processed_message_text()` helper
+- ✅ #2: Cache TTL - Set 1-week TTL to prevent unbounded growth
+- ✅ #3: Error handling - Created `@safe_callback` decorator for unified error handling
+- ✅ #4: Callback unification - Established `CallbackProtocol` and `BaseCallback`
+- ✅ #5: Test coverage - Improved from 60% to 80% (+38 tests, 3 new test files)
+- ✅ #6: Presentation layer - Created `MessageResponse` for UI separation
+- ✅ #7: Constants - Centralized constants in `constants.py`
+- ✅ #8: MCP timeout - Added 30s connect / 10s cleanup timeouts
+- ✅ #9: Async optimization - Eliminated event loop blocking
+- ✅ #10: Code quality - Adopted `match-case` pattern matching
 
-**Key sections**:
-- Issue #1-#10: Detailed problem analysis and solutions
-- Change log: Records of completed improvements with dates
-- Statistics: Impact metrics (lines changed, tests added, etc.)
-
-**Target audience**: Maintainers planning refactoring work, contributors understanding architectural decisions
-
-**Status tracking**:
-- ✅ Completed (10/10 - 100%): All improvement issues completed
-  - #1: URL loading, #2: Cache TTL, #3: Error handling, #4: Callback unification
-  - #5: Test coverage (60% → 80%), #6: Presentation layer, #7: Constants
-  - #8: MCP timeout, #9: Async optimization, #10: Code quality (match-case)
-
-**Note**: All issue details, including comprehensive documentation for significant changes like Issue #4, are maintained within IMPROVEMENTS.md to keep all improvement-related information centralized.
+**Note**: Detailed implementation history is available in git commit logs.
 
 ### README.md
 **Purpose**: Public-facing project documentation
@@ -326,5 +318,4 @@ This repository maintains several documentation files for different purposes:
 - Keep code compatible with Python 3.12+.
 - Use `make format` (ruff) before committing formatting changes.
 - Use `make lint`, `make type`, and focused `uv run pytest ...` runs to validate changes.
-- **Before implementing new features or refactoring**, check `IMPROVEMENTS.md` to see if there's a planned approach
-- **When completing items from IMPROVEMENTS.md**, update the status and add a detailed change log entry
+- Follow the established architecture patterns documented in this file (callbacks, presentation layer, error handling, etc.)
