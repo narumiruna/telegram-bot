@@ -119,6 +119,37 @@ This codebase uses a **hybrid callback architecture** that supports both functio
 - `get_message_text()` - Extracts raw text from messages
 - `strip_command()` - Removes command prefix from message text
 
+**Message Response Pattern** (`presentation.py`):
+
+All callbacks should use `MessageResponse` for sending replies to ensure consistent handling of long messages:
+
+```python
+from src.bot.presentation import MessageResponse
+
+# Create a response
+response = MessageResponse(
+    content="Your message content here",
+    title="Optional Title",  # Used for Telegraph pages
+    parse_mode="HTML"  # or None for plain text
+)
+
+# Send the response (automatically handles long messages)
+await response.send(message)
+```
+
+**How it works**:
+- Short messages (< 1000 chars): Sent directly via Telegram
+- Long messages (≥ 1000 chars): Automatically creates a Telegraph page and sends the link
+
+**When to use**:
+- ✅ All user-facing text responses from callbacks
+- ✅ LLM-generated content that might exceed Telegram's limits
+- ✅ Formatted articles, summaries, translations
+
+**Chain integration**:
+- Chains should provide `.to_message_response()` methods that return `MessageResponse` instances
+- Examples: `Summary.to_message_response()`, `Article.to_message_response()`
+
 **Tools and Chains**:
 - `tools/` - Utility functions for specific data sources:
   - `yahoo_finance.py` - Stock market data
@@ -260,8 +291,9 @@ This repository maintains several documentation files for different purposes:
 **Target audience**: Maintainers planning refactoring work, contributors understanding architectural decisions
 
 **Status tracking**:
-- ✅ Completed: Issues #1 (URL loading), #2 (Cache TTL), #3 (Error handling), #4 (Callback unification), #7 (Constants), #9 (Async optimization)
-- ⬜ Pending: Issues #5 (Test coverage), #6 (Presentation layer), #8 (MCP timeout), #10 (Code quality)
+- ✅ Completed (8/10): Issues #1 (URL loading), #2 (Cache TTL), #3 (Error handling), #4 (Callback unification), #6 (Presentation layer), #7 (Constants), #8 (MCP timeout), #9 (Async optimization)
+- 🔕 Deferred: Issue #5 (Test coverage for unused chains)
+- ⬜ Pending: Issue #10 (Code quality improvements)
 
 **Note**: All issue details, including comprehensive documentation for significant changes like Issue #4, are maintained within IMPROVEMENTS.md to keep all improvement-related information centralized.
 
