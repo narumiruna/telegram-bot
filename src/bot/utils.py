@@ -18,6 +18,7 @@ from kabigon import FirecrawlLoader
 from kabigon import PDFLoader
 from kabigon import PlaywrightLoader
 from kabigon import PttLoader
+from kabigon import RedditLoader
 from kabigon import ReelLoader
 from kabigon import TwitterLoader
 from kabigon import YoutubeLoader
@@ -96,6 +97,7 @@ def get_composed_loader() -> Compose:
         [
             PttLoader(),
             TwitterLoader(),
+            RedditLoader(),
             YoutubeLoader(),
             ReelLoader(),
             YoutubeYtdlpLoader(),
