@@ -35,10 +35,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Configuration**: `-c/--config` points to an MCP server config JSON file (see `AgentCallback.load_mcp_config`).
 
-The file must be a JSON object mapping server name to stdio server parameters, e.g.:
+The file must be a JSON object mapping server name to stdio server parameters. The default configuration (`config/default.json`) includes:
 
 ```json
 {
+  "playwright": {
+    "command": "npx",
+    "args": ["@playwright/mcp@latest"]
+  },
   "firecrawl-mcp": {
     "command": "npx",
     "args": ["-y", "firecrawl-mcp"],
@@ -47,19 +51,24 @@ The file must be a JSON object mapping server name to stdio server parameters, e
   "yfmcp": {
     "command": "uvx",
     "args": ["yfmcp@latest"]
+  },
+  "gurume": {
+    "command": "uvx",
+    "args": ["gurume@latest", "mcp"]
   }
 }
 ```
 
 If a value in `env` is the empty string (`""`), the bot will replace it with the corresponding environment variable at runtime.
 
-Note: `config/triage.json` exists but is not consumed by the current runtime path in `src/bot/bot.py`.
+**Note**: `config/triage.json` exists but is not loaded by default—you must explicitly specify it with `--config config/triage.json` to use it.
 
 **Callbacks Structure**:
-- `callbacks/` - Individual command handlers (format, translate, summarize, ticker, etc.)
+- `callbacks/` - Individual command handlers (format, translate, summarize, ticker, file_notes, etc.)
 - `callbacks/base.py` - Unified callback architecture (CallbackProtocol, BaseCallback)
 - `callbacks/agent.py` - Main agent callback using OpenAI models with MCP tools
 - `callbacks/utils.py` - Shared utilities (safe_callback decorator, message processing)
+- `callbacks/file_notes.py` - File upload handler for PDFs and HTML
 - Each callback handles specific Telegram commands and message processing
 
 **Callback Architecture** (unified as of 2025-12-27):
@@ -163,15 +172,13 @@ await response.send(message)
   - `content_extractor.py` - Web content extraction
   - `datetime.py` - Time utilities
 
+**File Processing**:
+- `file_callback` (in `callbacks/__init__.py`) - Handles uploaded files (PDFs, HTML) and extracts content for processing
+
 - `chains/` - LLM-powered processing chains:
   - `translation.py` - Multi-language translation
   - `summary.py` - Text summarization
-  - `jlpt/` - Japanese language learning system
   - `formatter.py` - Content formatting
-  - `polisher.py` - Text improvement
-  - `recipe.py` - Recipe generation
-  - `product.py` - Product analysis
-  - `keyword.py` - Keyword extraction
   - `notes.py` - Note processing
 
 **Key Integration Points**:
