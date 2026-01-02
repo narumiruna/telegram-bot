@@ -196,7 +196,6 @@ dependencies = [
     { name = "duckduckgo-search" },
     { name = "firecrawl-py" },
     { name = "httpx" },
-    { name = "kabigon" },
     { name = "logfire", extra = ["httpx", "redis", "requests"] },
     { name = "loguru" },
     { name = "lxml" },
@@ -216,6 +215,7 @@ dependencies = [
     { name = "tenacity" },
     { name = "tripplus" },
     { name = "twse" },
+    { name = "typer" },
     { name = "typer-slim" },
     { name = "yfinance" },
     { name = "youtube-search" },
@@ -244,7 +244,6 @@ requires-dist = [
     { name = "duckduckgo-search", specifier = ">=7.5.1" },
     { name = "firecrawl-py", specifier = ">=4.6.0" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "kabigon", specifier = ">=0.9.3" },
     { name = "logfire", extras = ["httpx", "redis", "requests"], specifier = ">=3.22.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "lxml", specifier = ">=5.3.0" },
@@ -264,6 +263,7 @@ requires-dist = [
     { name = "tenacity", specifier = ">=9.1.2" },
     { name = "tripplus", git = "https://github.com/narumiruna/tripplus.git" },
     { name = "twse", specifier = ">=0.3.3" },
+    { name = "typer", specifier = ">=0.21.0" },
     { name = "typer-slim", specifier = ">=0.21.0" },
     { name = "yfinance", specifier = ">=0.2.59" },
     { name = "youtube-search", specifier = ">=2.1.2" },
@@ -1175,28 +1175,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/19/74/a633ee74eb36c44aa6d1095e7cc5569bebf04342ee146178e2d36600708b/jsonschema_specifications-2025.9.1.tar.gz", hash = "sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d", size = 32855, upload-time = "2025-09-08T01:34:59.186Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl", hash = "sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe", size = 18437, upload-time = "2025-09-08T01:34:57.871Z" },
-]
-
-[[package]]
-name = "kabigon"
-version = "0.9.4"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "aioytt" },
-    { name = "firecrawl-py" },
-    { name = "httpx" },
-    { name = "loguru" },
-    { name = "markdownify" },
-    { name = "openai-whisper" },
-    { name = "playwright" },
-    { name = "pypdf" },
-    { name = "rich" },
-    { name = "typer" },
-    { name = "youtube-transcript-api" },
-    { name = "yt-dlp" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2a/4e/9e085be3601448e28119f6bf3d505da6d236e1cf50504f64ea607dd273cd/kabigon-0.9.4-py3-none-any.whl", hash = "sha256:e2a314bec40b3f1ccf3981c42d51a66bccb29d25c142db74a858115fe05e939a", size = 10806, upload-time = "2025-10-29T18:18:34.941Z" },
 ]
 
 [[package]]
