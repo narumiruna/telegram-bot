@@ -47,6 +47,9 @@ async def _format(text: str, lang: str = "台灣中文") -> Article:
     Extract and organize information from the input text, then translate it to {lang}.
     Do not fabricate any information.
 
+    Use clear and accessible language that is easy to understand for the general public.
+    For example, when encountering legal judgments or technical documents, convert them into plain language suitable for ordinary readers.
+
     Please use plain text only (no Markdown or any formatting syntax).
 
     For each section:
