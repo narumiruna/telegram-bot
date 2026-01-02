@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import os
 
-from telegram import Update
-from telegram.ext import ContextTypes
-
 from kabigon.pdf import read_pdf_content
 from kabigon.utils import read_html_content
+from telegram import Update
+from telegram.ext import ContextTypes
 
 from .. import chains
 from .utils import safe_callback
