@@ -164,7 +164,7 @@ class TestGetProcessedMessageText:
         assert error is None
 
     @pytest.mark.asyncio
-    @patch("bot.callbacks.utils.async_load_url")
+    @patch("bot.callbacks.utils.load_url")
     @patch("bot.callbacks.utils.parse_url")
     async def test_url_loading_success(self, mock_parse_url, mock_load_url):
         mock_parse_url.return_value = "https://example.com"
@@ -180,7 +180,7 @@ class TestGetProcessedMessageText:
         mock_load_url.assert_called_once_with("https://example.com")
 
     @pytest.mark.asyncio
-    @patch("bot.callbacks.utils.async_load_url")
+    @patch("bot.callbacks.utils.load_url")
     @patch("bot.callbacks.utils.parse_url")
     async def test_url_loading_failure(self, mock_parse_url, mock_load_url):
         mock_parse_url.return_value = "https://example.com"
@@ -195,7 +195,7 @@ class TestGetProcessedMessageText:
         assert error == "Failed to load URL: https://example.com"
 
     @pytest.mark.asyncio
-    @patch("bot.callbacks.utils.async_load_url")
+    @patch("bot.callbacks.utils.load_url")
     @patch("bot.callbacks.utils.parse_url")
     async def test_require_url_with_url_success(self, mock_parse_url, mock_load_url):
         mock_parse_url.return_value = "https://example.com"

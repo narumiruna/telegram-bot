@@ -240,15 +240,15 @@ class TestAgentCallback:
         mock_server2.cleanup.assert_called_once()
 
     @patch("bot.callbacks.agent.get_cache_from_env")
-    @patch("bot.callbacks.agent.async_load_url")
+    @patch("bot.callbacks.agent.load_url")
     @patch("bot.callbacks.agent.parse_url")
-    async def test_load_url_content_with_url(self, mock_parse_url, mock_async_load_url, mock_get_cache):
+    async def test_load_url_content_with_url(self, mock_parse_url, mock_load_url, mock_get_cache):
         """Test loading URL content when URL is present"""
         mock_agent = Mock()
         mock_cache = Mock()
         mock_get_cache.return_value = mock_cache
         mock_parse_url.return_value = "https://example.com"
-        mock_async_load_url.return_value = "URL content here"
+        mock_load_url.return_value = "URL content here"
 
         callback = AgentCallback(mock_agent)
 
@@ -260,7 +260,7 @@ class TestAgentCallback:
             "\nURL content here\n'''\n[END of URL content]\n"
         )
         assert result == expected
-        mock_async_load_url.assert_called_once_with("https://example.com")
+        mock_load_url.assert_called_once_with("https://example.com")
 
     @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.parse_url")
