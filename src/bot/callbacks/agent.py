@@ -28,8 +28,8 @@ from ..model import get_openai_model
 from ..model import get_openai_model_settings
 from ..retry_utils import is_retryable_error
 from ..tools import query_rate_history
-from ..utils import async_load_url
 from ..utils import load_json
+from ..utils import load_url
 from ..utils import parse_url
 from .utils import get_message_text
 from .utils import safe_callback
@@ -292,7 +292,7 @@ class AgentCallback:
         Raises:
             Exception: If all retry attempts fail
         """
-        return await async_load_url(url)
+        return await load_url(url)
 
     async def load_url_content(self, message_text: str) -> str:
         """Load URL content from message text if URL is present.

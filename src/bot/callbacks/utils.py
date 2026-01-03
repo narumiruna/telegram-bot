@@ -3,7 +3,7 @@ from functools import wraps
 from loguru import logger
 from telegram import Message
 
-from ..utils import async_load_url
+from ..utils import load_url
 from ..utils import parse_url
 
 
@@ -109,7 +109,7 @@ async def get_processed_message_text(
     # 嘗試載入 URL
     logger.info("Parsed URL: {url}", url=url)
     try:
-        content = await async_load_url(url)
+        content = await load_url(url)
         return content, None
     except Exception as e:
         error_msg = f"Failed to load URL: {url}"

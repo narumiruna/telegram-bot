@@ -108,10 +108,10 @@ def get_composed_loader() -> Compose:
     )
 
 
-async def async_load_url(url: str) -> str:
+async def load_url(url: str) -> str:
     with logfire.span("load_url"):
         loader = get_composed_loader()
-        return await loader.async_load(url)
+        return await loader.load(url)
 
 
 def logfire_is_enabled() -> bool:
