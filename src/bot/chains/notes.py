@@ -5,7 +5,9 @@ from typing import cast
 from loguru import logger
 from pydantic import BaseModel
 
+from ..core.prompting import PromptSpec
 from ..lazy import lazy_run
+from .instructions import BASE_INSTRUCTIONS
 from .utils import chunk_on_delimiter
 
 
@@ -47,34 +49,68 @@ class ResearchReport(BaseModel):
         return "\n\n".join(lines)
 
 
+EXTRACT_NOTES_PROMPT = PromptSpec(
+    id="extract_notes",
+    version=1,
+    name="extract_notes",
+    input_template="""
+As a research assistant, analyze the provided text and organize it into a structured research report in {lang}.
+
+Guidelines:
+- Extract only factual information present in the text
+- Do not add speculative or interpretive content
+- Format with clear sections and logical flow
+- If information is unknown or uncertain, use empty strings or empty lists instead of fabricating facts
+
+Please create a research report with:
+1. A descriptive title that captures the main subject
+2. A brief abstract summarizing key points
+3. An introduction explaining the context and purpose
+4. A methodology section describing approaches or methods used
+5. Key highlights or findings (as bullet points)
+6. Causal relationships identified in the text (cause -> effect format)
+7. A conclusion summarizing implications and importance
+
+Input text:
+```
+{text}
+```
+""",
+    output_type=ResearchReport,
+)
+
+CHUNK_NOTES_PROMPT = PromptSpec(
+    id="create_notes_from_chunk",
+    version=1,
+    name="create_notes_from_chunk",
+    input_template="""
+You are a researcher adept at creating concise, well-structured study notes.
+Your goal is to create a study notes based on the text below
+in a clear, step-by-step manner while maintaining accuracy and neutrality.
+Please adhere to the following guidelines:
+
+- Thoroughly read the text provided.
+- Generate study notes that organize the information in a logical structure.
+- Use neutral, factual language.
+- Do not add, infer, or fabricate any details—only use what the text explicitly states.
+- Keep the notes concise yet comprehensive.
+- Maintain a clear, step-by-step approach throughout the notes.
+
+Text:
+```
+{text}
+```
+""",
+)
+
+
 async def extract_notes(text: str, lang: str = "台灣中文") -> ResearchReport:
-    prompt = f"""
-    As a research assistant, analyze the provided text and organize it into a structured research report in {lang}.
-
-    Guidelines:
-    - Extract only factual information present in the text
-    - Do not add speculative or interpretive content
-    - Format with clear sections and logical flow
-    - If information is unknown or uncertain, use empty strings or empty lists instead of fabricating facts
-
-    Please create a research report with:
-    1. A descriptive title that captures the main subject
-    2. A brief abstract summarizing key points
-    3. An introduction explaining the context and purpose
-    4. A methodology section describing approaches or methods used
-    5. Key highlights or findings (as bullet points)
-    6. Causal relationships identified in the text (cause -> effect format)
-    7. A conclusion summarizing implications and importance
-
-    Input text:
-    ```
-    {text}
-    ```
-    """.strip()  # noqa: E501
     response = cast(
         ResearchReport,
         await lazy_run(
-            input=dedent(prompt),
+            input=dedent(EXTRACT_NOTES_PROMPT.render_input(text=text, lang=lang)),
+            instructions=EXTRACT_NOTES_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang),
+            name=EXTRACT_NOTES_PROMPT.name or "lazy_run",
             output_type=ResearchReport,
         ),
     )
@@ -84,22 +120,15 @@ async def extract_notes(text: str, lang: str = "台灣中文") -> ResearchReport
 
 
 async def create_notes_from_chunk(text: str) -> str:
-    prompt = dedent(f"""
-    You are a researcher adept at creating concise, well-structured study notes. Your goal is to create a study notes based on the text below in a clear, step-by-step manner while maintaining accuracy and neutrality. Please adhere to the following guidelines:
-
-    - Thoroughly read the text provided.
-    - Generate study notes that organize the information in a logical structure.
-    - Use neutral, factual language.
-    - Do not add, infer, or fabricate any details—only use what the text explicitly states.
-    - Keep the notes concise yet comprehensive.
-    - Maintain a clear, step-by-step approach throughout the notes.
-
-    Text:
-    ```
-    {text}
-    ```
-    """).strip()  # noqa
-    result = cast(str, await lazy_run(prompt))
+    prompt = dedent(CHUNK_NOTES_PROMPT.render_input(text=text))
+    result = cast(
+        str,
+        await lazy_run(
+            prompt,
+            instructions=CHUNK_NOTES_PROMPT.render_instructions(BASE_INSTRUCTIONS),
+            name=CHUNK_NOTES_PROMPT.name or "lazy_run",
+        ),
+    )
     return result
 
 
