@@ -1,34 +1,67 @@
 import inspect
 from typing import cast
 
+from ..core.prompting import PromptSpec
 from ..lazy import lazy_run
+from .instructions import BASE_INSTRUCTIONS
+
+TRANSLATE_TO_TAIWANESE_PROMPT = PromptSpec(
+    id="translate_to_taiwanese",
+    version=1,
+    name="translate_to_taiwanese",
+    input_template="""
+你是翻譯專家，你會適當的保留專有名詞，並確保翻譯的準確性。將以下的文字翻譯成台灣繁體中文：
+
+{text}
+""",
+)
+
+TRANSLATE_PROMPT = PromptSpec(
+    id="translate",
+    version=1,
+    name="translate",
+    input_template='"""{text}"""',
+    instructions_template="Translate the text delimited by triple quotation marks into {lang}.",
+)
+
+TRANSLATE_AND_EXPLAIN_PROMPT = PromptSpec(
+    id="translate_and_explain",
+    version=1,
+    name="translate_and_explain",
+    input_template='"""{text}"""',
+    instructions_template=(
+        "Translate the text delimited by triple quotation marks into {lang}, "
+        "and provide a concise explanation of grammar and usage in {lang}, "
+        "along with example sentences to enhance understanding."
+    ),
+)
 
 
 async def translate_to_taiwanese(text: str) -> str:
-    prompt = f"""
-    你是翻譯專家，你會適當的保留專有名詞，並確保翻譯的準確性。將以下的文字翻譯成台灣繁體中文：
-
-    {text}
-    """
-    return await lazy_run(inspect.cleandoc(prompt))
+    prompt = TRANSLATE_TO_TAIWANESE_PROMPT.render_input(text=text)
+    return await lazy_run(
+        inspect.cleandoc(prompt),
+        instructions=TRANSLATE_TO_TAIWANESE_PROMPT.render_instructions(BASE_INSTRUCTIONS),
+        name=TRANSLATE_TO_TAIWANESE_PROMPT.name or "lazy_run",
+    )
 
 
 async def translate(text: str, lang: str) -> str:
-    user_prompt = f'"""{text}"""'
-
-    system_prompt = f"""
-    Translate the text delimited by triple quotation marks into {lang}.
-    """.strip()
-    result = await lazy_run(user_prompt, instructions=system_prompt)
+    user_prompt = TRANSLATE_PROMPT.render_input(text=text)
+    instructions = TRANSLATE_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang)
+    result = await lazy_run(user_prompt, instructions=instructions, name=TRANSLATE_PROMPT.name or "lazy_run")
     return result.strip('"')
 
 
 async def translate_and_explain(text: str, lang: str) -> str:
-    user_prompt = f'"""{text}"""'
-
-    system_prompt = f"""
-    Translate the text delimited by triple quotation marks into {lang}, and provide a concise explanation of grammar and usage in {lang}, along with example sentences to enhance understanding."
-    """.strip()  # noqa
-
-    result = cast(str, await lazy_run(user_prompt, instructions=system_prompt))
+    user_prompt = TRANSLATE_AND_EXPLAIN_PROMPT.render_input(text=text)
+    instructions = TRANSLATE_AND_EXPLAIN_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang)
+    result = cast(
+        str,
+        await lazy_run(
+            user_prompt,
+            instructions=instructions,
+            name=TRANSLATE_AND_EXPLAIN_PROMPT.name or "lazy_run",
+        ),
+    )
     return result.strip('"')
