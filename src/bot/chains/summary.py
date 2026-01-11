@@ -4,17 +4,11 @@ import markdown2
 from pydantic import BaseModel
 from pydantic import Field
 
-from ..core.prompting import PromptSpec
 from ..lazy import lazy_run
 from ..presentation import MessageResponse
 from ..utils import async_create_page
-from .instructions import BASE_INSTRUCTIONS
 
-SUMMARY_PROMPT = PromptSpec(
-    id="summary",
-    version=1,
-    name="summarize",
-    input_template="""
+PROMPT_TEMPLATE = """
 請以台灣繁體中文為以下內容生成：
 
 - **推理過程**：提供一系列推理步驟，說明如何得出摘要、見解。
@@ -30,8 +24,7 @@ SUMMARY_PROMPT = PromptSpec(
 
 輸入：
 {text}
-""",
-)
+""".strip()  # noqa
 
 
 class ThoughtStep(BaseModel):
@@ -124,9 +117,7 @@ async def summarize(text: str) -> MessageResponse:
         MessageResponse: A formatted response containing the summary, insights, and hashtags.
     """
     summary = await lazy_run(
-        input=SUMMARY_PROMPT.render_input(text=text),
-        instructions=SUMMARY_PROMPT.render_instructions(BASE_INSTRUCTIONS),
-        name=SUMMARY_PROMPT.name or "lazy_run",
+        input=PROMPT_TEMPLATE.format(text=text),
         output_type=Summary,
     )
     return await summary.to_message_response()
