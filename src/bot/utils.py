@@ -4,23 +4,13 @@ import functools
 import json
 import os
 import re
-from functools import cache
 from pathlib import Path
 from typing import Any
 
+import kabigon
 import logfire
 import nest_asyncio
 import telegraph
-from kabigon import Compose
-from kabigon import FirecrawlLoader
-from kabigon import PDFLoader
-from kabigon import PlaywrightLoader
-from kabigon import PttLoader
-from kabigon import RedditLoader
-from kabigon import ReelLoader
-from kabigon import TwitterLoader
-from kabigon import YoutubeLoader
-from kabigon import YoutubeYtdlpLoader
 from loguru import logger
 
 
@@ -90,28 +80,9 @@ async def async_create_page(title: str, **kwargs: Any) -> str:
     return await asyncio.to_thread(create_page, title, **kwargs)
 
 
-@cache
-def get_composed_loader() -> Compose:
-    return Compose(
-        [
-            PttLoader(),
-            TwitterLoader(),
-            RedditLoader(),
-            YoutubeLoader(),
-            ReelLoader(),
-            YoutubeYtdlpLoader(),
-            PDFLoader(),
-            FirecrawlLoader(),
-            PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
-            PlaywrightLoader(timeout=10_000),
-        ]
-    )
-
-
 async def load_url(url: str) -> str:
     with logfire.span("load_url"):
-        loader = get_composed_loader()
-        return await loader.load(url)
+        return await kabigon.load_url(url)
 
 
 def logfire_is_enabled() -> bool:
