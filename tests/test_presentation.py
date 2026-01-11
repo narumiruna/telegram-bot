@@ -1,3 +1,4 @@
+import html
 from unittest.mock import AsyncMock
 from unittest.mock import Mock
 from unittest.mock import patch
@@ -117,3 +118,23 @@ class TestMessageResponse:
             title="Multiline",
             html_content=expected_html,
         )
+
+    @pytest.mark.asyncio
+    @patch("bot.presentation.async_create_page")
+    async def test_send_long_plain_text_escapes_html(self, mock_create_page):
+        """Test that long plain text is HTML-escaped for Telegraph pages"""
+        content = ("<promise>foo</promise>\n" * 200) + ("x" * 1001)
+        response = MessageResponse(content=content, title="Plain", parse_mode=None)
+
+        mock_create_page.return_value = "https://telegra.ph/plain"
+
+        message = Mock(spec=Message)
+        message.reply_text = AsyncMock()
+
+        await response.send(message)
+
+        mock_create_page.assert_called_once_with(
+            title="Plain",
+            html_content=html.escape(content).replace("\n", "<br>"),
+        )
+        message.reply_text.assert_called_once_with("https://telegra.ph/plain")

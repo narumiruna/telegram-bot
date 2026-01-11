@@ -6,6 +6,7 @@ automatically handling Telegraph page creation for long messages.
 
 from __future__ import annotations
 
+import html
 from dataclasses import dataclass
 
 from telegram import Message
@@ -42,9 +43,14 @@ class MessageResponse:
         """
         if len(self.content) > MAX_MESSAGE_LENGTH:
             # Create Telegraph page for long content
+            telegraph_html = (
+                html.escape(self.content).replace("\n", "<br>")
+                if self.parse_mode is None
+                else self.content.replace("\n", "<br>")
+            )
             url = await async_create_page(
                 title=self.title or "Response",
-                html_content=self.content.replace("\n", "<br>"),
+                html_content=telegraph_html,
             )
             await message.reply_text(url)
         else:
