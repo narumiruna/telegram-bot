@@ -6,10 +6,8 @@ from agents import trace
 from loguru import logger
 from pydantic import BaseModel
 
-from ..core.prompting import PromptSpec
 from ..lazy import lazy_run
 from ..presentation import MessageResponse
-from .instructions import BASE_INSTRUCTIONS
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
 
@@ -44,44 +42,32 @@ class Article(BaseModel):
         )
 
 
-FORMAT_PROMPT = PromptSpec(
-    id="format",
-    version=1,
-    name="format",
-    input_template="""
-Extract and organize information from the input text, then translate it to {lang}.
-Do not fabricate any information.
-
-Use clear and accessible language that is easy to understand for the general public.
-For example, when encountering legal judgments or technical documents,
-convert them into plain language suitable for ordinary readers.
-
-Please use plain text only (no Markdown or any formatting syntax).
-
-For each section:
-- Start with an appropriate emoji and a concise title in {lang} on one line.
-- The next line should be the well-organized content in {lang}, preserving the core meaning and important details.
-- Use multiple sections if there are distinct topics or points.
-
-Input text:
-```
-{text}
-```
-""",
-    output_type=Article,
-)
-
-
 async def _format(text: str, lang: str = "台灣中文") -> Article:
-    prompt = FORMAT_PROMPT.render_input(text=text, lang=lang)
+    prompt = f"""
+    Extract and organize information from the input text, then translate it to {lang}.
+    Do not fabricate any information.
+
+    Use clear and accessible language that is easy to understand for the general public.
+    For example, when encountering legal judgments or technical documents, convert them into plain language suitable for ordinary readers.
+
+    Please use plain text only (no Markdown or any formatting syntax).
+
+    For each section:
+    - Start with an appropriate emoji and a concise title in {lang} on one line.
+    - The next line should be the well-organized content in {lang}, preserving the core meaning and important details.
+    - Use multiple sections if there are distinct topics or points.
+
+    Input text:
+    ```
+    {text}
+    ```
+    """.strip()  # noqa: E501
 
     with trace("format"):
         response = cast(
             Article,
             await lazy_run(
                 dedent(prompt),
-                instructions=FORMAT_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang),
-                name=FORMAT_PROMPT.name or "lazy_run",
                 output_type=Article,
             ),
         )
