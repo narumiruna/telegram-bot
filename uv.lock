@@ -245,7 +245,7 @@ requires-dist = [
     { name = "duckduckgo-search", specifier = ">=7.5.1" },
     { name = "firecrawl-py", specifier = ">=4.6.0" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "kabigon", specifier = ">=0.14.0" },
+    { name = "kabigon", specifier = ">=0.14.1" },
     { name = "logfire", extras = ["httpx", "redis", "requests"], specifier = ">=3.22.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "lxml", specifier = ">=5.3.0" },
@@ -1149,7 +1149,7 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.14.0"
+version = "0.14.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "firecrawl-py" },
@@ -1165,12 +1165,12 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b8/38/2b52de5d10f9656d352e59a03701eb87289e9f4af6a51009c8162b4f665d/kabigon-0.14.0-py3-none-any.whl", hash = "sha256:42bc952e070d94f3cd047908e74b04c1ad7129dfcba4d4955c28346137cc0d40", size = 15875, upload-time = "2026-01-04T11:13:24.437Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/08/bb5d884d809410f8492e7b62f47e08dd118edcb221fed40e08041d6fb49d/kabigon-0.14.1-py3-none-any.whl", hash = "sha256:b1ff23d479e59cafbf8e0a7065745ed6c430306eb836e624552e62063a714d5b", size = 21328, upload-time = "2026-01-12T14:40:11.444Z" },
 ]
 
 [[package]]
 name = "litellm"
-version = "1.80.13"
+version = "1.80.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1187,9 +1187,9 @@ dependencies = [
     { name = "tiktoken" },
     { name = "tokenizers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/b4/ef75838159aabee15ad93d65ee0e91d04ba0e310784b7b0d3f490cca270c/litellm-1.80.13.tar.gz", hash = "sha256:61ed22dfad633ada3b97dd8a50d8e8d804da0115105006d2f9d77ba3fb247a0b", size = 13277620, upload-time = "2026-01-09T04:37:08.529Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/41/9b28df3e4739df83ddb32dfb2bccb12ad271d986494c9fd60e4927a0a6c3/litellm-1.80.15.tar.gz", hash = "sha256:759d09f33c9c6028c58dcdf71781b17b833ee926525714e09a408602be27f54e", size = 13376508, upload-time = "2026-01-11T18:31:44.95Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/90/e8e0ad7f57d3a56c3411b3867e02768f9722b5975a263c8aaaaba6693d91/litellm-1.80.13-py3-none-any.whl", hash = "sha256:43dcdbca010961f17d7a5a6a995a38d1a46101350959b0e8269576cfe913cf0b", size = 11562501, upload-time = "2026-01-09T04:37:05.551Z" },
+    { url = "https://files.pythonhosted.org/packages/df/3b/b1bd693721ccb3c9a37c8233d019a643ac57bef5a93f279e5a63839ee4db/litellm-1.80.15-py3-none-any.whl", hash = "sha256:f354e49456985a235b9ed99df1c19d686d30501f96e68882dcc5b29b1e7c59d9", size = 11670707, upload-time = "2026-01-11T18:31:41.67Z" },
 ]
 
 [[package]]
@@ -1214,7 +1214,7 @@ wheels = [
 
 [[package]]
 name = "logfire"
-version = "4.17.0"
+version = "4.18.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "executing" },
@@ -1225,9 +1225,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7d/74/88e8fec6e3fe247a7cdaeba777cbf7aced11de33db423693690e20ab8356/logfire-4.17.0.tar.gz", hash = "sha256:693d47d6b8b0a8f9fd8112d958eb9e3ae00fe5d323e1eee468e4bc6379bb2c4f", size = 558897, upload-time = "2026-01-07T10:52:16.148Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/47/c4b9a117a62b56b198d6aa56a8627eb9a69bf4d9cc3f6bfd145a6d17135c/logfire-4.18.0.tar.gz", hash = "sha256:04a1b5e6c2883fbb1077d2721a5f287de0716dc62118329e16a3fdce05f107c5", size = 563288, upload-time = "2026-01-12T14:37:01.73Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/68/c49baec77c56dcf5698daaa66a097523063d55b2feaecc968000518521a1/logfire-4.17.0-py3-none-any.whl", hash = "sha256:1ed1064a4126f48503f7832ce6039425dff70128d145552d7981ac9ce2151b17", size = 232456, upload-time = "2026-01-07T10:52:13.394Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/ff/fe0147174bfbfc29342955cff73107c2a93d3e33901c9065d665f1bd08b3/logfire-4.18.0-py3-none-any.whl", hash = "sha256:3e3f342d489edb4d7e9992249662d32aae0557969864ae8f30d9a550fd19aab5", size = 233801, upload-time = "2026-01-12T14:36:58.5Z" },
 ]
 
 [package.optional-dependencies]
