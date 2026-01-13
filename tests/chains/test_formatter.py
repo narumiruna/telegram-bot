@@ -182,7 +182,8 @@ class TestFormat:
 
             assert result == mock_article
             mock_chunk.assert_called_once_with(short_text)
-            mock_format_internal.assert_called_once_with(short_text)
+            # Verify that lang parameter is passed through
+            mock_format_internal.assert_called_once_with(short_text, lang="台灣中文")
 
     @pytest.mark.asyncio
     async def test_format_multiple_chunks(self) -> None:
@@ -212,7 +213,8 @@ class TestFormat:
             assert result == mock_article
             mock_chunk.assert_called_once_with(long_text)
             assert mock_create_chunk.call_count == 3
-            mock_format_internal.assert_called_once_with("\n".join(chunk_notes))
+            # Verify that lang parameter is passed through
+            mock_format_internal.assert_called_once_with("\n".join(chunk_notes), lang="台灣中文")
 
     @pytest.mark.asyncio
     async def test_format_with_custom_lang(self) -> None:
@@ -233,8 +235,8 @@ class TestFormat:
             result = await format(text, lang="English")
 
             assert result == mock_article
-            # 注意：format 函數並沒有傳遞 lang 參數到 _format，這可能是個 bug
-            # 但我們先測試現有行為
+            # Verify that custom lang parameter is passed through correctly
+            mock_format_internal.assert_called_once_with(text, lang="English")
 
     @pytest.mark.asyncio
     async def test_format_empty_text(self) -> None:
