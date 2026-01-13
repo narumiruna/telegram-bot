@@ -1,6 +1,5 @@
 import asyncio
 from textwrap import dedent
-from typing import cast
 
 from agents import trace
 from loguru import logger
@@ -91,17 +90,23 @@ Input text:
 
 
 async def _format(text: str, lang: str = "台灣中文") -> Article:
+    """Format text into a structured article with sections.
+
+    Args:
+        text: The text content to format
+        lang: Target language for the formatted output (default: "台灣中文")
+
+    Returns:
+        Article: Structured article with title and sections
+    """
     prompt = FORMAT_PROMPT.render_input(text=text, lang=lang)
 
     with trace("format"):
-        response = cast(
-            Article,
-            await lazy_run(
-                dedent(prompt),
-                instructions=FORMAT_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang),
-                name=FORMAT_PROMPT.name or "lazy_run",
-                output_type=Article,
-            ),
+        response = await lazy_run(
+            dedent(prompt),
+            instructions=FORMAT_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang),
+            name=FORMAT_PROMPT.name or "lazy_run",
+            output_type=Article,
         )
 
     logger.info("Formatted response: {response}", response=response)
@@ -109,10 +114,22 @@ async def _format(text: str, lang: str = "台灣中文") -> Article:
 
 
 async def format(text: str, lang: str = "台灣中文") -> Article:
+    """Format text into a structured article, handling long texts by chunking.
+
+    For long texts that exceed the chunk limit, the text is split into chunks,
+    each chunk is processed into notes, and then the combined notes are formatted.
+
+    Args:
+        text: The text content to format
+        lang: Target language for the formatted output (default: "台灣中文")
+
+    Returns:
+        Article: Structured article with title and sections
+    """
     chunks = chunk_on_delimiter(text)
 
     if len(chunks) == 1:
-        return await _format(text)
+        return await _format(text, lang=lang)
 
     results = await asyncio.gather(*[create_notes_from_chunk(chunk) for chunk in chunks])
-    return await _format("\n".join(results))
+    return await _format("\n".join(results), lang=lang)

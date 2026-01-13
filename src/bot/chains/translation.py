@@ -1,5 +1,4 @@
 import inspect
-from typing import cast
 
 from ..core.prompting import PromptSpec
 from ..lazy import lazy_run
@@ -38,6 +37,14 @@ TRANSLATE_AND_EXPLAIN_PROMPT = PromptSpec(
 
 
 async def translate_to_taiwanese(text: str) -> str:
+    """Translate text to Traditional Chinese (Taiwan).
+
+    Args:
+        text: The text to translate
+
+    Returns:
+        str: Translated text in Traditional Chinese
+    """
     prompt = TRANSLATE_TO_TAIWANESE_PROMPT.render_input(text=text)
     return await lazy_run(
         inspect.cleandoc(prompt),
@@ -47,6 +54,15 @@ async def translate_to_taiwanese(text: str) -> str:
 
 
 async def translate(text: str, lang: str) -> str:
+    """Translate text to the specified language.
+
+    Args:
+        text: The text to translate
+        lang: Target language
+
+    Returns:
+        str: Translated text
+    """
     user_prompt = TRANSLATE_PROMPT.render_input(text=text)
     instructions = TRANSLATE_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang)
     result = await lazy_run(user_prompt, instructions=instructions, name=TRANSLATE_PROMPT.name or "lazy_run")
@@ -54,14 +70,20 @@ async def translate(text: str, lang: str) -> str:
 
 
 async def translate_and_explain(text: str, lang: str) -> str:
+    """Translate text and provide explanation of grammar and usage.
+
+    Args:
+        text: The text to translate
+        lang: Target language
+
+    Returns:
+        str: Translated text with grammar explanation and examples
+    """
     user_prompt = TRANSLATE_AND_EXPLAIN_PROMPT.render_input(text=text)
     instructions = TRANSLATE_AND_EXPLAIN_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang)
-    result = cast(
-        str,
-        await lazy_run(
-            user_prompt,
-            instructions=instructions,
-            name=TRANSLATE_AND_EXPLAIN_PROMPT.name or "lazy_run",
-        ),
+    result = await lazy_run(
+        user_prompt,
+        instructions=instructions,
+        name=TRANSLATE_AND_EXPLAIN_PROMPT.name or "lazy_run",
     )
     return result.strip('"')

@@ -1,6 +1,5 @@
 import asyncio
 from textwrap import dedent
-from typing import cast
 
 from loguru import logger
 from pydantic import BaseModel
@@ -117,14 +116,20 @@ Text:
 
 
 async def extract_notes(text: str, lang: str = "台灣中文") -> ResearchReport:
-    response = cast(
-        ResearchReport,
-        await lazy_run(
-            input=dedent(EXTRACT_NOTES_PROMPT.render_input(text=text, lang=lang)),
-            instructions=EXTRACT_NOTES_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang),
-            name=EXTRACT_NOTES_PROMPT.name or "lazy_run",
-            output_type=ResearchReport,
-        ),
+    """Extract structured research notes from text.
+
+    Args:
+        text: The text content to extract notes from
+        lang: Target language for the notes (default: "台灣中文")
+
+    Returns:
+        ResearchReport: Structured research report with sections
+    """
+    response = await lazy_run(
+        input=dedent(EXTRACT_NOTES_PROMPT.render_input(text=text, lang=lang)),
+        instructions=EXTRACT_NOTES_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang),
+        name=EXTRACT_NOTES_PROMPT.name or "lazy_run",
+        output_type=ResearchReport,
     )
 
     logger.info("Formatted response: {response}", response=response)
@@ -132,19 +137,35 @@ async def extract_notes(text: str, lang: str = "台灣中文") -> ResearchReport
 
 
 async def create_notes_from_chunk(text: str) -> str:
+    """Create concise study notes from a text chunk.
+
+    Args:
+        text: The text chunk to process
+
+    Returns:
+        str: Formatted study notes
+    """
     prompt = dedent(CHUNK_NOTES_PROMPT.render_input(text=text))
-    result = cast(
-        str,
-        await lazy_run(
-            prompt,
-            instructions=CHUNK_NOTES_PROMPT.render_instructions(BASE_INSTRUCTIONS),
-            name=CHUNK_NOTES_PROMPT.name or "lazy_run",
-        ),
+    result = await lazy_run(
+        prompt,
+        instructions=CHUNK_NOTES_PROMPT.render_instructions(BASE_INSTRUCTIONS),
+        name=CHUNK_NOTES_PROMPT.name or "lazy_run",
     )
     return result
 
 
 async def create_notes(text: str) -> ResearchReport:
+    """Create structured research notes from text, handling long texts by chunking.
+
+    For long texts that exceed the chunk limit, the text is split into chunks,
+    each chunk is processed into notes, and then the combined notes are formatted.
+
+    Args:
+        text: The text content to create notes from
+
+    Returns:
+        ResearchReport: Structured research report with sections
+    """
     chunks = chunk_on_delimiter(text)
 
     if len(chunks) == 1:
