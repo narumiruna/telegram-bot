@@ -259,7 +259,7 @@ class TestSummarize:
             prompt = call_args.kwargs["input"]
 
             # 驗證提示模板包含必要元素
-            assert "台灣繁體中文" in prompt
+            assert "台灣正體中文" in prompt
             assert "推理過程" in prompt
             assert "摘要" in prompt
             assert "見解" in prompt

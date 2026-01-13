@@ -49,19 +49,37 @@ FORMAT_PROMPT = PromptSpec(
     version=1,
     name="format",
     input_template="""
-Extract and organize information from the input text, then translate it to {lang}.
-Do not fabricate any information.
+Begin with a concise checklist (3-7 bullets) of what you will do; keep items conceptual,
+not implementation-level.
 
-Use clear and accessible language that is easy to understand for the general public.
-For example, when encountering legal judgments or technical documents,
-convert them into plain language suitable for ordinary readers.
+Extract and organize information from the input text, then translate it into {lang}.
+Do not invent or add information.
 
-Please use plain text only (no Markdown or any formatting syntax).
+Use clear, accessible language that is easy for the general public to understand. When the input includes legal,
+technical, or other complex documents, rephrase the content in plain language appropriate for ordinary readers.
+
+Respond in plain text only. Do not use Markdown, HTML, or any other markup syntax.
 
 For each section:
-- Start with an appropriate emoji and a concise title in {lang} on one line.
-- The next line should be the well-organized content in {lang}, preserving the core meaning and important details.
-- Use multiple sections if there are distinct topics or points.
+- Begin with a relevant emoji (matching the section's theme) and a concise title in {lang} on the first line,
+  separated by a single space.
+- On the next line, present the well-organized content in {lang}, ensuring the main message and essential details
+  are preserved.
+- Use multiple sections if the input covers distinct topics, major points, or separate thematic paragraphs.
+
+If the input text is empty, respond with:
+[No content provided]
+
+If translation to {lang} is not supported, respond with:
+[Translation to '{lang}' is not supported]
+
+If a section already includes an emoji or title, update the title as needed and select a new emoji that fits
+the reorganized content.
+
+If section boundaries are unclear, treat each major paragraph, bullet point, or heading as a distinct section.
+When the structure is confusing, do your best to organize the information into clear, separate sections.
+
+After completing all sections, review the output to ensure all requirements are met and revise minimally if needed.
 
 Input text:
 ```
