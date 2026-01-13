@@ -49,7 +49,7 @@ FORMAT_PROMPT = PromptSpec(
     version=1,
     name="format",
     input_template="""
-System: Begin with a concise checklist (3-7 bullets) of what you will do; keep items conceptual,
+Begin with a concise checklist (3-7 bullets) of what you will do; keep items conceptual,
 not implementation-level.
 
 Extract and organize information from the input text, then translate it into {lang}.
