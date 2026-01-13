@@ -54,7 +54,7 @@ EXTRACT_NOTES_PROMPT = PromptSpec(
     version=1,
     name="extract_notes",
     input_template="""
-System: As a research assistant, begin by creating a concise checklist (3-7 bullets)
+As a research assistant, begin by creating a concise checklist (3-7 bullets)
 outlining the conceptual steps you will take to analyze the provided text and organize it
 into a structured research report in the specified language ({lang}).
 
@@ -91,7 +91,7 @@ CHUNK_NOTES_PROMPT = PromptSpec(
     version=1,
     name="create_notes_from_chunk",
     input_template="""
-System: You are a researcher skilled in creating concise, well-organized study notes.
+You are a researcher skilled in creating concise, well-organized study notes.
 
 Begin with a concise checklist (3-7 bullets) of your process; keep items conceptual, not implementation-level.
 
