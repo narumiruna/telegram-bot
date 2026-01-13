@@ -54,22 +54,29 @@ EXTRACT_NOTES_PROMPT = PromptSpec(
     version=1,
     name="extract_notes",
     input_template="""
-As a research assistant, analyze the provided text and organize it into a structured research report in {lang}.
+System: As a research assistant, begin by creating a concise checklist (3-7 bullets)
+outlining the conceptual steps you will take to analyze the provided text and organize it
+into a structured research report in the specified language ({lang}).
 
 Guidelines:
-- Extract only factual information present in the text
-- Do not add speculative or interpretive content
-- Format with clear sections and logical flow
-- If information is unknown or uncertain, use empty strings or empty lists instead of fabricating facts
+- Extract only factual information present in the text; do not include speculative or interpretive content.
+- Organize the report into the specified sections, maintaining the exact sequence below.
+- For unknown, missing, or uncertain information, use empty strings or lists; do not fabricate content.
+- If any input data is missing or malformed, represent it as an empty string or list and proceed with
+  available information.
+- If required variables such as {lang} or {text} are undefined, use empty strings as placeholders.
 
-Please create a research report with:
-1. A descriptive title that captures the main subject
-2. A brief abstract summarizing key points
-3. An introduction explaining the context and purpose
-4. A methodology section describing approaches or methods used
-5. Key highlights or findings (as bullet points)
-6. Causal relationships identified in the text (cause -> effect format)
-7. A conclusion summarizing implications and importance
+After structuring the report, review your output to ensure all guidelines and output format requirements are followed,
+including correct handling of missing or malformed data.
+
+Create a research report with the following sections, in strict order:
+1. Title: A descriptive heading reflecting the main subject
+2. Abstract: Concise summary of key points
+3. Introduction: Explanation of context and purpose
+4. Methodology: Description of approaches or methods used
+5. Key Highlights: Bullet-point findings
+6. Causal Relationships: List each in 'cause -> effect' format
+7. Conclusion: Summary of implications and importance
 
 Input text:
 ```
@@ -84,17 +91,22 @@ CHUNK_NOTES_PROMPT = PromptSpec(
     version=1,
     name="create_notes_from_chunk",
     input_template="""
-You are a researcher adept at creating concise, well-structured study notes.
-Your goal is to create a study notes based on the text below
-in a clear, step-by-step manner while maintaining accuracy and neutrality.
-Please adhere to the following guidelines:
+System: You are a researcher skilled in creating concise, well-organized study notes.
 
-- Thoroughly read the text provided.
-- Generate study notes that organize the information in a logical structure.
-- Use neutral, factual language.
-- Do not add, infer, or fabricate any details—only use what the text explicitly states.
-- Keep the notes concise yet comprehensive.
-- Maintain a clear, step-by-step approach throughout the notes.
+Begin with a concise checklist (3-7 bullets) of your process; keep items conceptual, not implementation-level.
+
+Set reasoning_effort = minimal; use only as much detail as needed for accuracy and clarity.
+
+Your objective is to produce study notes based on the text provided, following a clear,
+step-by-step format while ensuring accuracy and neutrality.
+
+Guidelines:
+- Carefully read the supplied text.
+- Organize the information into logically structured study notes.
+- Use neutral, factual language only.
+- Do not add, infer, or fabricate any information; include only what is explicitly stated in the text.
+- Ensure notes are concise yet comprehensive.
+- Present information in a step-by-step format.
 
 Text:
 ```
