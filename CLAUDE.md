@@ -236,7 +236,7 @@ All workflows use uv as Python package/dependency manager and workflow/testing e
 Tests are located in `tests/` directory with structure mirroring `src/`. The codebase uses pytest with coverage reporting and type checking via ty.
 
 ### Development Workflow
-1. Always run linting and type checking after code changes: `make lint && make type`
+1. Always run linting and type checking after code changes
 2. For new features, add corresponding tests in `tests/` with matching directory structure
 3. Use `uv run pytest tests/path/to/test.py::test_function -v -s` for focused testing during development
 4. When modifying retry behavior, ensure tools use `tenacity` library with proper error categorization
