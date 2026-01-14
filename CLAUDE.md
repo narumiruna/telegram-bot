@@ -15,11 +15,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `uv run pytest tests/tools/test_yahoo_finance.py::test_function -v -s` - Run specific test function
 
 ### Quality Assurance
-- `make lint` or `uv run ruff check src` - Run code linting
-- `make type` or `uv run ty check src` - Run type checking
-- `make test` or `uv run pytest -v -s --cov=src tests` - Run tests with coverage
-- `make format` - Format code with ruff
-- `make all` - Run format, lint, type check, and test in sequence
+- `uv run ruff check src` - Run code linting
+- `uv run ty check src` - Run type checking
+- `uv run pytest -v -s --cov=src tests` - Run tests with coverage
+- `uv run ruff format` - Format code with ruff
+- `uv run prek run -a` - Run pre-commit hooks on all files
 
 ### Build and Publish
 - `make publish` - Build wheel and publish to PyPI
