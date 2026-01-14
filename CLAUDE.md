@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `uv run prek run -a` - Run pre-commit hooks on all files
 
 ### Build and Publish
-- `make publish` - Build wheel and publish to PyPI
+- `uv build --wheel && uv publish` - Build wheel and publish to PyPI
 - `uv build --wheel` - Build wheel package only
 
 ## Code Architecture
