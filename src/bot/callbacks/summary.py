@@ -20,6 +20,7 @@ async def summarize_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await message.reply_text(error)
         return
     if not text:
+        await message.reply_text("請提供要摘要的 URL，例如：/s https://example.com")
         return
 
     response = await chains.summarize(text)

@@ -306,7 +306,7 @@ class TestAgentCallback:
         mock_message.reply_to_message = None
         mock_message.chat.id = 12345
         mock_new_message = Mock()
-        mock_new_message.id = 67890
+        mock_new_message.message_id = 67890
         mock_message.reply_text = AsyncMock(return_value=mock_new_message)
 
         callback = AgentCallback(mock_agent)
@@ -495,7 +495,7 @@ class TestAgentCallback:
         mock_message.reply_to_message = None
         mock_message.chat.id = 12345
         mock_new_message = Mock()
-        mock_new_message.id = 67890
+        mock_new_message.message_id = 67890
         mock_message.reply_text = AsyncMock(return_value=mock_new_message)
 
         callback = AgentCallback(mock_agent)
@@ -504,7 +504,7 @@ class TestAgentCallback:
         # Verify cache.set was called with TTL
         mock_cache.set.assert_called_once()
         call_args = mock_cache.set.call_args
-        assert call_args[0][0] == "bot:67890:12345"  # cache key (new_message.id:chat.id)
+        assert call_args[0][0] == "bot:67890:12345"  # cache key (new_message.message_id:chat.id)
         assert call_args[1]["ttl"] == CACHE_TTL_SECONDS  # TTL parameter
 
     @patch("bot.callbacks.agent.get_cache_from_env")
@@ -540,12 +540,12 @@ class TestAgentCallback:
 
         # Mock message with reply_to_message
         mock_reply_to = Mock()
-        mock_reply_to.id = 11111
+        mock_reply_to.message_id = 11111
         mock_message = Mock()
         mock_message.reply_to_message = mock_reply_to
         mock_message.chat.id = 12345
         mock_new_message = Mock()
-        mock_new_message.id = 67890
+        mock_new_message.message_id = 67890
         mock_message.reply_text = AsyncMock(return_value=mock_new_message)
 
         callback = AgentCallback(mock_agent)

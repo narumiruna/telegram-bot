@@ -270,8 +270,8 @@ class TestFileCallback:
         # Verify file processing was attempted
         mock_read_pdf.assert_called_once_with(test_file_path)
 
-        # File cleanup happens after content reading, so it won't be called if reading fails
-        mock_remove.assert_not_called()
+        # File cleanup should still happen even if content reading fails
+        mock_remove.assert_called_once_with(test_file_path)
 
         # Verify user was notified of error
         mock_update.message.reply_text.assert_called_once()
