@@ -21,11 +21,10 @@ from tenacity import retry_if_exception
 from tenacity import stop_after_attempt
 
 from ..cache import get_cache_from_env
+from ..chains.url_processor import process_url_content
 from ..constants import CACHE_TTL_SECONDS
-from ..constants import MAX_URL_CONTENT_LENGTH
 from ..constants import MCP_CLEANUP_TIMEOUT
 from ..constants import MCP_CONNECT_TIMEOUT
-from ..constants import URL_CONTENT_TRUNCATED_MESSAGE
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
 from ..retry_utils import is_retryable_error
@@ -257,6 +256,9 @@ class AgentCallback:
     async def load_url_content(self, message_text: str) -> str:
         """Load URL content from message text if URL is present.
 
+        Uses chunking and summarization for long content to prevent prompt bloat
+        while preserving important information.
+
         Args:
             message_text: The message text that may contain a URL
 
@@ -270,22 +272,21 @@ class AgentCallback:
         try:
             logger.info("Loading URL content: {url}", url=parsed_url)
             url_content = await self._load_url_with_retry(parsed_url)
-            logger.info("Successfully loaded URL content: {url}", url=parsed_url)
+            logger.info(
+                "Successfully loaded URL content: {url}, length: {length}", url=parsed_url, length=len(url_content)
+            )
 
-            # Apply content length limits for security and performance
-            if len(url_content) > MAX_URL_CONTENT_LENGTH:
-                original_length = len(url_content)
-                url_content = url_content[:MAX_URL_CONTENT_LENGTH] + "\n" + URL_CONTENT_TRUNCATED_MESSAGE
-                logger.warning(
-                    "URL content truncated from {original} to {limited} characters for URL: {url}",
-                    original=original_length,
-                    limited=len(url_content),
-                    url=parsed_url,
-                )
+            # Process URL content with chunking and summarization
+            processed_content = await process_url_content(url_content)
+            logger.info(
+                "URL content processed: {original} -> {processed} characters",
+                original=len(url_content),
+                processed=len(processed_content),
+            )
 
             message_text = message_text.replace(
                 parsed_url,
-                f"[URL content from {parsed_url}]:\n'''\n{url_content}\n'''\n[END of URL content]\n",
+                f"[網頁內容摘要 from {parsed_url}]:\n'''\n{processed_content}\n'''\n[END of 摘要]\n",
                 1,
             )
         except Exception as e:

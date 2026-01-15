@@ -240,15 +240,19 @@ class TestAgentCallback:
         mock_server2.cleanup.assert_called_once()
 
     @patch("bot.callbacks.agent.get_cache_from_env")
+    @patch("bot.callbacks.agent.process_url_content")
     @patch("bot.callbacks.agent.load_url")
     @patch("bot.callbacks.agent.parse_url")
-    async def test_load_url_content_with_url(self, mock_parse_url, mock_load_url, mock_get_cache):
+    async def test_load_url_content_with_url(
+        self, mock_parse_url, mock_load_url, mock_process_url_content, mock_get_cache
+    ):
         """Test loading URL content when URL is present"""
         mock_agent = Mock()
         mock_cache = Mock()
         mock_get_cache.return_value = mock_cache
         mock_parse_url.return_value = "https://example.com"
         mock_load_url.return_value = "URL content here"
+        mock_process_url_content.return_value = "Processed URL summary"
 
         callback = AgentCallback(mock_agent)
 
@@ -256,11 +260,11 @@ class TestAgentCallback:
         result = await callback.load_url_content(message_text)
 
         expected = (
-            "Check this out: [URL content from https://example.com]:\n'''"
-            "\nURL content here\n'''\n[END of URL content]\n"
+            "Check this out: [網頁內容摘要 from https://example.com]:\n'''\nProcessed URL summary\n'''\n[END of 摘要]\n"
         )
         assert result == expected
         mock_load_url.assert_called_once_with("https://example.com")
+        mock_process_url_content.assert_called_once_with("URL content here")
 
     @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.parse_url")
@@ -279,34 +283,51 @@ class TestAgentCallback:
         assert result == message_text
 
     @patch("bot.callbacks.agent.get_cache_from_env")
+    @patch("bot.callbacks.agent.process_url_content")
     @patch("bot.callbacks.agent.load_url")
     @patch("bot.callbacks.agent.parse_url")
-    async def test_load_url_content_with_truncation(self, mock_parse_url, mock_load_url, mock_get_cache):
-        """Test URL content truncation when content exceeds length limit"""
-        from bot.constants import MAX_URL_CONTENT_LENGTH
-        from bot.constants import URL_CONTENT_TRUNCATED_MESSAGE
-
+    async def test_load_url_content_with_processing(
+        self, mock_parse_url, mock_load_url, mock_process_url_content, mock_get_cache
+    ):
+        """Test URL content processing with chunking and rewriting"""
         mock_agent = Mock()
         mock_cache = Mock()
         mock_get_cache.return_value = mock_cache
         mock_parse_url.return_value = "https://example.com"
-
-        # Create content longer than the limit
-        long_content = "A" * (MAX_URL_CONTENT_LENGTH + 1000)
-        mock_load_url.return_value = long_content
+        mock_load_url.return_value = "Long URL content here..."
+        mock_process_url_content.return_value = "Processed rewritten URL content"
 
         callback = AgentCallback(mock_agent)
 
         message_text = "Check this out: https://example.com"
         result = await callback.load_url_content(message_text)
 
-        # Should be truncated with truncation message
-        expected_truncated_content = "A" * MAX_URL_CONTENT_LENGTH + "\n" + URL_CONTENT_TRUNCATED_MESSAGE
         expected = (
-            "Check this out: [URL content from https://example.com]:\n'''"
-            f"\n{expected_truncated_content}\n'''\n[END of URL content]\n"
+            "Check this out: [網頁內容摘要 from https://example.com]:\n'''"
+            "\nProcessed rewritten URL content\n'''\n[END of 摘要]\n"
         )
         assert result == expected
+        mock_load_url.assert_called_once_with("https://example.com")
+        mock_process_url_content.assert_called_once_with("Long URL content here...")
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
+    @patch("bot.callbacks.agent.load_url")
+    @patch("bot.callbacks.agent.parse_url")
+    async def test_load_url_content_loading_failure(self, mock_parse_url, mock_load_url, mock_get_cache):
+        """Test URL content processing when URL loading fails"""
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_get_cache.return_value = mock_cache
+        mock_parse_url.return_value = "https://example.com"
+        mock_load_url.side_effect = Exception("Failed to load URL")
+
+        callback = AgentCallback(mock_agent)
+
+        message_text = "Check this out: https://example.com"
+        result = await callback.load_url_content(message_text)
+
+        # Should return original message when URL loading fails
+        assert result == message_text
         mock_load_url.assert_called_once_with("https://example.com")
 
     @patch("bot.callbacks.agent.get_cache_from_env")
