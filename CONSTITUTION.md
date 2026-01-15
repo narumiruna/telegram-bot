@@ -52,6 +52,7 @@
 - Each document MUST serve exactly one purpose.
 - Rules MUST be stated in enforceable terms.
 - Constitutional rules MUST NOT be duplicated in subordinate documents.
+- Documentation MUST follow the principle of progressive disclosure, exposing only the minimum necessary information at each level and deferring details to subordinate documents.
 
 ## Interpretation
 
