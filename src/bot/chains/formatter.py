@@ -86,12 +86,12 @@ Input text:
 )
 
 
-async def _format(text: str, lang: str = "台灣中文") -> Article:
+async def _format(text: str, lang: str = "台灣正體中文") -> Article:
     """Format text into a structured article with sections.
 
     Args:
         text: The text content to format
-        lang: Target language for the formatted output (default: "台灣中文")
+        lang: Target language for the formatted output (default: "台灣正體中文")
 
     Returns:
         Article: Structured article with title and sections
@@ -110,7 +110,7 @@ async def _format(text: str, lang: str = "台灣中文") -> Article:
     return response
 
 
-async def format(text: str, lang: str = "台灣中文") -> Article:
+async def format(text: str, lang: str = "台灣正體中文") -> Article:
     """Format text into a structured article, handling long texts by chunking.
 
     For long texts that exceed the chunk limit, the text is split into chunks,
@@ -118,7 +118,7 @@ async def format(text: str, lang: str = "台灣中文") -> Article:
 
     Args:
         text: The text content to format
-        lang: Target language for the formatted output (default: "台灣中文")
+        lang: Target language for the formatted output (default: "台灣正體中文")
 
     Returns:
         Article: Structured article with title and sections

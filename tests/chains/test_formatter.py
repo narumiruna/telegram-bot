@@ -107,13 +107,13 @@ class TestFormatInternal:
             mock_trace.return_value.__enter__ = lambda *args: None
             mock_trace.return_value.__exit__ = lambda *args: None
 
-            result = await _format("測試文本", lang="台灣中文")
+            result = await _format("測試文本", lang="台灣正體中文")
 
             assert result == mock_article
             mock_lazy_run.assert_called_once()
             call_args = mock_lazy_run.call_args
             assert "測試文本" in call_args.args[0]
-            assert "台灣中文" in call_args.args[0]
+            assert "台灣正體中文" in call_args.args[0]
             assert call_args.kwargs["output_type"] == Article
 
     @pytest.mark.asyncio
@@ -136,7 +136,7 @@ class TestFormatInternal:
 
             assert result == mock_article
             call_args = mock_lazy_run.call_args
-            assert "台灣中文" in call_args.args[0]
+            assert "台灣正體中文" in call_args.args[0]
 
     @pytest.mark.asyncio
     async def test_format_internal_with_english(self) -> None:
@@ -183,7 +183,7 @@ class TestFormat:
             assert result == mock_article
             mock_chunk.assert_called_once_with(short_text)
             # Verify that lang parameter is passed through
-            mock_format_internal.assert_called_once_with(short_text, lang="台灣中文")
+            mock_format_internal.assert_called_once_with(short_text, lang="台灣正體中文")
 
     @pytest.mark.asyncio
     async def test_format_multiple_chunks(self) -> None:
@@ -214,7 +214,7 @@ class TestFormat:
             mock_chunk.assert_called_once_with(long_text)
             assert mock_create_chunk.call_count == 3
             # Verify that lang parameter is passed through
-            mock_format_internal.assert_called_once_with("\n".join(chunk_notes), lang="台灣中文")
+            mock_format_internal.assert_called_once_with("\n".join(chunk_notes), lang="台灣正體中文")
 
     @pytest.mark.asyncio
     async def test_format_with_custom_lang(self) -> None:

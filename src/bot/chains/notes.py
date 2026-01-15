@@ -115,12 +115,12 @@ Text:
 )
 
 
-async def extract_notes(text: str, lang: str = "台灣中文") -> ResearchReport:
+async def extract_notes(text: str, lang: str = "台灣正體中文") -> ResearchReport:
     """Extract structured research notes from text.
 
     Args:
         text: The text content to extract notes from
-        lang: Target language for the notes (default: "台灣中文")
+        lang: Target language for the notes (default: "台灣正體中文")
 
     Returns:
         ResearchReport: Structured research report with sections

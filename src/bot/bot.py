@@ -76,7 +76,7 @@ def run_bot(config_file: Annotated[str, typer.Option("-c", "--config")] = "confi
             CommandHandler("help", HelpCallback(helps=helps), filters=chat_filter, block=False),
             CommandHandler("s", summarize_callback, filters=chat_filter, block=False),
             CommandHandler("jp", TranslationCallback("日本語"), filters=chat_filter, block=False),
-            CommandHandler("tc", TranslationCallback("台灣中文"), filters=chat_filter, block=False),
+            CommandHandler("tc", TranslationCallback("台灣正體中文"), filters=chat_filter, block=False),
             CommandHandler("en", TranslationCallback("English"), filters=chat_filter, block=False),
             CommandHandler("t", query_ticker_callback, filters=chat_filter, block=False),
             CommandHandler("yt", search_youtube_callback, filters=chat_filter, block=False),

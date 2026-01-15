@@ -115,13 +115,13 @@ class TestExtractNotes:
         with patch("bot.chains.notes.lazy_run", new_callable=AsyncMock) as mock_lazy_run:
             mock_lazy_run.return_value = mock_report
 
-            result = await extract_notes("測試文本", lang="台灣中文")
+            result = await extract_notes("測試文本", lang="台灣正體中文")
 
             assert result == mock_report
             mock_lazy_run.assert_called_once()
             call_args = mock_lazy_run.call_args
             assert "測試文本" in call_args.kwargs["input"]
-            assert "台灣中文" in call_args.kwargs["input"]
+            assert "台灣正體中文" in call_args.kwargs["input"]
             assert call_args.kwargs["output_type"] == ResearchReport
 
     @pytest.mark.asyncio
@@ -143,7 +143,7 @@ class TestExtractNotes:
 
             assert result == mock_report
             call_args = mock_lazy_run.call_args
-            assert "台灣中文" in call_args.kwargs["input"]
+            assert "台灣正體中文" in call_args.kwargs["input"]
 
 
 class TestCreateNotesFromChunk:
