@@ -128,21 +128,6 @@ wheels = [
 ]
 
 [[package]]
-name = "aioytt"
-version = "0.2.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "click" },
-    { name = "httpx" },
-    { name = "loguru" },
-    { name = "pydantic" },
-    { name = "rich" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4e/24/dd07285cbc0b9d39ff0f9cd308720d913964c545e418998ca6f1cb3c4fe4/aioytt-0.2.5-py3-none-any.whl", hash = "sha256:64b830ec1d9bfa5359540c450c8b2d0433906202a0063be5a07f88546c2e9448", size = 5488, upload-time = "2025-04-08T15:13:06.784Z" },
-]
-
-[[package]]
 name = "annotated-types"
 version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -192,7 +177,6 @@ version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "aiocache", extra = ["redis"] },
-    { name = "aioytt" },
     { name = "duckduckgo-search" },
     { name = "firecrawl-py" },
     { name = "httpx" },
@@ -242,7 +226,6 @@ mlx = [
 [package.metadata]
 requires-dist = [
     { name = "aiocache", extras = ["redis"], specifier = ">=0.12.3" },
-    { name = "aioytt", specifier = ">=0.2.5" },
     { name = "duckduckgo-search", specifier = ">=7.5.1" },
     { name = "firecrawl-py", specifier = ">=4.6.0" },
     { name = "httpx", specifier = ">=0.28.1" },
