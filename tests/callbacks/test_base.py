@@ -38,7 +38,7 @@ class TestBaseCallback:
     def test_cannot_instantiate_base_callback(self) -> None:
         """Test that BaseCallback cannot be instantiated directly."""
         with pytest.raises(TypeError):
-            BaseCallback()  # type: ignore
+            BaseCallback()
 
     def test_concrete_callback_must_implement_call(self) -> None:
         """Test that concrete callbacks must implement __call__."""
@@ -47,7 +47,7 @@ class TestBaseCallback:
             pass
 
         with pytest.raises(TypeError):
-            IncompleteCallback()  # type: ignore
+            IncompleteCallback()
 
     def test_concrete_callback_with_call(self) -> None:
         """Test that concrete callbacks with __call__ can be instantiated."""
