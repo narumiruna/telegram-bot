@@ -18,7 +18,11 @@
 **Note**: Test results reflect behavior only when testing real system interactions, not mocked paths.
 
 ### Quality Assurance
+- `uv run ruff check src` - Lint code
+- `uv run ty check src` - Type check
+- `uv run ruff format` - Format code
 - `uv run prek run` - Run pre-commit hooks (REQUIRED after any change per CONSTITUTION.md)
+- `uv run prek run -a` - Run pre-commit hooks on all files
 
 ### Build and Publish
 - `uv build --wheel && uv publish` - Build wheel and publish to PyPI
