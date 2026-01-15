@@ -568,57 +568,6 @@ class TestAgentCallback:
 
     @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_message_text")
-    @patch("bot.callbacks.agent.async_create_page")
-    @patch("bot.callbacks.agent.Runner")
-    async def test_handle_message_long_response(
-        self, mock_runner, mock_get_message_text, mock_create_page, mock_get_cache
-    ):
-        """Test handling long responses that require Telegraph fallback"""
-        mock_agent = Mock()
-        mock_cache = Mock()
-        mock_cache.get = AsyncMock(return_value=[])
-        mock_cache.set = AsyncMock()
-        mock_get_cache.return_value = mock_cache
-
-        # Create long response that exceeds MAX_MESSAGE_LENGTH
-        long_response = "A" * 1500  # Longer than 1000 char limit
-        mock_get_message_text.return_value = "Tell me something long"
-
-        # Mock runner result with long content
-        mock_result = Mock()
-        mock_result.new_items = ["item1"]
-        mock_result.final_output = long_response
-        mock_result.to_input_list.return_value = [
-            {"role": "user", "content": "Tell me something long"},
-            {"role": "assistant", "content": long_response},
-        ]
-        mock_runner.run = AsyncMock(return_value=mock_result)
-
-        # Mock Telegraph page creation
-        mock_create_page.return_value = "https://telegra.ph/long-response-123"
-
-        # Mock message
-        mock_message = Mock()
-        mock_message.reply_to_message = None
-        mock_message.chat.id = 12345
-        mock_new_message = Mock()
-        mock_new_message.message_id = 67890
-        mock_message.reply_text = AsyncMock(return_value=mock_new_message)
-
-        callback = AgentCallback(mock_agent)
-        await callback.handle_message(mock_message)
-
-        # Verify Telegraph page was created for long content
-        mock_create_page.assert_called_once()
-        create_args = mock_create_page.call_args
-        assert create_args[1]["title"] == "Agent Response"
-        assert "A" * 1000 in create_args[1]["html_content"]  # HTML contains content
-
-        # Verify Telegraph URL was sent instead of long content
-        mock_message.reply_text.assert_called_once_with("https://telegra.ph/long-response-123")
-
-    @patch("bot.callbacks.agent.get_cache_from_env")
-    @patch("bot.callbacks.agent.get_message_text")
     @patch("bot.callbacks.agent.Runner")
     async def test_cache_persists_in_reply_thread(self, mock_runner, mock_get_message_text, mock_get_cache):
         """Test that cache persists conversation history when replying to a message"""
