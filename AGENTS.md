@@ -1,8 +1,6 @@
 # Repository Guidelines
 
-## Constitution (Read First)
-
-`CONSTITUTION.md` defines the project's highest-priority, non-negotiable rules and is immutable. Follow it for any work in this repo.
+**READ CONSTITUTION.md FIRST** - It defines non-negotiable rules with highest authority.
 
 ## Development Commands
 
@@ -15,13 +13,12 @@
 ### Testing
 - `uv run pytest tests/specific_test.py -v -s` - Run individual test file
 - `uv run pytest tests/tools/test_yahoo_finance.py::test_function -v -s` - Run specific test function
-- `uv run pytest -v -s --cov=src tests` - Run all tests with coverage
+- `uv run pytest -v -s tests` - Run all tests
+
+**Note**: Test results reflect behavior only when testing real system interactions, not mocked paths.
 
 ### Quality Assurance
-- `uv run ruff check src` - Lint code
-- `uv run ty check src` - Type check
-- `uv run ruff format` - Format code
-- `uv run prek run -a` - Run pre-commit hooks on all files
+- `uv run prek run` - Run pre-commit hooks (REQUIRED after any change per CONSTITUTION.md)
 
 ### Build and Publish
 - `uv build --wheel && uv publish` - Build wheel and publish to PyPI
@@ -177,7 +174,7 @@ The entrypoint (`src/bot/cli.py`) requires a `.env` file to exist (uses `find_do
 
 GitHub Actions workflows in `.github/workflows/`:
 
-- **python.yml**: Main CI pipeline (push/PR to main). Installs dependencies with uv, runs lint (ruff), tests (pytest + coverage), type-checks (ty), uploads coverage to Codecov.
+- **python.yml**: Main CI pipeline (push/PR to main). Installs dependencies with uv, runs lint (ruff), tests (pytest), type-checks (ty), uploads coverage to Codecov.
 - **deploy.yml**: Deploy workflow (main push/dispatch). Stops old service, installs dependencies, sets up .env, copies files, starts bot on self-hosted runner via launchctl (macOS).
 - **bump-version.yml**: Manual semantic version bumper (major/minor/patch), tags version using bump-my-version.
 - **publish.yml**: Manual PyPI release workflow—builds wheel with uv, publishes to PyPI using secret token.
@@ -185,8 +182,8 @@ GitHub Actions workflows in `.github/workflows/`:
 All workflows use uv as Python package/dependency manager. Testing environment uses Python 3.12.
 
 ### Development Workflow
-1. Always run linting and type checking after code changes
-2. For new features, add corresponding tests in `tests/` with matching directory structure
+1. After any change, run `uv run prek run` per CONSTITUTION.md
+2. For new features, add tests in `tests/` with matching directory structure
 3. Use `uv run pytest tests/path/to/test.py::test_function -v -s` for focused testing during development
 4. When modifying retry behavior, ensure tools use `tenacity` library with proper error categorization
 5. For agent modifications, validate the MCP config you changed is a plain server-name map (like `config/default.json`)
@@ -227,14 +224,14 @@ Entry point: `bot = "bot.cli:main"` (see `pyproject.toml`).
 
 ## Testing Guidelines
 
-- Frameworks: `pytest`, `pytest-asyncio`, `pytest-cov`.
+- Frameworks: `pytest`, `pytest-asyncio`.
 - Prefer focused tests near the feature area (e.g. callback changes → `tests/callbacks/`).
 - Use node ids for tight loops: `uv run pytest tests/tools/test_yahoo_finance.py::test_name -v -s`.
 
 ## Commit & Pull Request Guidelines
 
 - Commits: follow the existing history—short, imperative subjects (e.g. "Fix …", "Add …"); keep one logical change per commit when possible.
-- PRs: include a clear description, what changed/why, and how to test (commands + any required env vars). Add screenshots/snippets for user-facing formatting changes. Verify required workflows in `CONSTITUTION.md` are satisfied.
+- PRs: include a clear description, what changed/why, and how to test (commands + any required env vars). Add screenshots/snippets for user-facing formatting changes. Run `uv run prek run` before finalizing.
 
 ## Security & Configuration Tips
 
@@ -244,22 +241,6 @@ Entry point: `bot = "bot.cli:main"` (see `pyproject.toml`).
 ## Documentation
 
 This repository maintains several documentation files for different purposes:
-
-### Architecture Improvements
-
-**Completed improvements (10/10 - 100%)**:
-- ✅ #1: URL loading - Extracted common logic to `get_processed_message_text()` helper
-- ✅ #2: Cache TTL - Set 1-week TTL to prevent unbounded growth
-- ✅ #3: Error handling - Created `@safe_callback` decorator for unified error handling
-- ✅ #4: Callback unification - Established `CallbackProtocol` and `BaseCallback`
-- ✅ #5: Test coverage - Improved from 60% to 80% (+38 tests, 3 new test files)
-- ✅ #6: Presentation layer - Created `MessageResponse` for UI separation
-- ✅ #7: Constants - Centralized constants in `constants.py`
-- ✅ #8: MCP timeout - Added 30s connect / 10s cleanup timeouts
-- ✅ #9: Async optimization - Eliminated event loop blocking
-- ✅ #10: Code quality - Adopted `match-case` pattern matching
-
-**Note**: Detailed implementation history is available in git commit logs.
 
 ### README.md
 **Purpose**: Public-facing project documentation
@@ -287,6 +268,5 @@ This repository maintains several documentation files for different purposes:
 
 - Prefer small, surgical changes; avoid unrelated refactors.
 - Keep code compatible with Python 3.12+.
-- Use `make format` (ruff) before committing formatting changes.
-- Use `make lint`, `make type`, and focused `uv run pytest ...` runs to validate changes.
+- Use `uv run prek run` before committing changes.
 - Follow the established architecture patterns documented in this file (callbacks, presentation layer, error handling, etc.)
