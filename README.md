@@ -78,7 +78,7 @@ LANGFUSE_SECRET_KEY=your_langfuse_secret_key
 LANGFUSE_HOST=your_langfuse_host
 ```
 
-See [CLAUDE.md](CLAUDE.md#environment-requirements) for detailed configuration options.
+See [AGENTS.md](AGENTS.md#environment-requirements) for detailed configuration options.
 
 ## Installation
 
