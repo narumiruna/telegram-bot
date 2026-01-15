@@ -32,14 +32,17 @@ class MessageResponse:
     title: str | None = None
     parse_mode: str | None = "HTML"
 
-    async def send(self, message: Message) -> None:
-        """Send the response to Telegram.
+    async def send(self, message: Message) -> Message:
+        """Send response to Telegram.
 
-        If the content exceeds MAX_MESSAGE_LENGTH, creates a Telegraph page
+        If content exceeds MAX_MESSAGE_LENGTH, creates a Telegraph page
         and sends the URL instead.
 
         Args:
             message: The Telegram message to reply to
+
+        Returns:
+            The sent message
         """
         if len(self.content) > MAX_MESSAGE_LENGTH:
             # Create Telegraph page for long content
@@ -52,7 +55,7 @@ class MessageResponse:
                 title=self.title or "Response",
                 html_content=telegraph_html,
             )
-            await message.reply_text(url)
+            return await message.reply_text(url)
         else:
             # Send directly for short content
-            await message.reply_text(self.content, parse_mode=self.parse_mode)
+            return await message.reply_text(self.content, parse_mode=self.parse_mode)
