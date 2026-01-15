@@ -144,7 +144,7 @@ The bot uses MCP (Model Context Protocol) servers for extended capabilities. Con
 }
 ```
 
-See [CLAUDE.md](CLAUDE.md#configuration) for more details.
+See [AGENTS.md](AGENTS.md#configuration) for more details.
 
 ## Commands
 
@@ -214,13 +214,13 @@ config/               # MCP server configurations
 └── default.json      # Default MCP server setup
 ```
 
-See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation.
+See [AGENTS.md](AGENTS.md) for detailed architecture documentation.
 
 ## Documentation
 
 This project maintains comprehensive documentation for different audiences:
 
-- **[CLAUDE.md](CLAUDE.md)** - Development guide for AI assistants and developers
+- **[AGENTS.md](AGENTS.md)** - Development guide for AI assistants and developers
   - Code architecture and patterns
   - Development commands and workflows
   - Callback patterns and conventions
@@ -233,7 +233,7 @@ This project maintains comprehensive documentation for different audiences:
   - Features overview
   - Basic usage instructions
 
-**Note**: Detailed implementation history and architecture improvement details are available in git commit logs and CLAUDE.md.
+**Note**: Detailed implementation history and architecture improvement details are available in git commit logs and AGENTS.md.
 
 ## Development
 
@@ -264,7 +264,7 @@ When creating new callbacks:
 - Use `get_processed_message_text()` helper for message text extraction
 - Use `MessageResponse` for sending replies (handles long messages automatically)
 
-See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation.
+See [AGENTS.md](AGENTS.md) for detailed architecture documentation.
 
 ## Testing
 
