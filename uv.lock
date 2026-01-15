@@ -205,7 +205,6 @@ dependencies = [
     { name = "yfinance" },
     { name = "youtube-search" },
     { name = "youtube-transcript-api" },
-    { name = "yt-dlp" },
 ]
 
 [package.dev-dependencies]
@@ -254,7 +253,6 @@ requires-dist = [
     { name = "yfinance", specifier = ">=0.2.59" },
     { name = "youtube-search", specifier = ">=2.1.2" },
     { name = "youtube-transcript-api", specifier = ">=1.2.3" },
-    { name = "yt-dlp", specifier = ">=2025.10.22" },
 ]
 
 [package.metadata.requires-dev]
