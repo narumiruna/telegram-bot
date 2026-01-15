@@ -30,7 +30,6 @@ dependencies = [
     "httpx>=0.28.1",
     "pypdf>=6.2.0",
     "youtube-transcript-api>=1.2.3",
-    "openai-whisper>=20250625",
     "playwright>=1.55.0",
     "typer-slim>=0.21.0",
     "typer>=0.21.0",
