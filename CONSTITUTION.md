@@ -34,6 +34,17 @@
 - Any exception to using `uv` MUST be explicitly justified and recorded.
 - After any change, agents MUST run `prek run` and resolve all failures before proceeding.
 
+## Testing & Correctness Constraints
+
+- Test results MUST reflect realistic system behavior.
+- Tests that only validate mocked, patched, or artificially constructed behavior MUST NOT be treated as evidence of correctness.
+- Code coverage metrics MUST be treated as observational signals only.
+- No agent MAY justify a change, reject a change, or mark a result invalid solely based on coverage percentage.
+- Agents MUST NOT introduce tests whose primary purpose is to increase coverage without increasing confidence in real behavior.
+- If a trade-off exists between higher coverage and higher behavioral fidelity, behavioral fidelity MUST take precedence.
+- Mocking, patching, or interception mechanisms MUST NOT be used to fabricate success paths that cannot occur in real execution.
+- When mocks are unavoidable, agents MUST ensure that the tested behavior corresponds to an observable real-world interaction or failure mode.
+
 ## Documentation Principles
 
 - Language MUST be concise, precise, and unambiguous.
