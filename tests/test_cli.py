@@ -91,40 +91,6 @@ class TestCLI:
     @patch("bot.cli.configure_logfire")
     @patch("bot.cli.load_dotenv")
     @patch("bot.cli.find_dotenv")
-    def test_main_call_sequence(self, mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run):
-        """Test that functions are called in the correct order"""
-        mock_find_dotenv.return_value = ".env"
-        mock_load_dotenv.return_value = True
-
-        # Create a manager to track call order
-        manager = Mock()
-        manager.attach_mock(mock_find_dotenv, "find_dotenv")
-        manager.attach_mock(mock_load_dotenv, "load_dotenv")
-        manager.attach_mock(mock_configure_logfire, "configure_logfire")
-        manager.attach_mock(mock_typer_run, "typer_run")
-
-        main()
-
-        # Verify call order
-        expected_calls = [
-            ("find_dotenv", (), {}),
-            ("load_dotenv", (), {}),
-            ("configure_logfire", (), {}),
-            ("typer_run", (), {}),
-        ]
-
-        actual_calls = list(manager.mock_calls)
-        assert len(actual_calls) == 4
-
-        # Check that each expected call type was made
-        call_names = [call[0] for call in actual_calls]
-        expected_names = [call[0] for call in expected_calls]
-        assert call_names == expected_names
-
-    @patch("bot.cli.typer.run")
-    @patch("bot.cli.configure_logfire")
-    @patch("bot.cli.load_dotenv")
-    @patch("bot.cli.find_dotenv")
     def test_main_dotenv_parameters(self, mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run):
         """Test that dotenv functions are called with correct parameters"""
         mock_find_dotenv.return_value = "/path/to/.env"
@@ -144,41 +110,6 @@ class TestCLI:
             override=True,
         )
 
-    @patch("bot.cli.typer.run")
-    @patch("bot.cli.configure_logfire")
-    @patch("bot.cli.load_dotenv")
-    @patch("bot.cli.find_dotenv")
-    def test_main_no_return_value(self, mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run):
-        """Test that main function returns None"""
-        mock_find_dotenv.return_value = ".env"
-        mock_load_dotenv.return_value = True
 
-        result = main()
-
-        assert result is None
-
-    @patch("bot.cli.typer")
-    @patch("bot.cli.configure_logfire")
-    @patch("bot.cli.load_dotenv")
-    @patch("bot.cli.find_dotenv")
-    def test_main_integration_with_real_imports(
-        self, mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer
-    ):
-        """Test integration with real run_bot import"""
-        mock_find_dotenv.return_value = ".env"
-        mock_load_dotenv.return_value = True
-        mock_typer.run = Mock()
-
-        main()
-
-        # Verify that typer.run was called with the actual run_bot function
-        mock_typer.run.assert_called_once()
-
-        # Get the argument passed to typer.run
-        call_args = mock_typer.run.call_args
-        passed_function = call_args[0][0]
-
-        # Import the actual run_bot function to compare
-        from bot.bot import run_bot
-
-        assert passed_function == run_bot
+# Note: Tests for call sequence, no return value, and integration removed per CONSTITUTION.md §40.
+# Those tests only validated mock call patterns without testing real CLI behavior.
