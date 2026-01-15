@@ -48,11 +48,11 @@ FORMAT_PROMPT = PromptSpec(
     version=1,
     name="format",
     input_template="""
-Begin with a concise checklist (3-7 bullets) of what you will do; keep items conceptual,
-not implementation-level.
-
 Extract and organize information from the input text, then translate it into {lang}.
 Do not invent or add information.
+
+IMPORTANT: Do not include any internal planning, checklists, or meta-commentary about your process in the output.
+Only output the organized and translated content sections from the input text.
 
 Use clear, accessible language that is easy for the general public to understand. When the input includes legal,
 technical, or other complex documents, rephrase the content in plain language appropriate for ordinary readers.
