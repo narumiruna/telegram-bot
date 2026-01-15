@@ -5,7 +5,6 @@ from loguru import logger
 from telegram import Message
 
 from ..utils import load_url
-from ..utils import parse_url
 from ..utils import parse_urls
 
 
@@ -84,7 +83,7 @@ async def get_processed_message_text(
     require_url: bool = False,
 ) -> tuple[str | None, str | None]:
     """取得訊息文字，並處理 URL 載入（如果存在）
-    
+
     支援多個 URL 的處理，會並行載入所有 URL 的內容並組合。
 
     Args:
@@ -115,7 +114,7 @@ async def get_processed_message_text(
     try:
         # 並行載入所有 URL
         contents = await asyncio.gather(*[load_url(url) for url in urls])
-        
+
         # 組合所有內容
         if len(contents) == 1:
             return contents[0], None

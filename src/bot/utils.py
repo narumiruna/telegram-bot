@@ -47,10 +47,10 @@ def parse_url(s: str) -> str:
 
 def parse_urls(s: str) -> list[str]:
     """Parse all URLs from the given string.
-    
+
     Args:
         s: String that may contain URLs
-        
+
     Returns:
         List of URLs found in the string
     """
