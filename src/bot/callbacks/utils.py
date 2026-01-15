@@ -1,3 +1,4 @@
+import asyncio
 from functools import wraps
 
 from loguru import logger
@@ -5,6 +6,7 @@ from telegram import Message
 
 from ..utils import load_url
 from ..utils import parse_url
+from ..utils import parse_urls
 
 
 def get_user_display_name(message: Message) -> str | None:
@@ -82,6 +84,8 @@ async def get_processed_message_text(
     require_url: bool = False,
 ) -> tuple[str | None, str | None]:
     """取得訊息文字，並處理 URL 載入（如果存在）
+    
+    支援多個 URL 的處理，會並行載入所有 URL 的內容並組合。
 
     Args:
         message: Telegram message
@@ -96,23 +100,31 @@ async def get_processed_message_text(
     if not message_text:
         return None, None
 
-    url = parse_url(message_text)
+    urls = parse_urls(message_text)
 
     # 如果要求 URL 但沒有找到
-    if require_url and not url:
+    if require_url and not urls:
         return None, None
 
     # 如果沒有 URL，直接返回原始文字
-    if not url:
+    if not urls:
         return message_text, None
 
-    # 嘗試載入 URL
-    logger.info("Parsed URL: {url}", url=url)
+    # 嘗試載入所有 URL
+    logger.info("Parsed URLs: {urls}", urls=urls)
     try:
-        content = await load_url(url)
-        return content, None
+        # 並行載入所有 URL
+        contents = await asyncio.gather(*[load_url(url) for url in urls])
+        
+        # 組合所有內容
+        if len(contents) == 1:
+            return contents[0], None
+        else:
+            # 多個 URL 時，用分隔符組合內容
+            combined_content = "\n\n---\n\n".join(contents)
+            return combined_content, None
     except Exception as e:
-        error_msg = f"Failed to load URL: {url}"
+        error_msg = f"Failed to load URL(s): {', '.join(urls)}"
         logger.warning("{error}, got error: {exception}", error=error_msg, exception=e)
         return None, error_msg
 

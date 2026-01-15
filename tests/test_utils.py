@@ -11,6 +11,7 @@ from bot.utils import get_telegraph_client
 from bot.utils import load_json
 from bot.utils import logfire_is_enabled
 from bot.utils import parse_url
+from bot.utils import parse_urls
 from bot.utils import save_json
 from bot.utils import save_text
 
@@ -32,6 +33,34 @@ from bot.utils import save_text
 )
 def test_parse_url(text: str, expected: str) -> None:
     result = parse_url(text)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("Check this out: https://example.com", ["https://example.com"]),
+        ("No URL here!", []),
+        ("Multiple URLs: https://example.com and https://another.com", ["https://example.com", "https://another.com"]),
+        ("Just text", []),
+        ("https://domain.com/path?query=1", ["https://domain.com/path?query=1"]),
+        ("Visit http://insecure.com for info", ["http://insecure.com"]),
+        (
+            "Text with https://sub.domain.co.uk/path/file.html?a=1&b=2",
+            ["https://sub.domain.co.uk/path/file.html?a=1&b=2"],
+        ),
+        (
+            "Three URLs: https://first.com https://second.com https://third.com",
+            ["https://first.com", "https://second.com", "https://third.com"],
+        ),
+        (
+            "Mixed: http://example.com and https://secure.com text https://another.org",
+            ["http://example.com", "https://secure.com", "https://another.org"],
+        ),
+    ],
+)
+def test_parse_urls(text: str, expected: list[str]) -> None:
+    result = parse_urls(text)
     assert result == expected
 
 
