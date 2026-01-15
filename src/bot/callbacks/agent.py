@@ -339,7 +339,7 @@ class AgentCallback:
         # if the message is a reply to another message, get the previous messages
         messages = []
         if message.reply_to_message is not None:
-            key = self._make_cache_key(message.reply_to_message.id, message.chat.id)
+            key = self._make_cache_key(message.reply_to_message.message_id, message.chat.id)
             try:
                 logger.debug("Loading conversation history from cache: {key}", key=key)
                 messages = await self.cache.get(key, default=[])
@@ -370,7 +370,7 @@ class AgentCallback:
             input_items = input_items[-self.max_cache_size :]
 
         new_message = await message.reply_text(result.final_output)
-        new_key = self._make_cache_key(new_message.id, message.chat.id)
+        new_key = self._make_cache_key(new_message.message_id, message.chat.id)
 
         # Save conversation history to cache with TTL
         try:

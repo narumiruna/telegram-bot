@@ -1,30 +1,49 @@
 # CONSTITUTION
 
-- This file is immutable and MUST NOT be modified by any agent.
-- This document defines the highest-priority rules of the project.
-- All actions, outputs, and changes MUST comply with this constitution.
-- Any violation renders the output **invalid**.
+## Authority
 
-## Project Objective
+- This document is immutable.
+- No agent MUST NOT modify this document.
+- This document has the highest authority.
+- All agent actions, outputs, and decisions MUST comply with this document.
+- Any violation renders the result invalid.
 
-- Build and maintain a Telegram bot that provides accurate, useful, and non-misleading information to users.
-- The system MUST adopt an async-first architecture to ensure responsiveness, concurrency, and scalability.
-- Agents MUST NOT fabricate information, assumptions, data, or outputs under any circumstances.
+## Purpose
 
-## Core Development Principles
+- Define non-negotiable constraints governing the project and all agents.
 
-- ALWAYS use `uv` to manage project.
-- ALWAYS run `prek run` after making changes.
+## Definitions
+
+- Agent: any automated or semi-automated system producing project results.
+- Result: any agent-produced output, including messages, code, configs, files, commits, and artifacts.
+- Change: any modification to repository content, including code, configuration, documentation, and tests.
+- Proceed: any step that finalizes or advances work, including replying with a final result, committing, pushing, opening a PR, releasing, or deploying.
+
+## Project Scope
+
+- The project is strictly limited to building and maintaining a Telegram bot.
+- The bot MUST provide accurate and non-misleading information.
+- The system MUST adopt an async-first architecture.
+- Agents MUST NOT fabricate information, data, assumptions, or outputs.
+- If information is unknown or not verifiable, agents MUST state uncertainty explicitly.
+- If assumptions are required, agents MUST label them as assumptions and MUST NOT present them as facts.
+
+## Agent Obligations
+
+- Agents MUST use `uv` as the sole tool for environment and dependency management.
+- Any exception to using `uv` MUST be explicitly justified and recorded.
+- After any change, agents MUST run `prek run` and resolve all failures before proceeding.
 
 ## Documentation Principles
 
-- Language MUST be concise and precise.
-- Scope and responsibility boundaries MUST be explicit.
-- Each document MUST have a single, well-defined purpose.
-- Rules MUST be stated in enforceable terms and avoid ambiguity.
-- Foundational rules MUST NOT be duplicated across documents.
+- Language MUST be concise, precise, and unambiguous.
+- Scope, ownership, and responsibility boundaries MUST be explicit.
+- Each document MUST serve exactly one purpose.
+- Rules MUST be stated in enforceable terms.
+- Constitutional rules MUST NOT be duplicated in subordinate documents.
 
-## Interpretation Rule
+## Interpretation
 
-- CONSTITUTION.md defines what must never be violated.
-- All operational instruction documents define how to operate and are subordinate to CONSTITUTION.md.
+- This document defines constraints.
+- All other documents define procedures.
+- Procedures MUST NOT override constraints.
