@@ -22,8 +22,10 @@ from tenacity import stop_after_attempt
 
 from ..cache import get_cache_from_env
 from ..constants import CACHE_TTL_SECONDS
+from ..constants import MAX_URL_CONTENT_LENGTH
 from ..constants import MCP_CLEANUP_TIMEOUT
 from ..constants import MCP_CONNECT_TIMEOUT
+from ..constants import URL_CONTENT_TRUNCATED_MESSAGE
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
 from ..retry_utils import is_retryable_error
@@ -269,6 +271,17 @@ class AgentCallback:
             logger.info("Loading URL content: {url}", url=parsed_url)
             url_content = await self._load_url_with_retry(parsed_url)
             logger.info("Successfully loaded URL content: {url}", url=parsed_url)
+
+            # Apply content length limits for security and performance
+            if len(url_content) > MAX_URL_CONTENT_LENGTH:
+                original_length = len(url_content)
+                url_content = url_content[:MAX_URL_CONTENT_LENGTH] + "\n" + URL_CONTENT_TRUNCATED_MESSAGE
+                logger.warning(
+                    "URL content truncated from {original} to {limited} characters for URL: {url}",
+                    original=original_length,
+                    limited=len(url_content),
+                    url=parsed_url,
+                )
 
             message_text = message_text.replace(
                 parsed_url,

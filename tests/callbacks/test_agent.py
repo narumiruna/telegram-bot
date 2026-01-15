@@ -279,6 +279,37 @@ class TestAgentCallback:
         assert result == message_text
 
     @patch("bot.callbacks.agent.get_cache_from_env")
+    @patch("bot.callbacks.agent.load_url")
+    @patch("bot.callbacks.agent.parse_url")
+    async def test_load_url_content_with_truncation(self, mock_parse_url, mock_load_url, mock_get_cache):
+        """Test URL content truncation when content exceeds length limit"""
+        from bot.constants import MAX_URL_CONTENT_LENGTH
+        from bot.constants import URL_CONTENT_TRUNCATED_MESSAGE
+
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_get_cache.return_value = mock_cache
+        mock_parse_url.return_value = "https://example.com"
+
+        # Create content longer than the limit
+        long_content = "A" * (MAX_URL_CONTENT_LENGTH + 1000)
+        mock_load_url.return_value = long_content
+
+        callback = AgentCallback(mock_agent)
+
+        message_text = "Check this out: https://example.com"
+        result = await callback.load_url_content(message_text)
+
+        # Should be truncated with truncation message
+        expected_truncated_content = "A" * MAX_URL_CONTENT_LENGTH + "\n" + URL_CONTENT_TRUNCATED_MESSAGE
+        expected = (
+            "Check this out: [URL content from https://example.com]:\n'''"
+            f"\n{expected_truncated_content}\n'''\n[END of URL content]\n"
+        )
+        assert result == expected
+        mock_load_url.assert_called_once_with("https://example.com")
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_message_text")
     @patch("bot.callbacks.agent.Runner")
     async def test_handle_message_simple(self, mock_runner, mock_get_message_text, mock_get_cache):
