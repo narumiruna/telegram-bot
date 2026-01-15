@@ -36,7 +36,7 @@ dependencies = [
     "playwright>=1.55.0",
     "typer-slim>=0.21.0",
     "typer>=0.21.0",
-    "kabigon>=0.14.2",
+    "kabigon>=0.14.3",
 ]
 
 [project.scripts]
