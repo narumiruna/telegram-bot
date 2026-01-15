@@ -259,6 +259,24 @@ This repository maintains several documentation files for different purposes:
 
 **Target audience**: End users, new contributors, GitHub visitors
 
+### IMPROVEMENTS.md
+**Purpose:** Strategic record of technical debt, improvement proposals, and implementation priorities.
+
+Every core contributor must review IMPROVEMENTS.md before major refactors, architectural changes, or when setting development priorities.
+
+**Scope:**
+- Catalogs all significant improvement proposals, their status, responsible parties, and rationale.
+- Ranks and tracks each item (Critical, Operational, Strategic, Developer Experience).
+- Roadmap for ongoing and planned technical, operational, and architectural upgrades.
+
+**Maintenance:**
+- Update whenever work on a tracked issue starts, status changes, or a proposal completes.
+- Treat all roadmap and prioritization efforts as subordinate to CONSTITUTION.md constraints. If a conflict arises, constitutional constraints override.
+
+**Reference:**
+- IMPROVEMENTS.md sets the roadmap; AGENTS.md governs implementation; README.md summarizes for users and new contributors.
+
+
 ### .github/copilot-instructions.md
 **Purpose**: Redirect to AGENTS.md
 
