@@ -227,7 +227,7 @@ requires-dist = [
     { name = "duckduckgo-search", specifier = ">=7.5.1" },
     { name = "firecrawl-py", specifier = ">=4.6.0" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "kabigon", specifier = ">=0.14.2" },
+    { name = "kabigon", specifier = ">=0.14.3" },
     { name = "logfire", extras = ["httpx", "redis", "requests"], specifier = ">=3.22.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "lxml", specifier = ">=5.3.0" },
@@ -1130,9 +1130,10 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.14.2"
+version = "0.14.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "charset-normalizer" },
     { name = "firecrawl-py" },
     { name = "httpx" },
     { name = "loguru" },
@@ -1146,7 +1147,7 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/60/09dbd4f1f9c75c0bfae1f5a04475bfd3c41ec6870641b4a5a58689e5c7ed/kabigon-0.14.2-py3-none-any.whl", hash = "sha256:0855d0c9545b876553e7f7c33a4c92bf3bca5ee38411bc72a593c8f3d4dd7ed5", size = 21593, upload-time = "2026-01-15T06:49:56.822Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/48/a928ef676830ae8972d2fbb70fa04e774e74d4d6bbfc587fe3cffedbeb54/kabigon-0.14.3-py3-none-any.whl", hash = "sha256:90387ad8a24749aa4fe826b8a74a0df3e9528c7ccda579e8e8c42ea6f6b85ded", size = 21610, upload-time = "2026-01-15T08:31:49.997Z" },
 ]
 
 [[package]]

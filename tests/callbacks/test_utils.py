@@ -138,9 +138,9 @@ class TestGetProcessedMessageText:
         assert error is None
 
     @pytest.mark.asyncio
-    @patch("bot.callbacks.utils.parse_url")
-    async def test_require_url_but_no_url(self, mock_parse_url):
-        mock_parse_url.return_value = ""
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_require_url_but_no_url(self, mock_parse_urls):
+        mock_parse_urls.return_value = []
 
         message = Message(
             message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="No URL here"
@@ -151,9 +151,9 @@ class TestGetProcessedMessageText:
         assert error is None
 
     @pytest.mark.asyncio
-    @patch("bot.callbacks.utils.parse_url")
-    async def test_no_url_returns_original_text(self, mock_parse_url):
-        mock_parse_url.return_value = ""
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_no_url_returns_original_text(self, mock_parse_urls):
+        mock_parse_urls.return_value = []
 
         message = Message(
             message_id=1, date=datetime.datetime.now(), chat=self.chat, from_user=self.user, text="No URL here"
@@ -165,9 +165,9 @@ class TestGetProcessedMessageText:
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.utils.load_url")
-    @patch("bot.callbacks.utils.parse_url")
-    async def test_url_loading_success(self, mock_parse_url, mock_load_url):
-        mock_parse_url.return_value = "https://example.com"
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_url_loading_success(self, mock_parse_urls, mock_load_url):
+        mock_parse_urls.return_value = ["https://example.com"]
         mock_load_url.return_value = "Content from URL"
 
         message = Message(
@@ -181,9 +181,9 @@ class TestGetProcessedMessageText:
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.utils.load_url")
-    @patch("bot.callbacks.utils.parse_url")
-    async def test_url_loading_failure(self, mock_parse_url, mock_load_url):
-        mock_parse_url.return_value = "https://example.com"
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_url_loading_failure(self, mock_parse_urls, mock_load_url):
+        mock_parse_urls.return_value = ["https://example.com"]
         mock_load_url.side_effect = Exception("Connection error")
 
         message = Message(
@@ -192,13 +192,13 @@ class TestGetProcessedMessageText:
 
         text, error = await get_processed_message_text(message, require_url=False)
         assert text is None
-        assert error == "Failed to load URL: https://example.com"
+        assert error == "Failed to load URL(s): https://example.com"
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.utils.load_url")
-    @patch("bot.callbacks.utils.parse_url")
-    async def test_require_url_with_url_success(self, mock_parse_url, mock_load_url):
-        mock_parse_url.return_value = "https://example.com"
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_require_url_with_url_success(self, mock_parse_urls, mock_load_url):
+        mock_parse_urls.return_value = ["https://example.com"]
         mock_load_url.return_value = "Content from URL"
 
         message = Message(
@@ -209,6 +209,65 @@ class TestGetProcessedMessageText:
         assert text == "Content from URL"
         assert error is None
         mock_load_url.assert_called_once_with("https://example.com")
+
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.load_url")
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_multiple_urls_loading_success(self, mock_parse_urls, mock_load_url):
+        mock_parse_urls.return_value = ["https://example1.com", "https://example2.com"]
+        mock_load_url.side_effect = ["Content from URL 1", "Content from URL 2"]
+
+        message = Message(
+            message_id=1,
+            date=datetime.datetime.now(),
+            chat=self.chat,
+            from_user=self.user,
+            text="Check https://example1.com and https://example2.com",
+        )
+
+        text, error = await get_processed_message_text(message, require_url=False)
+        assert text == "Content from URL 1\n\n---\n\nContent from URL 2"
+        assert error is None
+        assert mock_load_url.call_count == 2
+
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.load_url")
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_multiple_urls_one_fails(self, mock_parse_urls, mock_load_url):
+        mock_parse_urls.return_value = ["https://example1.com", "https://example2.com"]
+        mock_load_url.side_effect = Exception("Connection error")
+
+        message = Message(
+            message_id=1,
+            date=datetime.datetime.now(),
+            chat=self.chat,
+            from_user=self.user,
+            text="Check https://example1.com and https://example2.com",
+        )
+
+        text, error = await get_processed_message_text(message, require_url=False)
+        assert text is None
+        assert error == "Failed to load URL(s): https://example1.com, https://example2.com"
+
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.load_url")
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_multiple_urls_require_url(self, mock_parse_urls, mock_load_url):
+        mock_parse_urls.return_value = ["https://example1.com", "https://example2.com", "https://example3.com"]
+        mock_load_url.side_effect = ["Content 1", "Content 2", "Content 3"]
+
+        message = Message(
+            message_id=1,
+            date=datetime.datetime.now(),
+            chat=self.chat,
+            from_user=self.user,
+            text="Three URLs: https://example1.com https://example2.com https://example3.com",
+        )
+
+        text, error = await get_processed_message_text(message, require_url=True)
+        assert text == "Content 1\n\n---\n\nContent 2\n\n---\n\nContent 3"
+        assert error is None
+        assert mock_load_url.call_count == 3
 
 
 class TestSafeCallback:
