@@ -17,10 +17,7 @@ SUMMARY_PROMPT = PromptSpec(
     input_template="""
 請以台灣正體中文為下述內容生成：
 
-在處理輸入內容時，請依循下列執行步驟：
-
-1. 開始前，先產生包含 3-7 點概念性事項的精簡清單（Checklist），簡述你將執行的核心步驟。
-2. 依下列要求輸出：
+依下列要求輸出：
 
 - **推理過程**：條列說明推導出摘要、見解的核心邏輯與步驟。
 - **摘要**：對內容進行總結，控制在 200 字以內。
@@ -80,14 +77,14 @@ class ChainOfThought(BaseModel):
 class Summary(BaseModel):
     chain_of_thought: ChainOfThought = Field(
         ...,
-        description=("通往摘要、見解的推理過程，翻譯成台灣繁體中文。提供一系列推理步驟，說明如何得出摘要、見解。"),
+        description=("通往摘要、見解的推理過程，翻譯成台灣正體中文。提供一系列推理步驟，說明如何得出摘要、見解。"),
     )
     summary_text: str = Field(
         ...,
-        description="對文本的總結，翻譯成台灣繁體中文。保留核心訊息，確保每條重點表達清晰且準確，避免加入任何虛構或未經證實的資訊。",
+        description="對文本的總結，翻譯成台灣正體中文。保留核心訊息，確保每條重點表達清晰且準確，避免加入任何虛構或未經證實的資訊。",
     )
     insights: list[str] = Field(
-        ..., description="從文本中提取的見解，翻譯成台灣繁體中文。使用項目符號列出內容中的主要重點和重要啟示。"
+        ..., description="從文本中提取的見解，翻譯成台灣正體中文。使用項目符號列出內容中的主要重點和重要啟示。"
     )
     hashtags: list[str] = Field(
         ...,

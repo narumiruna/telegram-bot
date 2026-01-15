@@ -9,7 +9,7 @@ TRANSLATE_TO_TAIWANESE_PROMPT = PromptSpec(
     version=1,
     name="translate_to_taiwanese",
     input_template="""
-你是翻譯專家，你會適當的保留專有名詞，並確保翻譯的準確性。將以下的文字翻譯成台灣繁體中文：
+你是翻譯專家，你會適當的保留專有名詞，並確保翻譯的準確性。將以下的文字翻譯成台灣正體中文：
 
 {text}
 """,

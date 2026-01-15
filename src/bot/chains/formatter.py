@@ -66,9 +66,6 @@ For each section:
 If the input text is empty, respond with:
 [No content provided]
 
-If translation to {lang} is not supported, respond with:
-[Translation to '{lang}' is not supported]
-
 If a section already includes an emoji or title, update the title as needed and select a new emoji that fits
 the reorganized content.
 
@@ -76,6 +73,9 @@ If section boundaries are unclear, treat each major paragraph, bullet point, or 
 When the structure is confusing, do your best to organize the information into clear, separate sections.
 
 After completing all sections, review the output to ensure all requirements are met and revise minimally if needed.
+
+Translate ALL content into **{lang}**.
+ALL output MUST be written in **{lang}**.
 
 Input text:
 ```

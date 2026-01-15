@@ -19,7 +19,7 @@ class TestTranslation:
         call_args = mock_lazy_run.call_args[0][0]
         assert "你是翻譯專家" in call_args
         assert "This is content to translate" in call_args
-        assert "台灣繁體中文" in call_args
+        assert "台灣正體中文" in call_args
         assert result == "這是翻譯的內容"
 
     @pytest.mark.asyncio

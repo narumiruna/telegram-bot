@@ -53,8 +53,7 @@ EXTRACT_NOTES_PROMPT = PromptSpec(
     version=1,
     name="extract_notes",
     input_template="""
-As a research assistant, begin by creating a concise checklist (3-7 bullets)
-outlining the conceptual steps you will take to analyze the provided text and organize it
+As a research assistant, you will take to analyze the provided text and organize it
 into a structured research report in the specified language ({lang}).
 
 Guidelines:
@@ -77,6 +76,9 @@ Create a research report with the following sections, in strict order:
 6. Causal Relationships: List each in 'cause -> effect' format
 7. Conclusion: Summary of implications and importance
 
+Translate ALL content into **{lang}**.
+ALL output MUST be written in **{lang}**.
+
 Input text:
 ```
 {text}
@@ -91,8 +93,6 @@ CHUNK_NOTES_PROMPT = PromptSpec(
     name="create_notes_from_chunk",
     input_template="""
 You are a researcher skilled in creating concise, well-organized study notes.
-
-Begin with a concise checklist (3-7 bullets) of your process; keep items conceptual, not implementation-level.
 
 Set reasoning_effort = minimal; use only as much detail as needed for accuracy and clarity.
 
