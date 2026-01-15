@@ -7,52 +7,59 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
+from agents import TResponseInputItem
 from mcp.client.stdio import StdioServerParameters
+from telegram import Message
 
 from bot.callbacks.agent import Agent
 from bot.callbacks.agent import AgentCallback
-from bot.callbacks.agent import Message
-from bot.callbacks.agent import TResponseInputItem
 from bot.callbacks.agent import load_mcp_config
-from bot.callbacks.agent import remove_fake_id_messages
 from bot.callbacks.agent import remove_tool_messages
 
 
 class TestAgentHelperFunctions:
-    def test_remove_tool_messages(self):
-        """Test removal of tool-related messages"""
-        messages = [
-            cast(TResponseInputItem, {"type": "text", "content": "Hello"}),
+    def test_remove_tool_messages_filters_tool_types(self):
+        """Test that tool message types are filtered out"""
+        tool_messages = [
             cast(TResponseInputItem, {"type": "function_call", "content": "tool call"}),
-            cast(TResponseInputItem, {"type": "user", "content": "User message"}),
             cast(TResponseInputItem, {"type": "function_call_output", "content": "tool output"}),
             cast(TResponseInputItem, {"type": "computer_call", "content": "computer call"}),
+        ]
+
+        result = remove_tool_messages(tool_messages)
+
+        # All tool messages should be filtered out
+        assert len(result) == 0
+
+    def test_remove_tool_messages_keeps_regular_types(self):
+        """Test that regular message types are kept"""
+        regular_messages = [
+            cast(TResponseInputItem, {"type": "text", "content": "Hello"}),
+            cast(TResponseInputItem, {"type": "user", "content": "User message"}),
             cast(TResponseInputItem, {"type": "text", "content": "Another message"}),
         ]
-        result = remove_tool_messages(messages)
-        assert all(msg["type"] not in {"function_call", "function_call_output", "computer_call"} for msg in result)
-        assert len(result) == 3
 
-    def test_remove_fake_id_messages(self):  # noqa: C901
-        """Test removal of messages with fake IDs"""
-        messages = [
-            cast(TResponseInputItem, {"type": "user"}),
-            cast(TResponseInputItem, {"type": "user"}),
-            cast(TResponseInputItem, {"type": "assistant"}),
-        ]
-        result = remove_fake_id_messages(messages)
-        # Since "id" is not a valid key, just check the length
-        assert len(result) == 3
+        result = remove_tool_messages(regular_messages)
 
-        @pytest.mark.asyncio
-        async def test_remove_fake_id_messages():
-            messages = [
-                cast(TResponseInputItem, {"type": "user"}),
-                cast(TResponseInputItem, {"type": "user"}),
-                cast(TResponseInputItem, {"type": "assistant"}),
-            ]
-            filtered = remove_fake_id_messages(messages)
-            assert len(filtered) == 3
+        # All regular messages should be kept
+        assert len(result) == 3
+        assert result == regular_messages
+
+    def test_remove_tool_messages_mixed_messages(self):  # noqa: C901
+        """Test filtering with mixed message types"""
+        # Create test data outside function to reduce complexity
+        tool_msg = cast(TResponseInputItem, {"type": "function_call", "content": "tool call"})
+        text_msg = cast(TResponseInputItem, {"type": "text", "content": "Hello"})
+        user_msg = cast(TResponseInputItem, {"type": "user", "content": "User message"})
+
+        all_messages = [tool_msg, text_msg, user_msg]
+        result = remove_tool_messages(all_messages)
+
+        # Should only have regular messages
+        assert len(result) == 2
+        assert tool_msg not in result
+        assert text_msg in result
+        assert user_msg in result
 
         class DummyAgent(Agent):
             def __init__(self, name="dummy"):
@@ -353,7 +360,7 @@ class TestAgentCallback:
         ]
         mock_runner.run = AsyncMock(return_value=mock_result)
 
-        # Mock message
+        # Mock message and MessageResponse
         mock_message = Mock()
         mock_message.reply_to_message = None
         mock_message.chat.id = 12345
@@ -368,10 +375,10 @@ class TestAgentCallback:
         mock_runner.run.assert_called_once()
         call_args = mock_runner.run.call_args
         assert call_args[1]["input"][0]["role"] == "user"
-        assert call_args[1]["input"][0]["content"] == "Hello, how are you?"
 
-        # Verify reply was sent
-        mock_message.reply_text.assert_called_once_with("I'm doing well, thank you!")
+        # Verify reply_text was called with MessageResponse content
+        mock_message.reply_text.assert_called_once_with("I'm doing well, thank you!", parse_mode="HTML")
+        assert call_args[1]["input"][0]["content"] == "Hello, how are you?"
 
         # Verify cache was updated
         mock_cache.set.assert_called_once()

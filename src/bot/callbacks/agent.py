@@ -27,6 +27,7 @@ from ..constants import MCP_CLEANUP_TIMEOUT
 from ..constants import MCP_CONNECT_TIMEOUT
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
+from ..presentation import MessageResponse
 from ..retry_utils import is_retryable_error
 from ..tools import query_rate_history
 from ..utils import load_json
@@ -341,7 +342,13 @@ class AgentCallback:
             logger.debug("Trimming conversation history to {size} items", size=self.max_cache_size)
             input_items = input_items[-self.max_cache_size :]
 
-        new_message = await message.reply_text(result.final_output)
+        # Send response using MessageResponse for consistency and Telegraph fallback
+        response = MessageResponse(
+            content=result.final_output,
+            title="Agent Response",
+            parse_mode="HTML",  # Agent output may contain HTML formatting
+        )
+        new_message = await response.send(message)
         new_key = self._make_cache_key(new_message.message_id, message.chat.id)
 
         # Save conversation history to cache with TTL
