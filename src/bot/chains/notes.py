@@ -115,25 +115,25 @@ Text:
 )
 
 
-async def extract_notes(text: str, lang: str = "台灣正體中文") -> ResearchReport:
+async def extract_notes(text: str, target_lang: str = "台灣正體中文") -> ResearchReport:
     """Extract structured research notes from text.
 
     Args:
         text: The text content to extract notes from
-        lang: Target language for the notes (default: "台灣正體中文")
+        target_lang: Target language for the notes (default: "台灣正體中文")
 
     Returns:
         ResearchReport: Structured research report with sections
     """
-    response = await lazy_run(
-        input=dedent(EXTRACT_NOTES_PROMPT.render_input(text=text, lang=lang)),
-        instructions=EXTRACT_NOTES_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang),
+    report = await lazy_run(
+        input=dedent(EXTRACT_NOTES_PROMPT.render_input(text=text, lang=target_lang)),
+        instructions=EXTRACT_NOTES_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=target_lang),
         name=EXTRACT_NOTES_PROMPT.name or "lazy_run",
         output_type=ResearchReport,
     )
 
-    logger.info("Formatted response: {response}", response=response)
-    return response
+    logger.info("Formatted report: {report}", report=report)
+    return report
 
 
 async def create_notes_from_chunk(text: str) -> str:
@@ -171,5 +171,5 @@ async def create_notes(text: str) -> ResearchReport:
     if len(chunks) == 1:
         return await extract_notes(text)
 
-    results = await asyncio.gather(*[create_notes_from_chunk(chunk) for chunk in chunks])
-    return await extract_notes("\n".join(results))
+    chunk_notes = await asyncio.gather(*[create_notes_from_chunk(chunk) for chunk in chunks])
+    return await extract_notes("\n".join(chunk_notes))

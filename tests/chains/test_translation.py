@@ -27,7 +27,7 @@ class TestTranslation:
     async def test_translate(self, mock_lazy_run):
         mock_lazy_run.return_value = '"This is translated content"'
 
-        result = await translate("這是要翻譯的內容", "English")
+        result = await translate("這是要翻譯的內容", target_lang="English")
 
         mock_lazy_run.assert_called_once()
 
@@ -48,7 +48,7 @@ class TestTranslation:
     async def test_translate_without_quotes(self, mock_lazy_run):
         mock_lazy_run.return_value = "This is translated content"
 
-        result = await translate("這是要翻譯的內容", "English")
+        result = await translate("這是要翻譯的內容", target_lang="English")
 
         assert result == "This is translated content"
 
@@ -57,7 +57,7 @@ class TestTranslation:
     async def test_translate_and_explain(self, mock_lazy_run):
         mock_lazy_run.return_value = '"This is translated content with explanation"'
 
-        result = await translate_and_explain("これは日本語です", "English")
+        result = await translate_and_explain("これは日本語です", target_lang="English")
 
         mock_lazy_run.assert_called_once()
 
@@ -81,9 +81,9 @@ class TestTranslation:
         mock_lazy_run.return_value = "Translated content"
 
         # Test with different target languages
-        await translate("Hello", "Japanese")
-        await translate("Hello", "French")
-        await translate("Hello", "German")
+        await translate("Hello", target_lang="Japanese")
+        await translate("Hello", target_lang="French")
+        await translate("Hello", target_lang="German")
 
         assert mock_lazy_run.call_count == 3
 

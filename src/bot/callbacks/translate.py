@@ -28,7 +28,7 @@ class TranslationCallback(BaseCallback):
         if not message_text:
             return
 
-        translated_text = await chains.translate(message_text, lang=self.lang)
+        translated_text = await chains.translate(message_text, target_lang=self.lang)
         logger.info("Translated text to {lang}: {text}", lang=self.lang, text=translated_text)
 
         response = MessageResponse(
