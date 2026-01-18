@@ -153,7 +153,7 @@ class TestUtilsFunctions:
         finally:
             Path(temp_path).unlink()
 
-    @patch("bot.utils.telegraph.Telegraph")
+    @patch("bot.telegraph_utils.telegraph.Telegraph")
     def test_get_telegraph_client(self, mock_telegraph_class):
         """Test telegraph client creation"""
         mock_client = Mock()
@@ -164,7 +164,7 @@ class TestUtilsFunctions:
         mock_telegraph_class.assert_called_once()
         assert client == mock_client
 
-    @patch("bot.utils.get_telegraph_client")
+    @patch("bot.telegraph_utils.get_telegraph_client")
     def test_create_page_success(self, mock_get_client):
         """Test successful page creation"""
         mock_client = Mock()
@@ -176,7 +176,7 @@ class TestUtilsFunctions:
         mock_client.create_page.assert_called_once_with(title="Test Title", content="Test content")
         assert result == "https://telegra.ph/test-page"
 
-    @patch("bot.utils.get_telegraph_client")
+    @patch("bot.telegraph_utils.get_telegraph_client")
     def test_create_page_failure(self, mock_get_client):
         """Test page creation failure"""
         mock_client = Mock()
@@ -202,9 +202,9 @@ class TestUtilsFunctions:
         with patch.dict("os.environ", {"LOGFIRE_TOKEN": ""}):
             assert logfire_is_enabled() is False
 
-    @patch("bot.utils.logfire_is_enabled")
-    @patch("bot.utils.logfire")
-    @patch("bot.utils.logger")
+    @patch("bot.observability.logfire_is_enabled")
+    @patch("bot.observability.logfire")
+    @patch("bot.observability.logger")
     def test_configure_logfire_enabled(self, mock_logger, mock_logfire, mock_is_enabled):
         """Test logfire configuration when enabled"""
         mock_is_enabled.return_value = True
@@ -218,8 +218,8 @@ class TestUtilsFunctions:
         mock_logfire.instrument_openai_agents.assert_called_once()
         mock_logger.configure.assert_called_once()
 
-    @patch("bot.utils.logfire_is_enabled")
-    @patch("bot.utils.logfire")
+    @patch("bot.observability.logfire_is_enabled")
+    @patch("bot.observability.logfire")
     def test_configure_logfire_disabled(self, mock_logfire, mock_is_enabled):
         """Test logfire configuration when disabled"""
         mock_is_enabled.return_value = False
@@ -238,9 +238,9 @@ class TestUtilsFunctions:
             "LANGFUSE_HOST": "https://cloud.langfuse.com",
         },
     )
-    @patch("bot.utils.logfire")
-    @patch("bot.utils.nest_asyncio")
-    @patch("bot.utils.logger")
+    @patch("bot.observability.logfire")
+    @patch("bot.observability.nest_asyncio")
+    @patch("bot.observability.logger")
     def test_configure_langfuse_with_keys(self, mock_logger, mock_nest_asyncio, mock_logfire):
         """Test langfuse configuration when keys are available"""
         mock_logfire.loguru_handler.return_value = Mock()
@@ -255,7 +255,7 @@ class TestUtilsFunctions:
         mock_logger.configure.assert_called_once()
 
     @patch.dict("os.environ", {}, clear=True)
-    @patch("bot.utils.logfire")
+    @patch("bot.observability.logfire")
     def test_configure_langfuse_without_keys(self, mock_logfire):
         """Test langfuse configuration when keys are missing"""
         from bot.utils import configure_langfuse
