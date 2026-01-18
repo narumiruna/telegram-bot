@@ -6,7 +6,6 @@ This module provides functionality for:
 - Loading URLs with instrumentation and logging
 """
 
-import asyncio
 import base64
 import os
 
