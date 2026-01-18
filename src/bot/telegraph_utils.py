@@ -1,3 +1,11 @@
+"""Telegraph utilities for creating and managing Telegraph pages.
+
+This module provides functionality for:
+- Creating Telegraph pages (sync and async)
+- Sanitizing HTML content for Telegraph's limited HTML subset
+- Managing Telegraph client instances
+"""
+
 import asyncio
 import functools
 from html import escape as html_escape

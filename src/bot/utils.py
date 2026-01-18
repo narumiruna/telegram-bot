@@ -2,9 +2,9 @@
 
 This module contains basic file and JSON handling utilities.
 For specific functionality, see:
-- telegraph_utils.py: Telegraph page creation and HTML sanitization
-- url_parser.py: URL parsing and extraction
-- observability.py: Logfire and Langfuse configuration
+- bot.telegraph_utils: Telegraph page creation and HTML sanitization
+- bot.url_parser: URL parsing and extraction
+- bot.observability: Logfire and Langfuse configuration
 """
 
 import json

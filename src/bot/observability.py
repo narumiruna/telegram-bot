@@ -1,3 +1,11 @@
+"""Observability and monitoring configuration.
+
+This module provides functionality for:
+- Configuring Logfire for application monitoring
+- Configuring Langfuse for LLM observability
+- Loading URLs with instrumentation and logging
+"""
+
 import asyncio
 import base64
 import os

@@ -1,3 +1,8 @@
+"""URL parsing utilities for extracting URLs from text.
+
+This module provides functions for parsing and extracting URLs from strings.
+"""
+
 import re
 
 
