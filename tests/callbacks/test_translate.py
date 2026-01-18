@@ -55,7 +55,7 @@ class TestTranslationCallback:
 
         await self.callback(update, self.context)
 
-        mock_translate.assert_called_once_with("This is content to translate", lang="zh")
+        mock_translate.assert_called_once_with("This is content to translate", target_lang="zh")
         # MessageResponse.send() is called internally, which calls message.reply_text
         message.reply_text.assert_called_once()
 
@@ -78,7 +78,7 @@ class TestTranslationCallback:
         await self.callback(update, self.context)
 
         mock_get_processed.assert_called_once_with(message, require_url=False)
-        mock_translate.assert_called_once_with("Content from URL", lang="zh")
+        mock_translate.assert_called_once_with("Content from URL", target_lang="zh")
         # MessageResponse.send() is called internally
         message.reply_text.assert_called_once()
 
@@ -101,7 +101,7 @@ class TestTranslationCallback:
 
         await self.callback(update, self.context)
 
-        mock_translate.assert_called_once_with("Long message to translate", lang="zh")
+        mock_translate.assert_called_once_with("Long message to translate", target_lang="zh")
         # MessageResponse.send() will create Telegraph page for long content
         mock_async_create_page.assert_called_once()
         message.reply_text.assert_called_once_with("https://telegra.ph/translation-page")

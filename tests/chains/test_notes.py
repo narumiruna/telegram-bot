@@ -115,7 +115,7 @@ class TestExtractNotes:
         with patch("bot.chains.notes.lazy_run", new_callable=AsyncMock) as mock_lazy_run:
             mock_lazy_run.return_value = mock_report
 
-            result = await extract_notes("測試文本", lang="台灣正體中文")
+            result = await extract_notes("測試文本", target_lang="台灣正體中文")
 
             assert result == mock_report
             mock_lazy_run.assert_called_once()

@@ -53,37 +53,37 @@ async def translate_to_taiwanese(text: str) -> str:
     )
 
 
-async def translate(text: str, lang: str) -> str:
+async def translate(text: str, target_lang: str) -> str:
     """Translate text to the specified language.
 
     Args:
         text: The text to translate
-        lang: Target language
+        target_lang: Target language
 
     Returns:
         str: Translated text
     """
     user_prompt = TRANSLATE_PROMPT.render_input(text=text)
-    instructions = TRANSLATE_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang)
-    result = await lazy_run(user_prompt, instructions=instructions, name=TRANSLATE_PROMPT.name or "lazy_run")
-    return result.strip('"')
+    instructions = TRANSLATE_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=target_lang)
+    translated_text = await lazy_run(user_prompt, instructions=instructions, name=TRANSLATE_PROMPT.name or "lazy_run")
+    return translated_text.strip('"')
 
 
-async def translate_and_explain(text: str, lang: str) -> str:
+async def translate_and_explain(text: str, target_lang: str) -> str:
     """Translate text and provide explanation of grammar and usage.
 
     Args:
         text: The text to translate
-        lang: Target language
+        target_lang: Target language
 
     Returns:
         str: Translated text with grammar explanation and examples
     """
     user_prompt = TRANSLATE_AND_EXPLAIN_PROMPT.render_input(text=text)
-    instructions = TRANSLATE_AND_EXPLAIN_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang)
-    result = await lazy_run(
+    instructions = TRANSLATE_AND_EXPLAIN_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=target_lang)
+    translated_text = await lazy_run(
         user_prompt,
         instructions=instructions,
         name=TRANSLATE_AND_EXPLAIN_PROMPT.name or "lazy_run",
     )
-    return result.strip('"')
+    return translated_text.strip('"')

@@ -86,31 +86,31 @@ Input text:
 )
 
 
-async def _format(text: str, lang: str = "台灣正體中文") -> Article:
+async def _format(text: str, target_lang: str = "台灣正體中文") -> Article:
     """Format text into a structured article with sections.
 
     Args:
         text: The text content to format
-        lang: Target language for the formatted output (default: "台灣正體中文")
+        target_lang: Target language for the formatted output (default: "台灣正體中文")
 
     Returns:
         Article: Structured article with title and sections
     """
-    prompt = FORMAT_PROMPT.render_input(text=text, lang=lang)
+    prompt = FORMAT_PROMPT.render_input(text=text, lang=target_lang)
 
     with trace("format"):
-        response = await lazy_run(
+        article = await lazy_run(
             dedent(prompt),
-            instructions=FORMAT_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=lang),
+            instructions=FORMAT_PROMPT.render_instructions(BASE_INSTRUCTIONS, lang=target_lang),
             name=FORMAT_PROMPT.name or "lazy_run",
             output_type=Article,
         )
 
-    logger.info("Formatted response: {response}", response=response)
-    return response
+    logger.info("Formatted article: {article}", article=article)
+    return article
 
 
-async def format(text: str, lang: str = "台灣正體中文") -> Article:
+async def format(text: str, target_lang: str = "台灣正體中文") -> Article:
     """Format text into a structured article, handling long texts by chunking.
 
     For long texts that exceed the chunk limit, the text is split into chunks,
@@ -118,7 +118,7 @@ async def format(text: str, lang: str = "台灣正體中文") -> Article:
 
     Args:
         text: The text content to format
-        lang: Target language for the formatted output (default: "台灣正體中文")
+        target_lang: Target language for the formatted output (default: "台灣正體中文")
 
     Returns:
         Article: Structured article with title and sections
@@ -126,7 +126,7 @@ async def format(text: str, lang: str = "台灣正體中文") -> Article:
     chunks = chunk_on_delimiter(text)
 
     if len(chunks) == 1:
-        return await _format(text, lang=lang)
+        return await _format(text, target_lang=target_lang)
 
-    results = await asyncio.gather(*[create_notes_from_chunk(chunk) for chunk in chunks])
-    return await _format("\n".join(results), lang=lang)
+    chunk_notes = await asyncio.gather(*[create_notes_from_chunk(chunk) for chunk in chunks])
+    return await _format("\n".join(chunk_notes), target_lang=target_lang)
