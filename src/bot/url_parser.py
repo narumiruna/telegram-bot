@@ -7,6 +7,14 @@ import re
 
 
 def parse_url(s: str) -> str:
+    """Parse the first URL from the given string.
+
+    Args:
+        s: String that may contain URLs
+
+    Returns:
+        The first URL found in the string, or empty string if no URL found
+    """
     url_pattern = r"https?://[^\s]+"
 
     match = re.search(url_pattern, s)
