@@ -11,7 +11,7 @@ from .utils import configure_logfire
 def main() -> None:
     # Set multiprocessing start method to 'spawn' to avoid CUDA fork issues
     # Must be called before any CUDA initialization (e.g., in kabigon loaders)
-    multiprocessing.set_start_method("spawn", force=True)
+    # multiprocessing.set_start_method("spawn", force=True)
     load_dotenv(
         find_dotenv(
             raise_error_if_not_found=True,
