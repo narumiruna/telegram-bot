@@ -25,11 +25,6 @@ jobs:
         run: |
           launchctl stop ${{ env.UNIT }}
           launchctl unload bot.plist
-      # - name: Install uv
-      #   run: |
-      #     if ! command -v uv >/dev/null 2>&1; then
-      #       curl -LsSf https://astral.sh/uv/install.sh | sh
-      #     fi
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
