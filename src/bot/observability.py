@@ -14,10 +14,10 @@ import logfire
 import nest_asyncio
 from loguru import logger
 
-from .env import langfuse_host
-from .env import langfuse_is_enabled
-from .env import langfuse_public_key
-from .env import langfuse_secret_key
+from bot.env import langfuse_host
+from bot.env import langfuse_is_enabled
+from bot.env import langfuse_public_key
+from bot.env import langfuse_secret_key
 
 
 async def load_url(url: str) -> str:
