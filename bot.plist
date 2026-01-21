@@ -4,14 +4,15 @@
   <dict>
     <key>EnvironmentVariables</key>
     <dict>
-      <key>PATH</key>
-      <string>/Users/narumi/.local/bin:/Users/narumi/.local/bin/env:/Users/narumi/.local/state/fnm_multishells/47071_1769002967808/bin:/Users/narumi/.local/share/fnm:/Users/narumi/.pyenv/shims:/Users/narumi/.pyenv/bin:/Users/narumi/.bun/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/opt/mysql-client/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/narumi/.cargo/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Users/narumi/.atuin/bin</string>
+      <key>THIS_IS_A_BOT</key>
+      <string>HELLO_WORLD</string>
     </dict>
     <key>Label</key>
     <string>bot</string>
     <key>ProgramArguments</key>
     <array>
-      <string>/Users/narumi/.local/bin/uv</string>
+      <string>/bin/zsh</string>
+      <string>uv</string>
       <string>run</string>
       <string>bot</string>
     </array>

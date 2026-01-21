@@ -46,7 +46,6 @@ jobs:
           cp bot.plist ${{ env.PLIST_DIR }}
       - name: Install dependencies
         run: |
-          rm -rf .venv
           uv venv --clear --managed-python --python ${{ matrix.python-version }}
           uv sync --upgrade
           uv run playwright install chromium
