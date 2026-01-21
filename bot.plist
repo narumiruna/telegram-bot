@@ -11,7 +11,7 @@
     <string>bot</string>
     <key>ProgramArguments</key>
     <array>
-      <string>/bin/zsh</string>
+      <string>/opt/homebrew/bin/zsh</string>
       <string>uv</string>
       <string>run</string>
       <string>bot</string>
