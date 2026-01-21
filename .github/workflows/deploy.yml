@@ -25,12 +25,6 @@ jobs:
         run: |
           launchctl stop ${{ env.UNIT }}
           launchctl unload bot.plist
-      - name: Install dependencies
-        run: |
-          rm -rf .venv
-          uv venv --clear --managed-python --python ${{ matrix.python-version }}
-          uv sync --upgrade
-          uv run playwright install chromium
       - name: Create dotenv
         run: |
           echo BOT_TOKEN=${{ secrets.BOT_TOKEN }} >> .env
@@ -50,6 +44,12 @@ jobs:
           rm -rf ${{ env.WORKDIR }}
           cp -rf ${{ github.workspace }} ${{ env.WORKDIR }}
           cp bot.plist ${{ env.PLIST_DIR }}
+      - name: Install dependencies
+        run: |
+          rm -rf .venv
+          uv venv --clear --managed-python --python ${{ matrix.python-version }}
+          uv sync --upgrade
+          uv run playwright install chromium
       - name: Start service
         working-directory: ${{ env.PLIST_DIR }}
         run: |
