@@ -27,6 +27,7 @@ jobs:
           launchctl unload bot.plist
       - name: Install dependencies
         run: |
+          rm -rf .venv
           uv venv --clear --managed-python --python ${{ matrix.python-version }}
           uv sync --upgrade
           uv run playwright install chromium
