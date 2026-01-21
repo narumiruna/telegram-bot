@@ -1,6 +1,6 @@
 [project]
 name = "bot"
-version = "0.1.2"
+version = "0.1.3"
 description = ""
 readme = "README.md"
 authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
@@ -85,7 +85,7 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.bumpversion]
-current_version = "0.1.2"
+current_version = "0.1.3"
 tag = true
 commit = true
 pre_commit_hooks = ["uv lock --upgrade", "git add uv.lock"]
