@@ -225,7 +225,7 @@ requires-dist = [
     { name = "rich", specifier = ">=13.9.4" },
     { name = "telegraph", specifier = ">=2.2.0" },
     { name = "tenacity", specifier = ">=9.1.2" },
-    { name = "tripplus", git = "https://github.com/narumiruna/tripplus.git" },
+    { name = "tripplus", specifier = ">=0.1.1" },
     { name = "twse", specifier = ">=0.3.3" },
     { name = "typer", specifier = ">=0.21.0" },
     { name = "typer-slim", specifier = ">=0.21.0" },
@@ -2920,11 +2920,14 @@ wheels = [
 [[package]]
 name = "tripplus"
 version = "0.1.1"
-source = { git = "https://github.com/narumiruna/tripplus.git#11a905dd2a1f936c5c156a6c81a35928e95fb885" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cloudscraper" },
     { name = "httpx" },
     { name = "pydantic" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d8/a4/92a6729277806b78fb295237abfa95766367be2a9cc501e7bf227c455b31/tripplus-0.1.1-py3-none-any.whl", hash = "sha256:89ca0973ae10639ab4e88a089afdc9fd6ee6b3354877ffa1ad704c26bdea1c31", size = 3631, upload-time = "2025-05-12T14:47:10.629Z" },
 ]
 
 [[package]]

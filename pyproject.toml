@@ -12,7 +12,6 @@ dependencies = [
     "python-telegram-bot>=21.6",
     "telegraph>=2.2.0",
     "youtube-search>=2.1.2",
-    "tripplus",
     "mortgage>=1.0.5",
     "markdown2>=2.5.1",
     "rich>=13.9.4",
@@ -34,6 +33,7 @@ dependencies = [
     "typer-slim>=0.21.0",
     "typer>=0.21.0",
     "kabigon>=0.14.3",
+    "tripplus>=0.1.1",
 ]
 
 [project.scripts]
@@ -55,9 +55,6 @@ dev = [
     "prek>=0.2.28",
 ]
 mlx = ["mlx-whisper>=0.4.1"]
-
-[tool.uv.sources]
-tripplus = { git = "https://github.com/narumiruna/tripplus.git" }
 
 [tool.ruff]
 exclude = ["build"]
