@@ -12,6 +12,7 @@
     <key>ProgramArguments</key>
     <array>
       <string>/opt/homebrew/bin/zsh</string>
+      <string>-lc</string>
       <string>uv</string>
       <string>run</string>
       <string>bot</string>
