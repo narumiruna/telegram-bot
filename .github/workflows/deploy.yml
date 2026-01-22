@@ -19,6 +19,8 @@ jobs:
         python-version: ["3.13"]
     steps:
       - uses: actions/checkout@v6
+        with:
+          path: ${{ env.WORKDIR }}
       - name: Stop and disable service
         continue-on-error: true
         working-directory: ${{ env.PLIST_DIR }}
@@ -26,6 +28,7 @@ jobs:
           launchctl stop ${{ env.UNIT }}
           launchctl unload bot.plist
       - name: Create dotenv
+        working-directory: ${{ env.WORKDIR }}
         run: |
           <<'EOF' > .env
           BOT_TOKEN=${{ secrets.BOT_TOKEN }}
@@ -38,13 +41,10 @@ jobs:
           FFMPEG_PATH=/opt/homebrew/bin/ffmpeg
           FIRECRAWL_API_KEY=${{ secrets.FIRECRAWL_API_KEY }}
           EOF
-      - name: Copy files
+      - name: Preparing environment
+        working-directory: ${{ env.WORKDIR }}
         run: |
-          rm -rf ${{ env.WORKDIR }}
-          cp -rf ${{ github.workspace }} ${{ env.WORKDIR }}
           cp bot.plist ${{ env.PLIST_DIR }}
-      - name: Install dependencies
-        run: |
           uv venv --clear --managed-python --python ${{ matrix.python-version }}
           uv sync
           uv run playwright install chromium
