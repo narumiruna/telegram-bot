@@ -27,15 +27,17 @@ jobs:
           launchctl unload bot.plist
       - name: Create dotenv
         run: |
-          echo BOT_TOKEN=${{ secrets.BOT_TOKEN }} >> .env
-          echo BOT_WHITELIST=${{ vars.BOT_WHITELIST }} >> .env
-          echo OPENAI_MODEL=${{ vars.OPENAI_MODEL }} >> .env
-          echo OPENAI_BASE_URL=${{ vars.OPENAI_BASE_URL }} >> .env
-          echo LITELLM_API_KEY=${{ secrets.LITELLM_API_KEY }} >> .env
-          echo LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }} >> .env
-          echo LOGFIRE_ENVIRONMENT=prod >> .env
-          echo FFMPEG_PATH=/opt/homebrew/bin/ffmpeg >> .env
-          echo FIRECRAWL_API_KEY=${{ secrets.FIRECRAWL_API_KEY }} >> .env
+          <<'EOF' > .env
+          BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+          BOT_WHITELIST=${{ vars.BOT_WHITELIST }}
+          OPENAI_MODEL=${{ vars.OPENAI_MODEL }}
+          OPENAI_BASE_URL=${{ vars.OPENAI_BASE_URL }}
+          LITELLM_API_KEY=${{ secrets.LITELLM_API_KEY }}
+          LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }}
+          LOGFIRE_ENVIRONMENT=prod
+          FFMPEG_PATH=/opt/homebrew/bin/ffmpeg
+          FIRECRAWL_API_KEY=${{ secrets.FIRECRAWL_API_KEY }}
+          EOF
       - name: Copy files
         run: |
           rm -rf ${{ env.WORKDIR }}
