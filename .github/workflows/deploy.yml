@@ -34,7 +34,7 @@ jobs:
       - name: Create dotenv
         working-directory: ${{ env.WORKDIR }}
         run: |
-          <<'EOF' > .env
+          cat <<'EOF' > .env
           BOT_TOKEN=${{ secrets.BOT_TOKEN }}
           BOT_WHITELIST=${{ vars.BOT_WHITELIST }}
           OPENAI_MODEL=${{ vars.OPENAI_MODEL }}
