@@ -19,8 +19,12 @@ jobs:
         python-version: ["3.13"]
     steps:
       - uses: actions/checkout@v6
-        with:
-          path: ${{ env.WORKDIR }}
+      - name: Sync code to runtime
+        shell: bash
+        run: |
+          rsync -a --delete \
+            --filter=':- .gitignore' \
+            "${GITHUB_WORKSPACE}/" "${{ env.WORKDIR }}/"
       - name: Stop and disable service
         continue-on-error: true
         working-directory: ${{ env.PLIST_DIR }}
