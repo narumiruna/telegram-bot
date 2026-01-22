@@ -24,7 +24,7 @@ jobs:
         run: |
           rsync -a --delete \
             --filter=':- .gitignore' \
-            "${GITHUB_WORKSPACE}/" "${{ env.WORKDIR }}/"
+            ${{ github.workspace }}/ ${{ env.WORKDIR }}/
       - name: Stop and disable service
         continue-on-error: true
         working-directory: ${{ env.PLIST_DIR }}
