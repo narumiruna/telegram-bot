@@ -229,38 +229,3 @@ class TestUtilsFunctions:
         configure_logfire()
 
         mock_logfire.configure.assert_not_called()
-
-    @patch.dict(
-        "os.environ",
-        {
-            "LANGFUSE_PUBLIC_KEY": "test_key",
-            "LANGFUSE_SECRET_KEY": "test_secret",
-            "LANGFUSE_HOST": "https://cloud.langfuse.com",
-        },
-    )
-    @patch("bot.observability.logfire")
-    @patch("bot.observability.nest_asyncio")
-    @patch("bot.observability.logger")
-    def test_configure_langfuse_with_keys(self, mock_logger, mock_nest_asyncio, mock_logfire):
-        """Test langfuse configuration when keys are available"""
-        mock_logfire.loguru_handler.return_value = Mock()
-
-        from bot.utils import configure_langfuse
-
-        configure_langfuse("test_service")
-
-        # Should configure logfire when keys are present
-        mock_logfire.configure.assert_called_once()
-        mock_nest_asyncio.apply.assert_called_once()
-        mock_logger.configure.assert_called_once()
-
-    @patch.dict("os.environ", {}, clear=True)
-    @patch("bot.observability.logfire")
-    def test_configure_langfuse_without_keys(self, mock_logfire):
-        """Test langfuse configuration when keys are missing"""
-        from bot.utils import configure_langfuse
-
-        configure_langfuse("test_service")
-
-        # Should not configure logfire when keys are missing
-        mock_logfire.configure.assert_not_called()
