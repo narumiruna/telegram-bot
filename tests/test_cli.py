@@ -61,9 +61,7 @@ def test_main_load_dotenv_failure(mock_find_dotenv, mock_load_dotenv, mock_confi
 @patch("bot.cli.configure_logfire")
 @patch("bot.cli.load_dotenv")
 @patch("bot.cli.find_dotenv")
-def test_main_configure_logfire_failure(
-    self, mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run
-):
+def test_main_configure_logfire_failure(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run):
     """Test error handling when configure_logfire fails"""
     mock_find_dotenv.return_value = ".env"
     mock_load_dotenv.return_value = True
