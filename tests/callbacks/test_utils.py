@@ -16,7 +16,7 @@ from bot.callbacks.utils import strip_command
 
 
 @pytest.mark.parametrize(
-    "text, expected",
+    ("text", "expected"),
     [
         ("/sum 1 2 3", "1 2 3"),
         ("/start", ""),

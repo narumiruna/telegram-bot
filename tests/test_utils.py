@@ -17,7 +17,7 @@ from bot.utils import save_text
 
 
 @pytest.mark.parametrize(
-    "text, expected",
+    ("text", "expected"),
     [
         ("Check this out: https://example.com", "https://example.com"),
         ("No URL here!", ""),
@@ -37,7 +37,7 @@ def test_parse_url(text: str, expected: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "text, expected",
+    ("text", "expected"),
     [
         ("Check this out: https://example.com", ["https://example.com"]),
         ("No URL here!", []),
@@ -64,168 +64,180 @@ def test_parse_urls(text: str, expected: list[str]) -> None:
     assert result == expected
 
 
-class TestUtilsFunctions:
-    def test_save_text(self):
-        """Test saving text to file"""
-        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
-            temp_path = f.name
+def test_save_text():
+    """Test saving text to file"""
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+        temp_path = f.name
 
-        try:
-            test_text = "Hello, World!\nThis is a test."
-            save_text(test_text, temp_path)
+    try:
+        test_text = "Hello, World!\nThis is a test."
+        save_text(test_text, temp_path)
 
-            # Verify file was written correctly
-            with open(temp_path) as f:
-                content = f.read()
-            assert content == test_text
-        finally:
-            Path(temp_path).unlink()
+        # Verify file was written correctly
+        with open(temp_path) as f:
+            content = f.read()
+        assert content == test_text
+    finally:
+        Path(temp_path).unlink()
 
-    def test_load_json_valid_file(self):
-        """Test loading valid JSON file"""
-        test_data = {"key": "value", "number": 42, "list": [1, 2, 3]}
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            json.dump(test_data, f)
-            temp_path = f.name
+def test_load_json_valid_file():
+    """Test loading valid JSON file"""
+    test_data = {"key": "value", "number": 42, "list": [1, 2, 3]}
 
-        try:
-            result = load_json(temp_path)
-            assert result == test_data
-        finally:
-            Path(temp_path).unlink()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(test_data, f)
+        temp_path = f.name
 
-    def test_load_json_with_path_object(self):
-        """Test loading JSON using Path object"""
-        test_data = {"test": True}
+    try:
+        result = load_json(temp_path)
+        assert result == test_data
+    finally:
+        Path(temp_path).unlink()
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            json.dump(test_data, f)
-            temp_path = Path(f.name)
 
-        try:
-            result = load_json(temp_path)
-            assert result == test_data
-        finally:
-            temp_path.unlink()
+def test_load_json_with_path_object():
+    """Test loading JSON using Path object"""
+    test_data = {"test": True}
 
-    def test_load_json_invalid_extension(self):
-        """Test error when file doesn't have .json extension"""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
-            temp_path = f.name
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(test_data, f)
+        temp_path = Path(f.name)
 
-        try:
-            with pytest.raises(ValueError, match="is not a json file"):
-                load_json(temp_path)
-        finally:
-            Path(temp_path).unlink()
+    try:
+        result = load_json(temp_path)
+        assert result == test_data
+    finally:
+        temp_path.unlink()
 
-    def test_load_json_invalid_content(self):
-        """Test error when file contains invalid JSON"""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            f.write("invalid json content")
-            temp_path = f.name
 
-        try:
-            with pytest.raises(json.JSONDecodeError):
-                load_json(temp_path)
-        finally:
-            Path(temp_path).unlink()
+def test_load_json_invalid_extension():
+    """Test error when file doesn't have .json extension"""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+        temp_path = f.name
 
-    def test_save_json(self):
-        """Test saving data to JSON file"""
-        test_data = {"key": "value", "number": 42, "nested": {"a": 1}}
+    try:
+        with pytest.raises(ValueError, match="is not a json file"):
+            load_json(temp_path)
+    finally:
+        Path(temp_path).unlink()
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            temp_path = f.name
 
-        try:
-            save_json(test_data, temp_path)
+def test_load_json_invalid_content():
+    """Test error when file contains invalid JSON"""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        f.write("invalid json content")
+        temp_path = f.name
 
-            # Verify file was written correctly
-            with open(temp_path, encoding="utf-8") as f:
-                content = f.read()
-                loaded_data = json.loads(content)
+    try:
+        with pytest.raises(json.JSONDecodeError):
+            load_json(temp_path)
+    finally:
+        Path(temp_path).unlink()
 
-            assert loaded_data == test_data
-            # Check formatting (should be indented)
-            assert "    " in content  # Should have indentation
-        finally:
-            Path(temp_path).unlink()
 
-    @patch("bot.telegraph_utils.telegraph.Telegraph")
-    def test_get_telegraph_client(self, mock_telegraph_class):
-        """Test telegraph client creation"""
-        mock_client = Mock()
-        mock_telegraph_class.return_value = mock_client
+def test_save_json():
+    """Test saving data to JSON file"""
+    test_data = {"key": "value", "number": 42, "nested": {"a": 1}}
 
-        client = get_telegraph_client()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        temp_path = f.name
 
-        mock_telegraph_class.assert_called_once()
-        assert client == mock_client
+    try:
+        save_json(test_data, temp_path)
 
-    @patch("bot.telegraph_utils.get_telegraph_client")
-    def test_create_page_success(self, mock_get_client):
-        """Test successful page creation"""
-        mock_client = Mock()
-        mock_client.create_page.return_value = {"url": "https://telegra.ph/test-page"}
-        mock_get_client.return_value = mock_client
+        # Verify file was written correctly
+        with open(temp_path, encoding="utf-8") as f:
+            content = f.read()
+            loaded_data = json.loads(content)
 
-        result = create_page(title="Test Title", content="Test content")
+        assert loaded_data == test_data
+        # Check formatting (should be indented)
+        assert "    " in content  # Should have indentation
+    finally:
+        Path(temp_path).unlink()
 
-        mock_client.create_page.assert_called_once_with(title="Test Title", content="Test content")
-        assert result == "https://telegra.ph/test-page"
 
-    @patch("bot.telegraph_utils.get_telegraph_client")
-    def test_create_page_failure(self, mock_get_client):
-        """Test page creation failure"""
-        mock_client = Mock()
-        mock_client.create_page.side_effect = Exception("API Error")
-        mock_get_client.return_value = mock_client
+@patch("bot.telegraph_utils.telegraph.Telegraph")
+def test_get_telegraph_client(mock_telegraph_class):
+    """Test telegraph client creation"""
+    mock_client = Mock()
+    mock_telegraph_class.return_value = mock_client
 
-        # This should raise an exception since create_page doesn't handle errors
-        with pytest.raises((Exception, RuntimeError, ValueError)):
-            create_page(title="Test Title", content="Test content")
+    client = get_telegraph_client()
 
-    def test_logfire_is_enabled_with_token(self):
-        """Test logfire detection when token is set"""
-        with patch.dict("os.environ", {"LOGFIRE_TOKEN": "test_token"}):
-            assert logfire_is_enabled() is True
+    mock_telegraph_class.assert_called_once()
+    assert client == mock_client
 
-    def test_logfire_is_enabled_without_token(self):
-        """Test logfire detection when token is not set"""
-        with patch.dict("os.environ", {}, clear=True):
-            assert logfire_is_enabled() is False
 
-    def test_logfire_is_enabled_empty_token(self):
-        """Test logfire detection when token is empty"""
-        with patch.dict("os.environ", {"LOGFIRE_TOKEN": ""}):
-            assert logfire_is_enabled() is False
+@patch("bot.telegraph_utils.get_telegraph_client")
+def test_create_page_success(mock_get_client):
+    """Test successful page creation"""
+    mock_client = Mock()
+    mock_client.create_page.return_value = {"url": "https://telegra.ph/test-page"}
+    mock_get_client.return_value = mock_client
 
-    @patch("bot.observability.logfire_is_enabled")
-    @patch("bot.observability.logfire")
-    @patch("bot.observability.logger")
-    def test_configure_logfire_enabled(self, mock_logger, mock_logfire, mock_is_enabled):
-        """Test logfire configuration when enabled"""
-        mock_is_enabled.return_value = True
-        mock_logfire.loguru_handler.return_value = Mock()
+    result = create_page(title="Test Title", content="Test content")
 
-        from bot.utils import configure_logfire
+    mock_client.create_page.assert_called_once_with(title="Test Title", content="Test content")
+    assert result == "https://telegra.ph/test-page"
 
-        configure_logfire()
 
-        mock_logfire.configure.assert_called_once()
-        mock_logfire.instrument_openai_agents.assert_called_once()
-        mock_logger.configure.assert_called_once()
+@patch("bot.telegraph_utils.get_telegraph_client")
+def test_create_page_failure(mock_get_client):
+    """Test page creation failure"""
+    mock_client = Mock()
+    mock_client.create_page.side_effect = Exception("API Error")
+    mock_get_client.return_value = mock_client
 
-    @patch("bot.observability.logfire_is_enabled")
-    @patch("bot.observability.logfire")
-    def test_configure_logfire_disabled(self, mock_logfire, mock_is_enabled):
-        """Test logfire configuration when disabled"""
-        mock_is_enabled.return_value = False
+    # This should raise an exception since create_page doesn't handle errors
+    with pytest.raises((Exception, RuntimeError, ValueError)):
+        create_page(title="Test Title", content="Test content")
 
-        from bot.utils import configure_logfire
 
-        configure_logfire()
+def test_logfire_is_enabled_with_token():
+    """Test logfire detection when token is set"""
+    with patch.dict("os.environ", {"LOGFIRE_TOKEN": "test_token"}):
+        assert logfire_is_enabled() is True
 
-        mock_logfire.configure.assert_not_called()
+
+def test_logfire_is_enabled_without_token():
+    """Test logfire detection when token is not set"""
+    with patch.dict("os.environ", {}, clear=True):
+        assert logfire_is_enabled() is False
+
+
+def test_logfire_is_enabled_empty_token():
+    """Test logfire detection when token is empty"""
+    with patch.dict("os.environ", {"LOGFIRE_TOKEN": ""}):
+        assert logfire_is_enabled() is False
+
+
+@patch("bot.observability.logfire_is_enabled")
+@patch("bot.observability.logfire")
+@patch("bot.observability.logger")
+def test_configure_logfire_enabled(mock_logger, mock_logfire, mock_is_enabled):
+    """Test logfire configuration when enabled"""
+    mock_is_enabled.return_value = True
+    mock_logfire.loguru_handler.return_value = Mock()
+
+    from bot.utils import configure_logfire
+
+    configure_logfire()
+
+    mock_logfire.configure.assert_called_once()
+    mock_logfire.instrument_openai_agents.assert_called_once()
+    mock_logger.configure.assert_called_once()
+
+
+@patch("bot.observability.logfire_is_enabled")
+@patch("bot.observability.logfire")
+def test_configure_logfire_disabled(mock_logfire, mock_is_enabled):
+    """Test logfire configuration when disabled"""
+    mock_is_enabled.return_value = False
+
+    from bot.utils import configure_logfire
+
+    configure_logfire()
+
+    mock_logfire.configure.assert_not_called()
