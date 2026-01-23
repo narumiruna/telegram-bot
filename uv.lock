@@ -1008,13 +1008,12 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.14.3"
+version = "0.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "charset-normalizer" },
     { name = "firecrawl-py" },
     { name = "httpx" },
-    { name = "loguru" },
     { name = "markdownify" },
     { name = "openai-whisper" },
     { name = "playwright" },
@@ -1025,7 +1024,7 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/48/a928ef676830ae8972d2fbb70fa04e774e74d4d6bbfc587fe3cffedbeb54/kabigon-0.14.3-py3-none-any.whl", hash = "sha256:90387ad8a24749aa4fe826b8a74a0df3e9528c7ccda579e8e8c42ea6f6b85ded", size = 21610, upload-time = "2026-01-15T08:31:49.997Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/d5/f4351baf88ae16b316dc3ced79d9aafe9d11df48903c63efc07243b03567/kabigon-0.15.0-py3-none-any.whl", hash = "sha256:02166299848ae94a9781d0c6c03dace28201bd6afcf64321a9043c911dd0b4f2", size = 24516, upload-time = "2026-01-21T21:37:28.003Z" },
 ]
 
 [[package]]
