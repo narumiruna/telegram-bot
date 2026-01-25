@@ -18,7 +18,6 @@ class BaseAgent(Agent):
         Continues to connect remaining servers even if some fail.
         Connection timeout is enforced to prevent hanging.
         """
-        connected_servers = []
         for mcp_server in list(self.mcp_servers):
             try:
                 logger.info(
@@ -28,7 +27,6 @@ class BaseAgent(Agent):
                 )
                 await asyncio.wait_for(mcp_server.connect(), timeout=MCP_CONNECT_TIMEOUT)
                 logger.info("Successfully connected to MCP server: {name}", name=mcp_server.name)
-                connected_servers.append(mcp_server)
             except TimeoutError:
                 logger.error(
                     "Connection timeout for MCP server {name} after {timeout}s",
