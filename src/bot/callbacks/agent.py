@@ -21,6 +21,7 @@ from tenacity import retry_if_exception
 from tenacity import stop_after_attempt
 
 from bot.tools import execute_command
+from bot.tools import query_rate_history
 
 from ..cache import get_cache_from_env
 from ..chains.url_processor import process_url_content
@@ -144,31 +145,31 @@ class AgentCallback:
                 name="playwright",
                 client_session_timeout_seconds=mcp_timeout,
             ),
-            # MCPServerStdio(
-            #     params=MCPServerStdioParams(
-            #         command="bunx",
-            #         args=["-y", "firecrawl-mcp"],
-            #         env={"FIRECRAWL_API_KEY": firecrawl_api_key},
-            #     ),
-            #     name="firecrawl-mcp",
-            #     client_session_timeout_seconds=mcp_timeout,
-            # ),
-            # MCPServerStdio(
-            #     params=MCPServerStdioParams(
-            #         command="uvx",
-            #         args=["yfmcp@latest"],
-            #     ),
-            #     name="yfmcp",
-            #     client_session_timeout_seconds=mcp_timeout,
-            # ),
-            # MCPServerStdio(
-            #     params=MCPServerStdioParams(
-            #         command="uvx",
-            #         args=["gurume@latest", "mcp"],
-            #     ),
-            #     name="gurume",
-            #     client_session_timeout_seconds=mcp_timeout,
-            # ),
+            MCPServerStdio(
+                params=MCPServerStdioParams(
+                    command="bunx",
+                    args=["-y", "firecrawl-mcp"],
+                    env={"FIRECRAWL_API_KEY": firecrawl_api_key},
+                ),
+                name="firecrawl-mcp",
+                client_session_timeout_seconds=mcp_timeout,
+            ),
+            MCPServerStdio(
+                params=MCPServerStdioParams(
+                    command="uvx",
+                    args=["yfmcp@latest"],
+                ),
+                name="yfmcp",
+                client_session_timeout_seconds=mcp_timeout,
+            ),
+            MCPServerStdio(
+                params=MCPServerStdioParams(
+                    command="uvx",
+                    args=["gurume@latest", "mcp"],
+                ),
+                name="gurume",
+                client_session_timeout_seconds=mcp_timeout,
+            ),
         ]
 
         agent = Agent(
@@ -177,7 +178,7 @@ class AgentCallback:
             model=get_openai_model(),
             model_settings=get_openai_model_settings(),
             tools=[
-                # query_rate_history,
+                query_rate_history,
                 execute_command,
             ],
             mcp_servers=mcp_servers,
