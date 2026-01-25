@@ -226,6 +226,27 @@ class TestAgentCallback:
         mock_server2.connect.assert_called_once()
 
     @patch("bot.callbacks.agent.get_cache_from_env")
+    async def test_connect_filters_failed_servers(self, mock_get_cache):
+        """Test failed MCP servers are removed after connect"""
+        mock_agent = Mock()
+        mock_cache = Mock()
+        mock_get_cache.return_value = mock_cache
+
+        mock_server1 = Mock()
+        mock_server1.connect = AsyncMock()
+        mock_server2 = Mock()
+        mock_server2.connect = AsyncMock(side_effect=FileNotFoundError("npx not found"))
+
+        mock_agent.mcp_servers = [mock_server1, mock_server2]
+
+        callback = AgentCallback(mock_agent)
+        await callback.connect()
+
+        mock_server1.connect.assert_called_once()
+        mock_server2.connect.assert_called_once()
+        assert mock_agent.mcp_servers == [mock_server1]
+
+    @patch("bot.callbacks.agent.get_cache_from_env")
     async def test_cleanup(self, mock_get_cache):
         """Test cleaning up MCP servers"""
         mock_agent = Mock()

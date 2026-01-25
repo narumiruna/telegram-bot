@@ -189,7 +189,8 @@ class AgentCallback:
         Continues to connect remaining servers even if some fail.
         Connection timeout is enforced to prevent hanging.
         """
-        for mcp_server in self.agent.mcp_servers:
+        connected_servers = []
+        for mcp_server in list(self.agent.mcp_servers):
             try:
                 logger.info(
                     "Connecting to MCP server: {name} (timeout: {timeout}s)",
@@ -198,6 +199,7 @@ class AgentCallback:
                 )
                 await asyncio.wait_for(mcp_server.connect(), timeout=MCP_CONNECT_TIMEOUT)
                 logger.info("Successfully connected to MCP server: {name}", name=mcp_server.name)
+                connected_servers.append(mcp_server)
             except TimeoutError:
                 logger.error(
                     "Connection timeout for MCP server {name} after {timeout}s",
@@ -210,6 +212,10 @@ class AgentCallback:
                     name=mcp_server.name,
                     error=str(e),
                 )
+        if len(connected_servers) != len(self.agent.mcp_servers):
+            removed_count = len(self.agent.mcp_servers) - len(connected_servers)
+            logger.warning("Disabling {count} MCP servers that failed to connect", count=removed_count)
+            self.agent.mcp_servers = connected_servers
 
     async def cleanup(self) -> None:
         """Cleanup all MCP servers with timeout.
