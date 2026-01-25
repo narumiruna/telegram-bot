@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import os
 from datetime import datetime
-from datetime import timezone
 from pathlib import Path
 from typing import cast
 from zoneinfo import ZoneInfo
