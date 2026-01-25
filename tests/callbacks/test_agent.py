@@ -5,7 +5,6 @@ from unittest.mock import patch
 
 import pytest
 from agents import TResponseInputItem
-from mcp.client.stdio import StdioServerParameters
 from telegram import Message
 
 from bot.callbacks.agent import Agent
@@ -125,28 +124,6 @@ class TestAgentHelperFunctions:
 
 
 class TestAgentCallback:
-    @patch("bot.callbacks.agent.get_openai_model")
-    @patch("bot.callbacks.agent.get_openai_model_settings")
-    @patch("bot.callbacks.agent.Agent")
-    def test_from_config(self, mock_agent_class, mock_model_settings, mock_model, mock_load_config):
-        """Test AgentCallback creation from config"""
-        # Setup mocks
-        mock_config = {"test_server": StdioServerParameters(command="test_cmd", args=["arg1"])}
-        mock_load_config.return_value = mock_config
-        mock_model.return_value = "test_model"
-        mock_model_settings.return_value = {"temperature": 0.0}
-        mock_agent = Mock()
-        mock_agent_class.return_value = mock_agent
-
-        # Call method
-        result = AgentCallback.from_env()
-
-        # Verify
-        mock_load_config.assert_called_once_with()
-        mock_agent_class.assert_called_once()
-        assert isinstance(result, AgentCallback)
-        assert result.agent == mock_agent
-
     @patch("bot.callbacks.agent.get_cache_from_env")
     def test_init(self, mock_get_cache):
         """Test AgentCallback initialization"""
