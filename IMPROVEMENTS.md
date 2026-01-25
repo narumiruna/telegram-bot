@@ -24,9 +24,6 @@ The project demonstrates excellent architectural foundation with 78% test covera
 
 ### 2) 🚧 MCP Configuration Schema Unification
 **Status**: IN PROGRESS
-- **Issue**: Two different MCP config loading approaches:
-  - `src/bot/callbacks/agent.py:71` - `load_mcp_config()` (server-name → params map)
-  - `src/bot/config.py:13` - `AgentConfig` model (expects `{"mcp_servers": {...}}`)
 - **Impact**: Configuration inconsistency, potential runtime failures
 - **Solution**: Unify to server-name map schema, update `AgentConfig` model
 

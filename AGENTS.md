@@ -36,23 +36,6 @@
 
 **Agent System**: Uses `openai-agents` with MCP (Model Context Protocol) server integration for external tool access via `AgentCallback`.
 
-**Configuration**: `-c/--config` points to an MCP server config JSON file (see `AgentCallback.load_mcp_config`).
-
-The config must map server names to stdio server parameters. Default (`config/default.json`):
-
-```json
-{
-  "playwright": {"command": "npx", "args": ["@playwright/mcp@latest"]},
-  "firecrawl-mcp": {"command": "npx", "args": ["-y", "firecrawl-mcp"], "env": {"FIRECRAWL_API_KEY": ""}},
-  "yfmcp": {"command": "uvx", "args": ["yfmcp@latest"]},
-  "gurume": {"command": "uvx", "args": ["gurume@latest", "mcp"]}
-}
-```
-
-Empty string `env` values are replaced with corresponding environment variables at runtime.
-
-**Note**: `config/triage.json` exists but requires explicit `--config config/triage.json` to use.
-
 ### Callback Architecture
 
 Hybrid architecture supporting function-based and class-based patterns (unified 2025-12-27):

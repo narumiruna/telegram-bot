@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import os
 from datetime import datetime
-from pathlib import Path
 from typing import cast
 from zoneinfo import ZoneInfo
 
@@ -14,7 +13,6 @@ from agents import trace
 from agents.mcp.server import MCPServerStdio
 from agents.mcp.server import MCPServerStdioParams
 from loguru import logger
-from mcp.client.stdio import StdioServerParameters
 from telegram import Message
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -32,7 +30,6 @@ from ..model import get_openai_model_settings
 from ..presentation import MessageResponse
 from ..retry_utils import is_retryable_error
 from ..tools import query_rate_history
-from ..utils import load_json
 from ..utils import load_url
 from ..utils import parse_url
 from .utils import get_message_text
@@ -75,26 +72,6 @@ INSTRUCTIONS = f"""
 【即時資訊】
 現在時間是: {current_time}。
 """.strip()
-
-
-def load_mcp_config(f: str | Path) -> dict[str, StdioServerParameters]:
-    data = load_json(f)
-    if not isinstance(data, dict):
-        raise ValueError(f"Invalid configuration file: {f}")
-
-    result = {}
-    for name, params in data.items():
-        if not isinstance(params, dict):
-            raise ValueError(f"Invalid parameters for {name}: {params}")
-
-        env_vars = params.get("env")
-        if isinstance(env_vars, dict):
-            for k, v in env_vars.items():
-                if v == "":
-                    env_vars[k] = os.getenv(k, "")
-
-        result[name] = StdioServerParameters.model_validate(params)
-    return result
 
 
 def remove_tool_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
@@ -143,7 +120,7 @@ class AgentCallback:
         return f"bot:{message_id}:{chat_id}"
 
     @classmethod
-    def from_config(cls, config_file: str | Path) -> AgentCallback:
+    def from_config(cls) -> AgentCallback:
         """Create AgentCallback from MCP server configuration file.
 
         Args:
@@ -152,11 +129,49 @@ class AgentCallback:
         Returns:
             Configured AgentCallback instance
         """
-        config = load_mcp_config(config_file)
-
         # Read configuration from environment variables
         mcp_timeout = int(os.getenv("MCP_SERVER_TIMEOUT", "300"))
         max_cache_size = int(os.getenv("AGENT_MAX_CACHE_SIZE", "50"))
+
+        firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
+        if not firecrawl_api_key:
+            raise ValueError("FIRECRAWL_API_KEY environment variable is not set")
+
+        mcp_servers = [
+            MCPServerStdio(
+                params=MCPServerStdioParams(
+                    command="bunx",
+                    args=["@playwright/mcp@latest"],
+                ),
+                name="playwright",
+                client_session_timeout_seconds=mcp_timeout,
+            ),
+            MCPServerStdio(
+                params=MCPServerStdioParams(
+                    command="bunx",
+                    args=["-y", "firecrawl-mcp"],
+                    env={"FIRECRAWL_API_KEY": firecrawl_api_key},
+                ),
+                name="firecrawl-mcp",
+                client_session_timeout_seconds=mcp_timeout,
+            ),
+            MCPServerStdio(
+                params=MCPServerStdioParams(
+                    command="uvx",
+                    args=["yfmcp@latest"],
+                ),
+                name="yfmcp",
+                client_session_timeout_seconds=mcp_timeout,
+            ),
+            MCPServerStdio(
+                params=MCPServerStdioParams(
+                    command="uvx",
+                    args=["gurume@latest", "mcp"],
+                ),
+                name="gurume",
+                client_session_timeout_seconds=mcp_timeout,
+            ),
+        ]
 
         agent = Agent(
             name="agent",
@@ -164,14 +179,7 @@ class AgentCallback:
             model=get_openai_model(),
             model_settings=get_openai_model_settings(),
             tools=[query_rate_history],
-            mcp_servers=[
-                MCPServerStdio(
-                    params=cast(MCPServerStdioParams, params.model_dump()),
-                    name=name,
-                    client_session_timeout_seconds=mcp_timeout,
-                )
-                for name, params in config.items()
-            ],
+            mcp_servers=mcp_servers,
         )
         return cls(agent, max_cache_size=max_cache_size)
 

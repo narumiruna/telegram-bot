@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Annotated
 
-import typer
 from loguru import logger
 from telegram import Update
 from telegram.ext import Application
@@ -40,10 +38,10 @@ def get_bot_token() -> str:
     return token
 
 
-def run_bot(config_file: Annotated[str, typer.Option("-c", "--config")] = "config/default.json") -> None:  # noqa
+def run_bot() -> None:  # noqa
     chat_filter = get_chat_filter()
 
-    agent_callback = AgentCallback.from_config(config_file)
+    agent_callback = AgentCallback.from_config()
 
     async def connect(application: Application) -> None:
         await agent_callback.connect()

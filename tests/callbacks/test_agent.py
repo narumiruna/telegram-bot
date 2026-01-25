@@ -1,6 +1,3 @@
-import json
-import os
-import tempfile
 from typing import cast
 from unittest.mock import AsyncMock
 from unittest.mock import Mock
@@ -13,7 +10,6 @@ from telegram import Message
 
 from bot.callbacks.agent import Agent
 from bot.callbacks.agent import AgentCallback
-from bot.callbacks.agent import load_mcp_config
 from bot.callbacks.agent import remove_tool_messages
 
 
@@ -127,37 +123,8 @@ class TestAgentHelperFunctions:
 
         # (Removed invalid/unfinished code block here)
 
-    def test_load_mcp_config_invalid_format(self):
-        """Test error handling for invalid config format"""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            f.write("invalid json")
-            temp_path = f.name
-
-        try:
-            with pytest.raises((json.JSONDecodeError, ValueError)):
-                load_mcp_config(temp_path)
-        finally:
-            os.unlink(temp_path)
-
-    def test_load_mcp_config_invalid_structure(self):
-        """Test error handling for invalid structure"""
-        config_data = "not a dict"
-
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            import json
-
-            json.dump(config_data, f)
-            temp_path = f.name
-
-        try:
-            with pytest.raises(ValueError, match="Invalid configuration file"):
-                load_mcp_config(temp_path)
-        finally:
-            os.unlink(temp_path)
-
 
 class TestAgentCallback:
-    @patch("bot.callbacks.agent.load_mcp_config")
     @patch("bot.callbacks.agent.get_openai_model")
     @patch("bot.callbacks.agent.get_openai_model_settings")
     @patch("bot.callbacks.agent.Agent")
@@ -172,10 +139,10 @@ class TestAgentCallback:
         mock_agent_class.return_value = mock_agent
 
         # Call method
-        result = AgentCallback.from_config("test_config.json")
+        result = AgentCallback.from_config()
 
         # Verify
-        mock_load_config.assert_called_once_with("test_config.json")
+        mock_load_config.assert_called_once_with()
         mock_agent_class.assert_called_once()
         assert isinstance(result, AgentCallback)
         assert result.agent == mock_agent
