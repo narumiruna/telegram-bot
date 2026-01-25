@@ -1,12 +1,10 @@
 {
   "playwright": {
-      "command": "npx",
-      "args": [
-        "@playwright/mcp@latest"
-      ]
+    "command": "/Users/narumi/.local/state/fnm_multishells/22164_1769334091574/bin/npx",
+    "args": ["@playwright/mcp@latest"]
   },
   "firecrawl-mcp": {
-    "command": "npx",
+    "command": "/Users/narumi/.local/state/fnm_multishells/22164_1769334091574/bin/npx",
     "args": ["-y", "firecrawl-mcp"],
     "env": {
       "FIRECRAWL_API_KEY": ""
@@ -17,7 +15,7 @@
     "args": ["yfmcp@latest"]
   },
   "gurume": {
-      "command": "uvx",
-      "args": ["gurume@latest", "mcp"]
+    "command": "uvx",
+    "args": ["gurume@latest", "mcp"]
   }
 }
