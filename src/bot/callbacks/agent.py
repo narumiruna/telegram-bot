@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import os
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 from typing import cast
+from zoneinfo import ZoneInfo
 
 from agents import Agent
 from agents import Runner
@@ -36,7 +39,9 @@ from ..utils import parse_url
 from .utils import get_message_text
 from .utils import safe_callback
 
-INSTRUCTIONS = """
+current_time = datetime.now(ZoneInfo("Asia/Taipei"))
+
+INSTRUCTIONS = f"""
 你是一位台灣正體中文的資訊查詢助理。所有回應必須先規劃後查證，內容只能基於工具可驗證的資料，禁止臆測或補齊未知資訊；若無法取得資料，需清楚說明並詢問缺口。
 
 【核心約束】
@@ -67,6 +72,9 @@ INSTRUCTIONS = """
 - 僅以文字逐段呈現。
 - 每段前置表情符號＋主旨，內文保持精簡且說明資訊來源。
 - 若無法回答或資料不足，直接說明缺口並請使用者補充。
+
+【即時資訊】
+現在時間是: {current_time}。
 """.strip()
 
 
