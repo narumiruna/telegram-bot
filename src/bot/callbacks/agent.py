@@ -20,6 +20,8 @@ from tenacity import retry
 from tenacity import retry_if_exception
 from tenacity import stop_after_attempt
 
+from bot.tools import execute_command
+
 from ..cache import get_cache_from_env
 from ..chains.url_processor import process_url_content
 from ..constants import CACHE_TTL_SECONDS
@@ -29,7 +31,6 @@ from ..model import get_openai_model
 from ..model import get_openai_model_settings
 from ..presentation import MessageResponse
 from ..retry_utils import is_retryable_error
-from ..tools import query_rate_history
 from ..utils import load_url
 from ..utils import parse_url
 from .utils import get_message_text
@@ -146,31 +147,31 @@ class AgentCallback:
                 name="playwright",
                 client_session_timeout_seconds=mcp_timeout,
             ),
-            MCPServerStdio(
-                params=MCPServerStdioParams(
-                    command="bunx",
-                    args=["-y", "firecrawl-mcp"],
-                    env={"FIRECRAWL_API_KEY": firecrawl_api_key},
-                ),
-                name="firecrawl-mcp",
-                client_session_timeout_seconds=mcp_timeout,
-            ),
-            MCPServerStdio(
-                params=MCPServerStdioParams(
-                    command="uvx",
-                    args=["yfmcp@latest"],
-                ),
-                name="yfmcp",
-                client_session_timeout_seconds=mcp_timeout,
-            ),
-            MCPServerStdio(
-                params=MCPServerStdioParams(
-                    command="uvx",
-                    args=["gurume@latest", "mcp"],
-                ),
-                name="gurume",
-                client_session_timeout_seconds=mcp_timeout,
-            ),
+            # MCPServerStdio(
+            #     params=MCPServerStdioParams(
+            #         command="bunx",
+            #         args=["-y", "firecrawl-mcp"],
+            #         env={"FIRECRAWL_API_KEY": firecrawl_api_key},
+            #     ),
+            #     name="firecrawl-mcp",
+            #     client_session_timeout_seconds=mcp_timeout,
+            # ),
+            # MCPServerStdio(
+            #     params=MCPServerStdioParams(
+            #         command="uvx",
+            #         args=["yfmcp@latest"],
+            #     ),
+            #     name="yfmcp",
+            #     client_session_timeout_seconds=mcp_timeout,
+            # ),
+            # MCPServerStdio(
+            #     params=MCPServerStdioParams(
+            #         command="uvx",
+            #         args=["gurume@latest", "mcp"],
+            #     ),
+            #     name="gurume",
+            #     client_session_timeout_seconds=mcp_timeout,
+            # ),
         ]
 
         agent = Agent(
@@ -178,7 +179,10 @@ class AgentCallback:
             instructions=INSTRUCTIONS,
             model=get_openai_model(),
             model_settings=get_openai_model_settings(),
-            tools=[query_rate_history],
+            tools=[
+                # query_rate_history,
+                execute_command,
+            ],
             mcp_servers=mcp_servers,
         )
         return cls(agent, max_cache_size=max_cache_size)
