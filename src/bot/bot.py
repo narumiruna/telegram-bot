@@ -41,7 +41,7 @@ def get_bot_token() -> str:
 def run_bot() -> None:  # noqa
     chat_filter = get_chat_filter()
 
-    agent_callback = AgentCallback.from_config()
+    agent_callback = AgentCallback.from_env()
 
     async def connect(application: Application) -> None:
         await agent_callback.connect()

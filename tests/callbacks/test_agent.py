@@ -139,7 +139,7 @@ class TestAgentCallback:
         mock_agent_class.return_value = mock_agent
 
         # Call method
-        result = AgentCallback.from_config()
+        result = AgentCallback.from_env()
 
         # Verify
         mock_load_config.assert_called_once_with()

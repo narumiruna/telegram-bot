@@ -121,11 +121,8 @@ class AgentCallback:
         return f"bot:{message_id}:{chat_id}"
 
     @classmethod
-    def from_config(cls) -> AgentCallback:
-        """Create AgentCallback from MCP server configuration file.
-
-        Args:
-            config_file: Path to the MCP server configuration JSON file
+    def from_env(cls) -> AgentCallback:
+        """Create AgentCallback from environment variables.
 
         Returns:
             Configured AgentCallback instance
