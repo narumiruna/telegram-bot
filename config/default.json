@@ -1,10 +1,10 @@
 {
   "playwright": {
-    "command": "bunx",
+    "command": "/Users/narumi/.bun/bin/bunx",
     "args": ["@playwright/mcp@latest"]
   },
   "firecrawl-mcp": {
-    "command": "bunx",
+    "command": "/Users/narumi/.bun/bin/bunx",
     "args": ["-y", "firecrawl-mcp"],
     "env": {
       "FIRECRAWL_API_KEY": ""
