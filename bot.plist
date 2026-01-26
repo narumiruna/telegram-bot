@@ -23,7 +23,7 @@
     <key>UserName</key>
     <string>narumi</string>
     <key>WorkingDirectory</key>
-    <string>/Users/narumi/services/bot</string>
+    <string>/Users/narumi/apps/bot</string>
     <key>StandardOutPath</key>
     <string>/Users/narumi/.log/bot.log</string>
     <key>StandardErrorPath</key>
