@@ -11,7 +11,7 @@ on:
 
 jobs:
   python:
-    runs-on: macos-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         python-version: ["3.13"]
