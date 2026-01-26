@@ -8,7 +8,7 @@ on:
 
 env:
   UNIT: bot
-  WORKDIR: /Users/narumi/services/bot
+  WORKDIR: /Users/narumi/apps/bot
   PLIST_DIR: /Users/narumi/Library/LaunchAgents
 
 jobs:
