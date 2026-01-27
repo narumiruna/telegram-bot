@@ -102,6 +102,8 @@ def get_message_key(message: Message) -> str:
 async def get_processed_message_text(
     message: Message,
     require_url: bool = False,
+    include_reply_to_message: bool = True,
+    include_user_name: bool = False,
 ) -> tuple[str | None, str | None]:
     """取得訊息文字，並處理 URL 載入（如果存在）
 
@@ -116,7 +118,11 @@ async def get_processed_message_text(
         如果成功: (text, None)
         如果失敗: (None, error_message)
     """
-    message_text = get_message_text(message)
+    message_text = get_message_text(
+        message,
+        include_reply_to_message=include_reply_to_message,
+        include_user_name=include_user_name,
+    )
     if not message_text:
         return None, None
 
