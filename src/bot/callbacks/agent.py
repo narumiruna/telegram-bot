@@ -139,7 +139,7 @@ class AgentCallback:
         mcp_servers = [
             MCPServerStdio(
                 params=MCPServerStdioParams(
-                    command="bunx",
+                    command="npx",
                     args=["@playwright/mcp@latest"],
                 ),
                 name="playwright",
@@ -147,7 +147,7 @@ class AgentCallback:
             ),
             MCPServerStdio(
                 params=MCPServerStdioParams(
-                    command="bunx",
+                    command="npx",
                     args=["-y", "firecrawl-mcp"],
                     env={"FIRECRAWL_API_KEY": firecrawl_api_key},
                 ),
