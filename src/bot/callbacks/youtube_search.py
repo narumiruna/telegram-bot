@@ -16,7 +16,7 @@ async def search_youtube_callback(message: Message) -> None:
     text = strip_command(message.text or "")
     if not text:
         return
-    
+
     search_terms = "_".join(text.split())
     result = YoutubeSearch(search_terms=search_terms, max_results=MAX_RESULTS).to_dict()
     if not result:

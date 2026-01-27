@@ -180,9 +180,7 @@ def safe_callback(callback_func):
             # 通知用戶
             if message:
                 try:
-                    await message.answer(
-                        "抱歉，處理您的請求時發生錯誤，請稍後再試。\n如果問題持續發生，請聯絡管理員。"
-                    )
+                    await message.answer("抱歉，處理您的請求時發生錯誤，請稍後再試。\n如果問題持續發生，請聯絡管理員。")
                 except Exception as reply_error:
                     logger.error(
                         "Failed to send error message to user: {error}",

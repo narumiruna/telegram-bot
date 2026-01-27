@@ -1,6 +1,5 @@
 import asyncio
 
-import typer
 from dotenv import find_dotenv
 from dotenv import load_dotenv
 

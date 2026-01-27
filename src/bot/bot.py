@@ -7,7 +7,6 @@ from aiogram import Dispatcher
 from aiogram import F
 from aiogram import Router
 from aiogram.filters import Command
-from aiogram.filters import CommandStart
 from aiogram.types import ErrorEvent
 from loguru import logger
 
@@ -25,7 +24,7 @@ from .callbacks.agent import AgentCallback
 
 def get_chat_filter():
     """Create a filter for allowed chats based on whitelist.
-    
+
     Returns a filter function that checks if the chat_id is in the whitelist.
     """
     whitelist = os.getenv("BOT_WHITELIST")
@@ -34,8 +33,10 @@ def get_chat_filter():
         return lambda _: True
     else:
         chat_ids = [int(chat_id) for chat_id in whitelist.replace(" ", "").split(",")]
+
         def chat_filter(message) -> bool:
             return message.chat.id in chat_ids
+
         return chat_filter
 
 
@@ -50,16 +51,16 @@ async def run_bot() -> None:  # noqa
     # Create bot and dispatcher
     bot = Bot(token=get_bot_token())
     dp = Dispatcher()
-    
+
     # Create router for handlers
     router = Router()
-    
+
     # Get chat filter
     chat_filter = get_chat_filter()
-    
+
     # Initialize agent callback
     agent_callback = AgentCallback.from_env()
-    
+
     helps = [
         "code: https://github.com/narumiruna/bot",
         "/help - Show this help message",
@@ -73,7 +74,7 @@ async def run_bot() -> None:  # noqa
         "/t - Query ticker from Yahoo Finance and Taiwan stock exchange",
         "/f - Format and normalize the document in 台灣話",
     ]
-    
+
     # Register command handlers
     router.message.register(agent_callback.handle_command, Command("a"), F.func(chat_filter))
     router.message.register(agent_callback.handle_command, Command("gpt"), F.func(chat_filter))
@@ -86,26 +87,26 @@ async def run_bot() -> None:  # noqa
     router.message.register(search_youtube_callback, Command("yt"), F.func(chat_filter))
     router.message.register(format_callback, Command("f"), F.func(chat_filter))
     router.message.register(echo_callback, Command("echo"))
-    
+
     # Register reply handler (for replies to bot messages)
     router.message.register(agent_callback.handle_reply, F.reply_to_message, F.func(chat_filter))
-    
+
     # Register file handler (should be last among message handlers)
     router.message.register(file_callback, F.document, F.func(chat_filter))
-    
+
     # Register error handler
     error_callback = ErrorCallback(os.getenv("DEVELOPER_CHAT_ID"))
-    
+
     @router.error()
     async def error_handler(event: ErrorEvent) -> None:
         await error_callback(event, bot)
-    
+
     # Include router in dispatcher
     dp.include_router(router)
-    
+
     # Connect to MCP servers
     await agent_callback.connect()
-    
+
     try:
         # Start polling
         await dp.start_polling(bot)

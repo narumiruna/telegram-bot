@@ -17,7 +17,7 @@ async def query_ticker_callback(message: Message) -> None:
     text = strip_command(message.text or "")
     if not text:
         return
-    
+
     symbols = text.split()
     if not symbols:
         return
@@ -58,9 +58,7 @@ async def query_ticker_callback(message: Message) -> None:
     result = "\n\n".join(results).strip()
 
     if not result:
-        await message.answer(
-            f"無法查詢到股票代碼 {', '.join(symbols)} 的資訊。\n請確認代碼是否正確，或稍後再試。"
-        )
+        await message.answer(f"無法查詢到股票代碼 {', '.join(symbols)} 的資訊。\n請確認代碼是否正確，或稍後再試。")
         return
 
     await message.answer(result, parse_mode="MarkdownV2")

@@ -22,11 +22,11 @@ async def file_callback(message: Message, bot: Bot) -> None:
     file = await bot.get_file(document.file_id)
     if not file.file_path:
         return
-    
+
     # Download file
     file_path = Path(f"/tmp/{document.file_name}")
     await bot.download_file(file.file_path, file_path)
-    
+
     try:
         match file_path.suffix:
             case ".pdf":
