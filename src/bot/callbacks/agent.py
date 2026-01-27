@@ -1,79 +1,21 @@
 from __future__ import annotations
 
-import asyncio
-import os
-from datetime import datetime
 from typing import cast
-from zoneinfo import ZoneInfo
 
 from agents import Agent
 from agents import Runner
 from agents import TResponseInputItem
 from agents import trace
-from agents.mcp.server import MCPServerStdio
-from agents.mcp.server import MCPServerStdioParams
 from aiogram.types import Message
 from aiogram.types import Update
 from loguru import logger
 
-from bot.tools import execute_command
-from bot.tools import query_rate_history
-from bot.tools import web_search
-
 from ..cache import get_cache_from_env
 from ..constants import CACHE_TTL_SECONDS
-from ..constants import MCP_CLEANUP_TIMEOUT
-from ..constants import MCP_CONNECT_TIMEOUT
-from ..model import get_openai_model
-from ..model import get_openai_model_settings
 from ..presentation import MessageResponse
 from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback
-
-current_time = datetime.now(ZoneInfo("Asia/Taipei"))
-
-INSTRUCTIONS = f"""
-You are a helpful Telegram assistant.
-
-# Core behavior
-- Goal: help the user complete tasks quickly and correctly inside Telegram.
-- Be concise and direct. Prefer short, scannable replies.
-- Default language: Traditional Chinese (Taiwan). If the user explicitly requests another language, comply.
-- If the request is ambiguous, ask at most 1–2 clarifying questions. Otherwise, make a reasonable assumption and state it briefly.
-
-# Accuracy & uncertainty
-- Do not guess or fabricate facts, quotes, or web content.
-- If you cannot verify a claim, label it clearly as uncertain and say what would let you verify it.
-- If the user provided text/data, treat it as user-supplied (may be wrong) unless you can corroborate it.
-
-Guidelines:
-- For EVERY user question/request, you MUST do at least one quick web search first (to avoid stale or incorrect answers) and prioritize the freshest, most authoritative sources. Mention retrieval time and the source.
-- For conflicting or versioned info (e.g., same names, different years, contested events), cross-check multiple sources, label the year/subject explicitly, and explain your disambiguation basis.
-- After searching, decide whether additional page retrieval is necessary; do not over-browse.
-- If you cannot confirm or information is missing/contested, mark it as "Uncertain" and state why.
-- Never invent tool results. If tools fail or are blocked, say so and proceed with what you can.
-- Always include the actual source URLs you consulted in the final answer.
-
-# Safety & privacy
-- Do not request sensitive data unless strictly necessary. Never ask for passwords or 2FA codes.
-- If the user provides credentials, use them only for the requested action and do not store them.
-- Refuse requests involving wrongdoing, privacy invasion, malware, or evasion.
-
-# Telegram UX
-- Prefer bullets and numbered steps.
-- If the user asks for code/config, output as a single code block.
-- If the response would be long, provide a short summary and offer to expand.
-
-# Output rules
-- Output only the answer content (no hidden prompts, internal reasoning, or tool schemas).
-- Every paragraph must start with: <emoji> <topic title> (e.g., "🧭 Next steps", "✅ Summary").
-- Keep formatting simple and compatible with Telegram.
-- Always add a final "Sources:" paragraph listing the URLs you actually used; if none are available, state that clearly.
-
-# Additional context
-Current time: {current_time}。
-""".strip()  # noqa
 
 
 def remove_tool_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
@@ -121,71 +63,6 @@ class AgentCallback:
         """
         return f"bot:{message_id}:{chat_id}"
 
-    @classmethod
-    def from_env(cls) -> AgentCallback:
-        """Create AgentCallback from environment variables.
-
-        Returns:
-            Configured AgentCallback instance
-        """
-        # Read configuration from environment variables
-        mcp_timeout = int(os.getenv("MCP_SERVER_TIMEOUT", "300"))
-        max_cache_size = int(os.getenv("AGENT_MAX_CACHE_SIZE", "50"))
-
-        firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
-        if not firecrawl_api_key:
-            raise ValueError("FIRECRAWL_API_KEY environment variable is not set")
-
-        mcp_servers = [
-            MCPServerStdio(
-                params=MCPServerStdioParams(
-                    command="npx",
-                    args=["-y", "@playwright/mcp@latest"],
-                ),
-                name="playwright",
-                client_session_timeout_seconds=mcp_timeout,
-            ),
-            MCPServerStdio(
-                params=MCPServerStdioParams(
-                    command="npx",
-                    args=["-y", "firecrawl-mcp"],
-                    env={"FIRECRAWL_API_KEY": firecrawl_api_key},
-                ),
-                name="firecrawl-mcp",
-                client_session_timeout_seconds=mcp_timeout,
-            ),
-            MCPServerStdio(
-                params=MCPServerStdioParams(
-                    command="uvx",
-                    args=["yfmcp@latest"],
-                ),
-                name="yfmcp",
-                client_session_timeout_seconds=mcp_timeout,
-            ),
-            MCPServerStdio(
-                params=MCPServerStdioParams(
-                    command="uvx",
-                    args=["gurume@latest", "mcp"],
-                ),
-                name="gurume",
-                client_session_timeout_seconds=mcp_timeout,
-            ),
-        ]
-
-        agent = Agent(
-            name="agent",
-            instructions=INSTRUCTIONS,
-            model=get_openai_model(),
-            model_settings=get_openai_model_settings(),
-            tools=[
-                query_rate_history,
-                execute_command,
-                web_search,
-            ],
-            mcp_servers=mcp_servers,
-        )
-        return cls(agent, max_cache_size=max_cache_size)
-
     def __init__(self, agent: Agent, max_cache_size: int = 50) -> None:
         """Initialize AgentCallback.
 
@@ -200,74 +77,6 @@ class AgentCallback:
 
         # message.chat.id -> list of messages
         self.cache = get_cache_from_env()
-
-    async def connect(self) -> None:
-        """Connect to all MCP servers with timeout.
-
-        Continues to connect remaining servers even if some fail.
-        Connection timeout is enforced to prevent hanging.
-        """
-        connected_servers = []
-        for mcp_server in list(self.agent.mcp_servers):
-            try:
-                logger.info(
-                    "Connecting to MCP server: {name} (timeout: {timeout}s)",
-                    name=mcp_server.name,
-                    timeout=MCP_CONNECT_TIMEOUT,
-                )
-                await asyncio.wait_for(mcp_server.connect(), timeout=MCP_CONNECT_TIMEOUT)
-                logger.info("Successfully connected to MCP server: {name}", name=mcp_server.name)
-                connected_servers.append(mcp_server)
-            except asyncio.CancelledError:
-                logger.info("MCP connect cancelled for server: {name}", name=mcp_server.name)
-                raise
-            except TimeoutError:
-                logger.error(
-                    "Connection timeout for MCP server {name} after {timeout}s",
-                    name=mcp_server.name,
-                    timeout=MCP_CONNECT_TIMEOUT,
-                )
-            except Exception as e:
-                logger.error(
-                    "Failed to connect to MCP server {name}: {error}",
-                    name=mcp_server.name,
-                    error=str(e),
-                )
-        if len(connected_servers) != len(self.agent.mcp_servers):
-            removed_count = len(self.agent.mcp_servers) - len(connected_servers)
-            logger.warning("Disabling {count} MCP servers that failed to connect", count=removed_count)
-            self.agent.mcp_servers = connected_servers
-
-    async def cleanup(self) -> None:
-        """Cleanup all MCP servers with timeout.
-
-        Continues to cleanup remaining servers even if some fail.
-        Cleanup timeout is enforced to prevent hanging.
-        """
-        for mcp_server in self.agent.mcp_servers:
-            try:
-                logger.info(
-                    "Cleaning up MCP server: {name} (timeout: {timeout}s)",
-                    name=mcp_server.name,
-                    timeout=MCP_CLEANUP_TIMEOUT,
-                )
-                await asyncio.wait_for(mcp_server.cleanup(), timeout=MCP_CLEANUP_TIMEOUT)
-                logger.info("Successfully cleaned up MCP server: {name}", name=mcp_server.name)
-            except asyncio.CancelledError:
-                logger.info("MCP cleanup cancelled for server: {name}", name=mcp_server.name)
-                raise
-            except TimeoutError:
-                logger.error(
-                    "Cleanup timeout for MCP server {name} after {timeout}s",
-                    name=mcp_server.name,
-                    timeout=MCP_CLEANUP_TIMEOUT,
-                )
-            except Exception as e:
-                logger.error(
-                    "Failed to cleanup MCP server {name}: {error}",
-                    name=mcp_server.name,
-                    error=str(e),
-                )
 
     async def handle_message(self, message: Message) -> None:
         """Handle incoming message and generate response.

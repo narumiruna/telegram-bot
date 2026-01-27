@@ -7,6 +7,7 @@ import pytest
 from agents import TResponseInputItem
 from aiogram.types import Message
 
+from bot.agents.chat import build_chat_agent
 from bot.callbacks.agent import Agent
 from bot.callbacks.agent import AgentCallback
 from bot.callbacks.agent import remove_tool_messages
@@ -147,69 +148,6 @@ class TestAgentCallback:
         callback = AgentCallback(mock_agent)
 
         assert callback.max_cache_size == 50
-
-    @patch("bot.callbacks.agent.get_cache_from_env")
-    async def test_connect(self, mock_get_cache):
-        """Test connecting MCP servers"""
-        mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
-
-        # Create mock MCP servers
-        mock_server1 = Mock()
-        mock_server1.connect = AsyncMock()
-        mock_server2 = Mock()
-        mock_server2.connect = AsyncMock()
-
-        mock_agent.mcp_servers = [mock_server1, mock_server2]
-
-        callback = AgentCallback(mock_agent)
-        await callback.connect()
-
-        mock_server1.connect.assert_called_once()
-        mock_server2.connect.assert_called_once()
-
-    @patch("bot.callbacks.agent.get_cache_from_env")
-    async def test_connect_filters_failed_servers(self, mock_get_cache):
-        """Test failed MCP servers are removed after connect"""
-        mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
-
-        mock_server1 = Mock()
-        mock_server1.connect = AsyncMock()
-        mock_server2 = Mock()
-        mock_server2.connect = AsyncMock(side_effect=FileNotFoundError("npx not found"))
-
-        mock_agent.mcp_servers = [mock_server1, mock_server2]
-
-        callback = AgentCallback(mock_agent)
-        await callback.connect()
-
-        mock_server1.connect.assert_called_once()
-        mock_server2.connect.assert_called_once()
-        assert mock_agent.mcp_servers == [mock_server1]
-
-    @patch("bot.callbacks.agent.get_cache_from_env")
-    async def test_cleanup(self, mock_get_cache):
-        """Test cleaning up MCP servers"""
-        mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
-
-        # Create mock MCP servers
-        mock_server1 = Mock()
-        mock_server1.cleanup = AsyncMock()
-        mock_server2 = Mock()
-        mock_server2.cleanup = AsyncMock()
-
-        mock_agent.mcp_servers = [mock_server1, mock_server2]
-
-        callback = AgentCallback(mock_agent)
-        await callback.cleanup()
-
-        mock_server1.cleanup.assert_called_once()
-        mock_server2.cleanup.assert_called_once()
 
     @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_processed_message_text")
@@ -495,52 +433,35 @@ class TestAgentCallback:
         assert input_messages[1]["content"] == "Previous response"
         assert input_messages[2]["content"] == "New message"
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
-    async def test_connect_with_timeout_success(self, mock_get_cache):
-        """Test successful MCP server connection with timeout"""
-        mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
 
-        # Create mock MCP server that connects successfully
+class TestChatAgentBuilder:
+    @patch("bot.agents.chat.Agent")
+    @patch("bot.agents.chat.get_openai_model_settings")
+    @patch("bot.agents.chat.get_openai_model")
+    @patch("bot.agents.chat._build_mcp_servers")
+    @pytest.mark.asyncio
+    async def test_build_chat_agent_context_manager(
+        self,
+        mock_build_mcp_servers,
+        mock_get_openai_model,
+        mock_get_openai_model_settings,
+        mock_agent_class,
+        monkeypatch,
+    ):
         mock_server = Mock()
-        mock_server.name = "test_server"
-        mock_server.connect = AsyncMock()
-        mock_agent.mcp_servers = [mock_server]
+        mock_server.name = "test-server"
+        mock_server.__aenter__ = AsyncMock()
+        mock_server.__aexit__ = AsyncMock()
+        mock_build_mcp_servers.return_value = [mock_server]
 
-        callback = AgentCallback(mock_agent)
-        await callback.connect()
-
-        # Verify connect was called
-        mock_server.connect.assert_called_once()
-
-    @patch("bot.callbacks.agent.get_cache_from_env")
-    async def test_cleanup_with_timeout_success(self, mock_get_cache):
-        """Test successful MCP server cleanup with timeout"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
+        mock_agent_class.return_value = mock_agent
 
-        # Create mock MCP server that cleans up successfully
-        mock_server = Mock()
-        mock_server.name = "test_server"
-        mock_server.cleanup = AsyncMock()
-        mock_agent.mcp_servers = [mock_server]
+        monkeypatch.setenv("FIRECRAWL_API_KEY", "test-key")
+        monkeypatch.setenv("MCP_SERVER_TIMEOUT", "10")
 
-        callback = AgentCallback(mock_agent)
-        await callback.cleanup()
+        async with build_chat_agent() as agent:
+            assert agent == mock_agent
 
-        # Verify cleanup was called
-        mock_server.cleanup.assert_called_once()
-
-    @patch("bot.callbacks.agent.get_cache_from_env")
-    @pytest.mark.skip(reason="Too slow: slow_server cleanup timeout test")
-    async def test_cleanup_with_timeout_error(self, mock_get_cache):
-        """Test MCP server cleanup timeout (skipped)"""
-        pass
-
-    @patch("bot.callbacks.agent.get_cache_from_env")
-    @pytest.mark.skip(reason="Too slow: slow_server cleanup/timeout test")
-    async def test_cleanup_continues_after_timeout(self, mock_get_cache):
-        """Test that cleanup continues with other servers after timeout (skipped)"""
-        pass
+        mock_server.__aenter__.assert_called_once()
+        mock_server.__aexit__.assert_called_once()
