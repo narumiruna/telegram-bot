@@ -140,7 +140,7 @@ class AgentCallback:
             MCPServerStdio(
                 params=MCPServerStdioParams(
                     command="npx",
-                    args=["@playwright/mcp@latest"],
+                    args=["-y", "@playwright/mcp@latest"],
                 ),
                 name="playwright",
                 client_session_timeout_seconds=mcp_timeout,
