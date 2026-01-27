@@ -50,5 +50,5 @@ Migrate only the conversation memory mechanism. No changes to agent instructions
 
 ## Open Decisions
 - Session scope: keep reply-scoped context (only replies to a bot message continue the same session).
-- Whether tool messages should remain excluded from stored history.
+- Tool message handling: keep removing tool messages to avoid cross-agent tool mismatch during handoff.
 * End Patch
