@@ -15,27 +15,20 @@ from agents.mcp.server import MCPServerStdioParams
 from aiogram.types import Message
 from aiogram.types import Update
 from loguru import logger
-from tenacity import retry
-from tenacity import retry_if_exception
-from tenacity import stop_after_attempt
 
 from bot.tools import execute_command
 from bot.tools import query_rate_history
 from bot.tools import web_search
 
 from ..cache import get_cache_from_env
-from ..chains.url_processor import process_url_content
 from ..constants import CACHE_TTL_SECONDS
 from ..constants import MCP_CLEANUP_TIMEOUT
 from ..constants import MCP_CONNECT_TIMEOUT
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
 from ..presentation import MessageResponse
-from ..retry_utils import is_retryable_error
-from ..utils import load_url
-from ..utils import parse_url
 from .utils import get_message_from_update
-from .utils import get_message_text
+from .utils import get_processed_message_text
 from .utils import safe_callback
 
 current_time = datetime.now(ZoneInfo("Asia/Taipei"))
@@ -270,71 +263,21 @@ class AgentCallback:
                     error=str(e),
                 )
 
-    @retry(retry=retry_if_exception(is_retryable_error), stop=stop_after_attempt(3))
-    async def _load_url_with_retry(self, url: str) -> str:
-        """Load URL content with retry mechanism.
-
-        Args:
-            url: The URL to load
-
-        Returns:
-            The loaded content
-
-        Raises:
-            Exception: If all retry attempts fail
-        """
-        return await load_url(url)
-
-    async def load_url_content(self, message_text: str) -> str:
-        """Load URL content from message text if URL is present.
-
-        Uses chunking and summarization for long content to prevent prompt bloat
-        while preserving important information.
-
-        Args:
-            message_text: The message text that may contain a URL
-
-        Returns:
-            The message text with URL content replaced (if URL found and loaded successfully)
-        """
-        parsed_url = parse_url(message_text)
-        if not parsed_url:
-            return message_text
-
-        try:
-            logger.info("Loading URL content: {url}", url=parsed_url)
-            url_content = await self._load_url_with_retry(parsed_url)
-            logger.info(
-                "Successfully loaded URL content: {url}, length: {length}", url=parsed_url, length=len(url_content)
-            )
-
-            # Process URL content with chunking and summarization
-            processed_content = await process_url_content(url_content)
-            logger.info(
-                "URL content processed: {original} -> {processed} characters",
-                original=len(url_content),
-                processed=len(processed_content),
-            )
-
-            message_text = message_text.replace(
-                parsed_url,
-                f"[網頁內容摘要 from {parsed_url}]:\n'''\n{processed_content}\n'''\n[END of 摘要]\n",
-                1,
-            )
-        except Exception as e:
-            logger.error("Failed to load URL {url}: {error}", url=parsed_url, error=str(e))
-            # Return original message text if URL loading fails
-            logger.info("Falling back to original message text")
-
-        return message_text
-
     async def handle_message(self, message: Message) -> None:
         """Handle incoming message and generate response.
 
         Args:
             message: The Telegram message to handle
         """
-        message_text = get_message_text(message, include_reply_to_message=True, include_user_name=True)
+        message_text, error = await get_processed_message_text(
+            message,
+            require_url=False,
+            include_reply_to_message=True,
+            include_user_name=True,
+        )
+        if error:
+            await message.answer(error)
+            return
         if not message_text:
             return
 
@@ -355,9 +298,6 @@ class AgentCallback:
         # remove all tool messages from the memory
         messages = remove_tool_messages(messages)
         messages = remove_fake_id_messages(messages)
-
-        # replace the URL with the content
-        message_text = await self.load_url_content(message_text)
 
         # add the user message to the list of messages
         messages.append(cast(TResponseInputItem, {"role": "user", "content": message_text}))
