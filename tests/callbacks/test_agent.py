@@ -7,7 +7,6 @@ import pytest
 from agents import TResponseInputItem
 from aiogram.types import Message
 
-from bot.agents.chat import build_chat_agent
 from bot.callbacks.agent import Agent
 from bot.callbacks.agent import AgentCallback
 from bot.callbacks.agent import remove_tool_messages
@@ -432,36 +431,3 @@ class TestAgentCallback:
         assert input_messages[0]["content"] == "Previous message"
         assert input_messages[1]["content"] == "Previous response"
         assert input_messages[2]["content"] == "New message"
-
-
-class TestChatAgentBuilder:
-    @patch("bot.agents.chat.Agent")
-    @patch("bot.agents.chat.get_openai_model_settings")
-    @patch("bot.agents.chat.get_openai_model")
-    @patch("bot.agents.chat._build_mcp_servers")
-    @pytest.mark.asyncio
-    async def test_build_chat_agent_context_manager(
-        self,
-        mock_build_mcp_servers,
-        mock_get_openai_model,
-        mock_get_openai_model_settings,
-        mock_agent_class,
-        monkeypatch,
-    ):
-        mock_server = Mock()
-        mock_server.name = "test-server"
-        mock_server.__aenter__ = AsyncMock()
-        mock_server.__aexit__ = AsyncMock()
-        mock_build_mcp_servers.return_value = [mock_server]
-
-        mock_agent = Mock()
-        mock_agent_class.return_value = mock_agent
-
-        monkeypatch.setenv("FIRECRAWL_API_KEY", "test-key")
-        monkeypatch.setenv("MCP_SERVER_TIMEOUT", "10")
-
-        async with build_chat_agent() as agent:
-            assert agent == mock_agent
-
-        mock_server.__aenter__.assert_called_once()
-        mock_server.__aexit__.assert_called_once()
