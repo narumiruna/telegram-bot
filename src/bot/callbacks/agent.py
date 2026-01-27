@@ -218,6 +218,9 @@ class AgentCallback:
                 await asyncio.wait_for(mcp_server.connect(), timeout=MCP_CONNECT_TIMEOUT)
                 logger.info("Successfully connected to MCP server: {name}", name=mcp_server.name)
                 connected_servers.append(mcp_server)
+            except asyncio.CancelledError:
+                logger.info("MCP connect cancelled for server: {name}", name=mcp_server.name)
+                raise
             except TimeoutError:
                 logger.error(
                     "Connection timeout for MCP server {name} after {timeout}s",
@@ -250,6 +253,9 @@ class AgentCallback:
                 )
                 await asyncio.wait_for(mcp_server.cleanup(), timeout=MCP_CLEANUP_TIMEOUT)
                 logger.info("Successfully cleaned up MCP server: {name}", name=mcp_server.name)
+            except asyncio.CancelledError:
+                logger.info("MCP cleanup cancelled for server: {name}", name=mcp_server.name)
+                raise
             except TimeoutError:
                 logger.error(
                     "Cleanup timeout for MCP server {name} after {timeout}s",

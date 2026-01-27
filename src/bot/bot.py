@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 
 from aiogram import Bot
@@ -20,6 +21,8 @@ from .callbacks import query_ticker_callback
 from .callbacks import search_youtube_callback
 from .callbacks import summarize_callback
 from .callbacks.agent import AgentCallback
+from .constants import SHUTDOWN_TIMEOUT
+from .shutdown import ShutdownManager
 
 
 def get_chat_filter():
@@ -60,6 +63,8 @@ async def run_bot() -> None:  # noqa
 
     # Initialize agent callback
     agent_callback = AgentCallback.from_env()
+    shutdown = ShutdownManager(SHUTDOWN_TIMEOUT)
+    shutdown.install_signal_handlers()
 
     helps = [
         "code: https://github.com/narumiruna/bot",
@@ -107,10 +112,42 @@ async def run_bot() -> None:  # noqa
     # Connect to MCP servers
     await agent_callback.connect()
 
+    polling_task = asyncio.create_task(
+        dp.start_polling(bot, handle_signals=False),
+        name="bot_polling",
+    )
+    shutdown_task = asyncio.create_task(shutdown.wait(), name="shutdown_wait")
+
     try:
-        # Start polling
-        await dp.start_polling(bot)
+        done, _ = await asyncio.wait(
+            {polling_task, shutdown_task},
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+
+        if shutdown_task in done:
+            logger.info("Shutdown event triggered, stopping polling.")
+            await dp.stop_polling()
+            await shutdown.cancel_tasks([polling_task], reason="shutdown")
+        else:
+            shutdown_task.cancel()
+            await shutdown.cancel_tasks([shutdown_task], reason="polling_completed")
+            await polling_task
+    except asyncio.CancelledError:
+        logger.info("run_bot cancelled, beginning shutdown.")
+        raise
+    except Exception:
+        logger.exception("Unexpected error in run_bot.")
+        raise
     finally:
-        # Cleanup on shutdown
-        await agent_callback.cleanup()
-        await bot.session.close()
+        await shutdown.cancel_tasks([polling_task, shutdown_task], reason="finalize")
+        try:
+            await agent_callback.cleanup()
+        except asyncio.CancelledError:
+            logger.info("Cleanup cancelled.")
+            raise
+        except Exception:
+            logger.exception("Unexpected error during MCP cleanup.")
+        try:
+            await bot.session.close()
+        except Exception:
+            logger.exception("Failed to close bot session.")

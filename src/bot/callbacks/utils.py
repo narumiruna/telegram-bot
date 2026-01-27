@@ -149,6 +149,9 @@ async def get_processed_message_text(
             # 多個 URL 時，用分隔符組合內容
             combined_content = "\n\n---\n\n".join(contents)
             return combined_content, None
+    except asyncio.CancelledError:
+        logger.debug("URL loading cancelled.")
+        raise
     except Exception as e:
         error_msg = f"Failed to load URL(s): {', '.join(urls)}"
         logger.warning("{error}, got error: {exception}", error=error_msg, exception=e)
@@ -188,6 +191,9 @@ def safe_callback(callback_func):
 
         try:
             return await callback_func(*args, **kwargs)
+        except asyncio.CancelledError:
+            logger.info("Callback {func} cancelled.", func=callback_func.__name__)
+            raise
         except Exception as e:
             # 記錄錯誤
             logger.exception(
