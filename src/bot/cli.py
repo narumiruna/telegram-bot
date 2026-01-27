@@ -4,7 +4,7 @@ from dotenv import find_dotenv
 from dotenv import load_dotenv
 
 from .bot import run_bot
-from .utils import configure_logfire
+from .observability import configure_logging
 
 
 def main() -> None:
@@ -15,5 +15,5 @@ def main() -> None:
         ),
         override=True,
     )
-    configure_logfire()
+    configure_logging()
     asyncio.run(run_bot())

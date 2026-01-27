@@ -18,6 +18,7 @@ from bot.env import langfuse_host
 from bot.env import langfuse_is_enabled
 from bot.env import langfuse_public_key
 from bot.env import langfuse_secret_key
+from bot.env import logfire_token
 
 
 async def load_url(url: str) -> str:
@@ -26,14 +27,18 @@ async def load_url(url: str) -> str:
 
 
 def logfire_is_enabled() -> bool:
-    return bool(os.getenv("LOGFIRE_TOKEN"))
+    return bool(logfire_token)
+
+
+def configure_logging() -> None:
+    if logfire_is_enabled():
+        configure_logfire()
+    else:
+        logger.info("Logfire is not enabled.")
 
 
 def configure_logfire() -> None:
-    if not logfire_is_enabled():
-        return
-
-    logfire.configure()
+    logfire.configure(token=logfire_token)
     logfire.instrument_openai_agents()
     # Note: httpx and requests instrumentation disabled to reduce noise
     # logfire.instrument_httpx()
