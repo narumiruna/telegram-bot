@@ -9,7 +9,6 @@ This module provides functionality for:
 import base64
 import os
 
-import kabigon
 import logfire
 import nest_asyncio
 from loguru import logger
@@ -19,11 +18,6 @@ from bot.env import langfuse_is_enabled
 from bot.env import langfuse_public_key
 from bot.env import langfuse_secret_key
 from bot.env import logfire_token
-
-
-async def load_url(url: str) -> str:
-    with logfire.span("load_url"):
-        return await kabigon.load_url(url)
 
 
 def logfire_is_enabled() -> bool:

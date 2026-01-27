@@ -13,7 +13,7 @@ from agents.extensions.models.litellm_model import LitellmModel
 from openai import AsyncAzureOpenAI
 from openai import AsyncOpenAI
 
-from .utils import logfire_is_enabled
+from .observability import logfire_is_enabled
 
 
 @cache

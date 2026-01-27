@@ -11,37 +11,21 @@ import json
 from pathlib import Path
 from typing import Any
 
-# Backward compatibility: re-export functions from new modules
-from .observability import configure_langfuse
-from .observability import configure_logfire
-from .observability import load_url
-from .observability import logfire_is_enabled
-from .telegraph_utils import async_create_page
-from .telegraph_utils import create_page
-from .telegraph_utils import get_telegraph_client
-from .telegraph_utils import sanitize_telegraph_html
-from .url_parser import parse_url
-from .url_parser import parse_urls
+import kabigon
+import logfire
 
 __all__ = [
     # File I/O
     "save_text",
     "load_json",
     "save_json",
-    # URL parsing (re-exported from url_parser)
-    "parse_url",
-    "parse_urls",
-    # Telegraph (re-exported from telegraph_utils)
-    "get_telegraph_client",
-    "sanitize_telegraph_html",
-    "create_page",
-    "async_create_page",
-    # Observability (re-exported from observability)
     "load_url",
-    "logfire_is_enabled",
-    "configure_logfire",
-    "configure_langfuse",
 ]
+
+
+async def load_url(url: str) -> str:
+    with logfire.span("load_url"):
+        return await kabigon.load_url(url)
 
 
 def save_text(text: str, f: str) -> None:

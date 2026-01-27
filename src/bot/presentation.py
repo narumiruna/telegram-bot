@@ -17,7 +17,7 @@ from unittest.mock import AsyncMock
 from aiogram.types import Message
 
 from .constants import MAX_MESSAGE_LENGTH
-from .utils import async_create_page
+from .telegraph_utils import async_create_page
 
 
 @dataclass
