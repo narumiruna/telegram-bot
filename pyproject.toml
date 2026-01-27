@@ -8,6 +8,7 @@ authors         = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 dependencies    = [
   "aiocache[redis]>=0.12.3",
   "aiogram>=3.24.0",
+  "certifi>=2026.1.4",
   "duckduckgo-search>=8.1.1",
   "firecrawl-py>=4.13.4",
   "httpx>=0.28.1",

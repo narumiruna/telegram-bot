@@ -189,6 +189,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiocache", extra = ["redis"] },
     { name = "aiogram" },
+    { name = "certifi" },
     { name = "duckduckgo-search" },
     { name = "firecrawl-py" },
     { name = "httpx" },
@@ -236,6 +237,7 @@ mlx = [
 requires-dist = [
     { name = "aiocache", extras = ["redis"], specifier = ">=0.12.3" },
     { name = "aiogram", specifier = ">=3.24.0" },
+    { name = "certifi", specifier = ">=2026.1.4" },
     { name = "duckduckgo-search", specifier = ">=8.1.1" },
     { name = "firecrawl-py", specifier = ">=4.13.4" },
     { name = "httpx", specifier = ">=0.28.1" },
