@@ -51,4 +51,10 @@ Migrate only the conversation memory mechanism. No changes to agent instructions
 ## Open Decisions
 - Session scope: keep reply-scoped context (only replies to a bot message continue the same session).
 - Tool message handling: keep removing tool messages to avoid cross-agent tool mismatch during handoff.
+## Requirements (Confirmed)
+- TTL: continue using `settings.cache_ttl_seconds`.
+- max_cache_size: trim by item count only.
+- pop/clear: not required for now.
+- Filters: remove tool messages and `id == "__fake_id__"`.
+- Redis failures: no fallback; skip persistence and retrieval when unavailable.
 * End Patch
