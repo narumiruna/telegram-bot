@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 from agents import TResponseInputItem
-from telegram import Message
+from aiogram.types import Message
 
 from bot.callbacks.agent import Agent
 from bot.callbacks.agent import AgentCallback
@@ -78,9 +78,9 @@ class TestAgentHelperFunctions:
             callback = AgentCallback(DummyAgent(name="dummy"), max_cache_size=2)
             message = Mock(spec=Message)
             message.text = "hello"
-            message.reply_text = AsyncMock()
+            message.answer = AsyncMock()
             await callback.handle_message(message)
-            message.reply_text.assert_called()
+            message.answer.assert_called()
 
         @pytest.mark.asyncio
         async def test_agent_callback_handle_message_trims_history(monkeypatch):
@@ -97,9 +97,9 @@ class TestAgentHelperFunctions:
             callback = AgentCallback(DummyAgent(name="dummy"), max_cache_size=5)
             message = Mock(spec=Message)
             message.text = "hi"
-            message.reply_text = AsyncMock()
+            message.answer = AsyncMock()
             await callback.handle_message(message)
-            message.reply_text.assert_called()
+            message.answer.assert_called()
 
         @pytest.mark.asyncio
         async def test_agent_callback_handle_message_with_none(monkeypatch):
@@ -116,9 +116,9 @@ class TestAgentHelperFunctions:
             callback = AgentCallback(DummyAgent(name="dummy"), max_cache_size=1)
             message = Mock(spec=Message)
             message.text = None
-            message.reply_text = AsyncMock()
+            message.answer = AsyncMock()
             await callback.handle_message(message)
-            message.reply_text.assert_called()
+            message.answer.assert_called()
 
         # (Removed invalid/unfinished code block here)
 
@@ -331,7 +331,7 @@ class TestAgentCallback:
         mock_message.chat.id = 12345
         mock_new_message = Mock()
         mock_new_message.message_id = 67890
-        mock_message.reply_text = AsyncMock(return_value=mock_new_message)
+        mock_message.answer = AsyncMock(return_value=mock_new_message)
 
         callback = AgentCallback(mock_agent)
         await callback.handle_message(mock_message)
@@ -342,7 +342,7 @@ class TestAgentCallback:
         assert call_args[1]["input"][0]["role"] == "user"
 
         # Verify reply_text was called with MessageResponse content
-        mock_message.reply_text.assert_called_once_with("I'm doing well, thank you!", parse_mode="HTML")
+        mock_message.answer.assert_called_once_with("I'm doing well, thank you!", parse_mode="HTML")
         assert call_args[1]["input"][0]["content"] == "Hello, how are you?"
 
         # Verify cache was updated
@@ -520,7 +520,7 @@ class TestAgentCallback:
         mock_message.chat.id = 12345
         mock_new_message = Mock()
         mock_new_message.message_id = 67890
-        mock_message.reply_text = AsyncMock(return_value=mock_new_message)
+        mock_message.answer = AsyncMock(return_value=mock_new_message)
 
         callback = AgentCallback(mock_agent)
         await callback.handle_message(mock_message)
@@ -570,7 +570,7 @@ class TestAgentCallback:
         mock_message.chat.id = 12345
         mock_new_message = Mock()
         mock_new_message.message_id = 67890
-        mock_message.reply_text = AsyncMock(return_value=mock_new_message)
+        mock_message.answer = AsyncMock(return_value=mock_new_message)
 
         callback = AgentCallback(mock_agent)
         await callback.handle_message(mock_message)

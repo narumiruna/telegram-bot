@@ -3,10 +3,10 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-from telegram import Chat
-from telegram import Message
-from telegram import Update
-from telegram import User
+from aiogram.types import Chat
+from aiogram.types import Message
+from aiogram.types import Update
+from aiogram.types import User
 
 from bot.callbacks.format import format_callback
 
@@ -52,7 +52,7 @@ class TestFormatCallback:
         message.text = "Test message to format"
         message.from_user = self.user
         message.reply_to_message = None
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -79,7 +79,7 @@ class TestFormatCallback:
         message.text = "Check this URL: https://example.com"
         message.from_user = self.user
         message.reply_to_message = None
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -104,7 +104,7 @@ class TestFormatCallback:
         message.text = "Short text"
         message.from_user = self.user
         message.reply_to_message = None
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message

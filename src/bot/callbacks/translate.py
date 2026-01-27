@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from aiogram.types import Message
 from loguru import logger
-from telegram import Update
-from telegram.ext import ContextTypes
 
 from .. import chains
 from ..presentation import MessageResponse
@@ -16,14 +15,10 @@ class TranslationCallback(BaseCallback):
         self.lang = lang
 
     @safe_callback
-    async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        message = update.message
-        if not message:
-            return
-
+    async def __call__(self, message: Message) -> None:
         message_text, error = await get_processed_message_text(message, require_url=False)
         if error:
-            await message.reply_text(error)
+            await message.answer(error)
             return
         if not message_text:
             return

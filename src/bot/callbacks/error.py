@@ -4,9 +4,9 @@ import html
 import json
 import traceback
 
+from aiogram import Bot
+from aiogram.types import ErrorEvent
 from loguru import logger
-from telegram import Update
-from telegram.ext import ContextTypes
 
 from ..utils import async_create_page
 from .base import BaseCallback
@@ -16,26 +16,24 @@ class ErrorCallback(BaseCallback):
     def __init__(self, chat_id: str | None = None) -> None:
         self.chat_id = chat_id
 
-    async def __call__(self, update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-        logger.error("Exception while handling an update: {error}", error=context.error)
+    async def __call__(self, event: ErrorEvent, bot: Bot) -> None:
+        logger.error("Exception while handling an update: {error}", error=event.exception)
 
         if self.chat_id is None:
             return
 
-        update_str = update.to_dict() if isinstance(update, Update) else str(update)
+        update_str = event.update.model_dump() if event.update else {}
 
         html_content = (
             "An exception was raised while handling an update\n"
             f"<pre>update = {html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}</pre>\n\n"
-            f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
-            f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
-            f"<pre>context.error = {html.escape(str(context.error))}</pre>\n\n"
+            f"<pre>exception = {html.escape(str(event.exception))}</pre>\n\n"
         )
-        if context.error:
-            tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
+        if event.exception:
+            tb_list = traceback.format_exception(None, event.exception, event.exception.__traceback__)
             tb_string = "".join(tb_list)
             html_content += f"<pre>Traceback (most recent call last):\n{html.escape(tb_string)}</pre>"
 
         page_url = await async_create_page(title="Error", html_content=html_content)
 
-        await context.bot.send_message(chat_id=self.chat_id, text=page_url)
+        await bot.send_message(chat_id=self.chat_id, text=page_url)

@@ -4,11 +4,11 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-from telegram import Chat
-from telegram import Message
-from telegram import Update
-from telegram import User
-from telegram.constants import ParseMode
+from aiogram.types import Chat
+from aiogram.types import Message
+from aiogram.types import Update
+from aiogram.types import User
+
 
 from bot.callbacks.ticker import query_ticker_callback
 
@@ -55,7 +55,7 @@ class TestQueryTickerCallback:
         message = Mock(spec=Message)
         message.text = "/ticker AAPL"
         message.from_user = self.user
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -69,7 +69,7 @@ class TestQueryTickerCallback:
         mock_get_stock_info.assert_called_once_with("AAPL")
 
         expected_result = "Yahoo Finance result for AAPL\n\nTWSE result for AAPL"
-        message.reply_text.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
+        message.answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.ticker.query_tickers")
@@ -84,7 +84,7 @@ class TestQueryTickerCallback:
         message = Mock(spec=Message)
         message.text = "/ticker AAPL"
         message.from_user = self.user
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -98,7 +98,7 @@ class TestQueryTickerCallback:
         mock_get_stock_info.assert_called_once_with("AAPL")
 
         expected_result = "TWSE result for AAPL"
-        message.reply_text.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
+        message.answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.ticker.query_tickers")
@@ -110,7 +110,7 @@ class TestQueryTickerCallback:
         message = Mock(spec=Message)
         message.text = "/ticker AAPL"
         message.from_user = self.user
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -124,7 +124,7 @@ class TestQueryTickerCallback:
         mock_get_stock_info.assert_called_once_with("AAPL")
 
         expected_result = "Yahoo Finance result for AAPL"
-        message.reply_text.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
+        message.answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.ticker.query_tickers")
@@ -142,7 +142,7 @@ class TestQueryTickerCallback:
         message = Mock(spec=Message)
         message.text = "/ticker AAPL GOOGL"
         message.from_user = self.user
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -156,7 +156,7 @@ class TestQueryTickerCallback:
         assert mock_get_stock_info.call_count == 2
 
         expected_result = "Yahoo Finance results\n\nTWSE result for AAPL\n\nTWSE result for GOOGL"
-        message.reply_text.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
+        message.answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.ticker.query_tickers")
@@ -168,7 +168,7 @@ class TestQueryTickerCallback:
         message = Mock(spec=Message)
         message.text = "/ticker INVALID"
         message.from_user = self.user
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -180,7 +180,7 @@ class TestQueryTickerCallback:
 
         assert result is None
         # Should notify user that no results were found
-        message.reply_text.assert_called_once()
-        call_args = message.reply_text.call_args[0][0]
+        message.answer.assert_called_once()
+        call_args = message.answer.call_args[0][0]
         assert "無法查詢到股票代碼" in call_args
         assert "INVALID" in call_args

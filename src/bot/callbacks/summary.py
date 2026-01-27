@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from aiogram.types import Message
 from loguru import logger
-from telegram import Update
-from telegram.ext import ContextTypes
 
 from .. import chains
 from .utils import get_processed_message_text
@@ -10,17 +9,13 @@ from .utils import safe_callback
 
 
 @safe_callback
-async def summarize_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message = update.message
-    if not message:
-        return
-
+async def summarize_callback(message: Message) -> None:
     text, error = await get_processed_message_text(message, require_url=True)
     if error:
-        await message.reply_text(error)
+        await message.answer(error)
         return
     if not text:
-        await message.reply_text("請提供要摘要的 URL，例如：/s https://example.com")
+        await message.answer("請提供要摘要的 URL，例如：/s https://example.com")
         return
 
     response = await chains.summarize(text)
