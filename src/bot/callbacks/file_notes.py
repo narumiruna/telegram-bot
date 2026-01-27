@@ -14,7 +14,8 @@ from aiogram.types import Update
 from kabigon.loaders.pdf import read_pdf_content
 from kabigon.loaders.utils import read_html_content
 
-from .. import chains
+from bot import chains
+
 from .utils import get_message_from_update
 from .utils import safe_callback
 

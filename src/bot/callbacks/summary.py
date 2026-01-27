@@ -4,7 +4,8 @@ from aiogram.types import Message
 from aiogram.types import Update
 from loguru import logger
 
-from .. import chains
+from bot import chains
+
 from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback

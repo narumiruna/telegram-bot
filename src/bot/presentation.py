@@ -78,6 +78,5 @@ class MessageResponse:
                 html_content=telegraph_html,
             )
             return await send_direct(url)
-        else:
-            # Send directly for short content
-            return await send_direct(self.content, parse_mode=self.parse_mode)
+        # Send directly for short content
+        return await send_direct(self.content, parse_mode=self.parse_mode)

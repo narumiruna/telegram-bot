@@ -34,12 +34,11 @@ def get_chat_filter():
     if not chat_ids:
         logger.warning("No whitelist specified, allowing all chats")
         return lambda _: True
-    else:
 
-        def chat_filter(message) -> bool:
-            return message.chat.id in chat_ids
+    def chat_filter(message) -> bool:
+        return message.chat.id in chat_ids
 
-        return chat_filter
+    return chat_filter
 
 
 def get_bot_token() -> str:
@@ -49,7 +48,7 @@ def get_bot_token() -> str:
     return token
 
 
-async def run_bot() -> None:  # noqa
+async def run_bot() -> None:
     async with build_chat_agent() as agent:
         # Create bot and dispatcher
         bot = Bot(token=get_bot_token())

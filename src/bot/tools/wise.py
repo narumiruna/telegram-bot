@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC
 from datetime import datetime
 from enum import Enum
 from zoneinfo import ZoneInfo
@@ -32,7 +33,7 @@ class Rate(BaseModel):
             case datetime():
                 return v
             case int():
-                return datetime.fromtimestamp(v // 1000)
+                return datetime.fromtimestamp(v // 1000, tz=UTC)
             case _:
                 msg = f"invalid time: {v}"
                 raise TypeError(msg)

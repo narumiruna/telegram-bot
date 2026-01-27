@@ -4,8 +4,9 @@ from textwrap import dedent
 from loguru import logger
 from pydantic import BaseModel
 
-from ..core.prompting import PromptSpec
-from ..lazy import lazy_run
+from bot.core.prompting import PromptSpec
+from bot.lazy import lazy_run
+
 from .instructions import BASE_INSTRUCTIONS
 from .utils import chunk_on_delimiter
 
@@ -146,12 +147,11 @@ async def create_notes_from_chunk(text: str) -> str:
         str: Formatted study notes
     """
     prompt = dedent(CHUNK_NOTES_PROMPT.render_input(text=text))
-    result = await lazy_run(
+    return await lazy_run(
         prompt,
         instructions=CHUNK_NOTES_PROMPT.render_instructions(BASE_INSTRUCTIONS),
         name=CHUNK_NOTES_PROMPT.name or "lazy_run",
     )
-    return result
 
 
 async def create_notes(text: str) -> ResearchReport:

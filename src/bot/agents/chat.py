@@ -9,12 +9,11 @@ from agents.mcp.server import MCPServerStdio
 from agents.mcp.server import MCPServerStdioParams
 from loguru import logger
 
+from bot.model import get_openai_model
 from bot.settings import settings
 from bot.tools import execute_command
 from bot.tools import query_rate_history
 from bot.tools import web_search
-
-from ..model import get_openai_model
 
 current_time = datetime.now(ZoneInfo("Asia/Taipei"))
 

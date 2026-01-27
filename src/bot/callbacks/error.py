@@ -8,7 +8,7 @@ from aiogram import Bot
 from aiogram.types import ErrorEvent
 from loguru import logger
 
-from ..telegraph_utils import async_create_page
+from bot.telegraph_utils import async_create_page
 
 
 class ErrorCallback:

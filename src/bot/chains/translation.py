@@ -1,7 +1,8 @@
 import inspect
 
-from ..core.prompting import PromptSpec
-from ..lazy import lazy_run
+from bot.core.prompting import PromptSpec
+from bot.lazy import lazy_run
+
 from .instructions import BASE_INSTRUCTIONS
 
 TRANSLATE_TO_TAIWANESE_PROMPT = PromptSpec(

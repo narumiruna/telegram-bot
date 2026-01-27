@@ -36,8 +36,7 @@ def chunk_on_delimiter(text: str, delimiter: str = " ", max_length: int = 200_00
             # Handle case where single word is longer than max_length
             if len(word) > max_length:
                 # Split the word itself
-                for i in range(0, len(word), max_length):
-                    chunks.append(word[i : i + max_length])
+                chunks.extend([word[i : i + max_length] for i in range(0, len(word), max_length)])
                 current_chunk = ""
             else:
                 current_chunk = word + delimiter

@@ -6,8 +6,8 @@ from aiogram.types import Message
 from aiogram.types import Update
 from loguru import logger
 
-from ..url_parser import parse_urls
-from ..utils import load_url
+from bot.url_parser import parse_urls
+from bot.utils import load_url
 
 
 def get_user_display_name(message: Message) -> str | None:
@@ -90,7 +90,7 @@ def strip_command(text: str) -> str:
     Output: "hello"
     """
     if text.startswith("/"):
-        command, *args = text.split(" ", 1)
+        _command, *args = text.split(" ", 1)
         return args[0] if args else ""
     return text
 
@@ -141,14 +141,6 @@ async def get_processed_message_text(
     try:
         # 並行載入所有 URL
         contents = await asyncio.gather(*[load_url(url) for url in urls])
-
-        # 組合所有內容
-        if len(contents) == 1:
-            return contents[0], None
-        else:
-            # 多個 URL 時，用分隔符組合內容
-            combined_content = "\n\n---\n\n".join(contents)
-            return combined_content, None
     except asyncio.CancelledError:
         logger.debug("URL loading cancelled.")
         raise
@@ -156,6 +148,13 @@ async def get_processed_message_text(
         error_msg = f"Failed to load URL(s): {', '.join(urls)}"
         logger.warning("{error}, got error: {exception}", error=error_msg, exception=e)
         return None, error_msg
+    else:
+        # 組合所有內容
+        if len(contents) == 1:
+            return contents[0], None
+        # 多個 URL 時，用分隔符組合內容
+        combined_content = "\n\n---\n\n".join(contents)
+        return combined_content, None
 
 
 def safe_callback(callback_func):

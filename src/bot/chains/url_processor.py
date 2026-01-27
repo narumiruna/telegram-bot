@@ -3,8 +3,9 @@ from textwrap import dedent
 
 from loguru import logger
 
-from ..core.prompting import PromptSpec
-from ..lazy import lazy_run
+from bot.core.prompting import PromptSpec
+from bot.lazy import lazy_run
+
 from .instructions import BASE_INSTRUCTIONS
 from .utils import chunk_on_delimiter
 
@@ -60,12 +61,11 @@ async def rewrite_url_chunk(text: str) -> str:
     Returns:
         str: Rewritten content in Traditional Chinese
     """
-    result = await lazy_run(
+    return await lazy_run(
         input=dedent(URL_CHUNK_REWRITE_PROMPT.render_input(text=text)),
         instructions=URL_CHUNK_REWRITE_PROMPT.render_instructions(BASE_INSTRUCTIONS),
         name=URL_CHUNK_REWRITE_PROMPT.name or "lazy_run",
     )
-    return result
 
 
 async def process_url_content(text: str) -> str:

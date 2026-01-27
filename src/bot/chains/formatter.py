@@ -5,9 +5,10 @@ from agents import trace
 from loguru import logger
 from pydantic import BaseModel
 
-from ..core.prompting import PromptSpec
-from ..lazy import lazy_run
-from ..presentation import MessageResponse
+from bot.core.prompting import PromptSpec
+from bot.lazy import lazy_run
+from bot.presentation import MessageResponse
+
 from .instructions import BASE_INSTRUCTIONS
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter

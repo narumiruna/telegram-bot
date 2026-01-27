@@ -10,10 +10,11 @@ from aiogram.types import Message
 from aiogram.types import Update
 from loguru import logger
 
-from ..cache import get_cache_from_env
-from ..memory import RedisSession
-from ..presentation import MessageResponse
-from ..settings import settings
+from bot.cache import get_cache_from_env
+from bot.memory import RedisSession
+from bot.presentation import MessageResponse
+from bot.settings import settings
+
 from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback

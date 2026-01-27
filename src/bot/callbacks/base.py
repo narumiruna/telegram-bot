@@ -51,4 +51,3 @@ class BaseCallback(ABC):
         Args:
             message: The Telegram message to process
         """
-        pass

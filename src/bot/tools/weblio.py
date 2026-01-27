@@ -35,8 +35,5 @@ def query_weblio(query: str) -> str:
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    res = []
     definitions = soup.find_all("div", class_="kiji")
-    for definition in definitions:
-        res.append(definition.text.strip())
-    return "\n".join(res)
+    return "\n".join([definition.text.strip() for definition in definitions])

@@ -8,7 +8,8 @@ from aiogram.types import Update
 from loguru import logger
 from twse.stock_info import get_stock_info
 
-from ..yahoo_finance import query_tickers
+from bot.yahoo_finance import query_tickers
+
 from .utils import get_message_from_update
 from .utils import safe_callback
 from .utils import strip_command

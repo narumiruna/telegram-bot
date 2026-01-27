@@ -21,7 +21,7 @@ class AgentConfig(BaseModel):
     @field_validator("mcp_servers", mode="after")
     @classmethod
     def get_env_vars(cls, mcp_servers: dict[str, StdioServerParameters]) -> dict[str, StdioServerParameters]:
-        for _, params in mcp_servers.items():
+        for params in mcp_servers.values():
             if params.env:
                 for k, v in params.env.items():
                     if v == "":

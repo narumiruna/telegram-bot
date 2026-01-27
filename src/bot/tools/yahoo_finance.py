@@ -1,6 +1,6 @@
 from agents import function_tool
 
-from ..yahoo_finance import query_tickers
+from bot.yahoo_finance import query_tickers
 
 
 @function_tool

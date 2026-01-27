@@ -1,6 +1,6 @@
 from agents import function_tool
 
-from ..utils import load_url
+from bot.utils import load_url
 
 
 @function_tool
@@ -13,5 +13,4 @@ async def extract_content_from_url(url: str) -> str:
     Returns:
         The extracted content as a string.
     """
-    content = await load_url(url)
-    return content
+    return await load_url(url)
