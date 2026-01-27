@@ -35,7 +35,8 @@ Migrate only the conversation memory mechanism. No changes to agent instructions
    - Store items under a stable session key with TTL.
    - Add trimming logic to enforce `max_cache_size` after `add_items`.
 3. **Integrate with `AgentCallback`**
-   - Replace manual `messages` collection + `Runner.run(..., input=...)` with `Runner.run(..., session=...)`.
+   - Keep `Runner.run(..., input=...)` because the session key is derived from the bot reply message ID.
+   - Use `RedisSession` for persistence and retrieval with the confirmed key format.
    - Keep `remove_tool_messages` behavior only if explicitly required; otherwise allow full item history.
 4. **Adjust tests**
    - Add unit tests for `RedisSession` behavior: `get_items`, `add_items`, `pop_item`, `clear_session`, and trimming.

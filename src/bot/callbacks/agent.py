@@ -11,6 +11,7 @@ from aiogram.types import Update
 from loguru import logger
 
 from ..cache import get_cache_from_env
+from ..memory import RedisSession
 from ..presentation import MessageResponse
 from ..settings import settings
 from .utils import get_message_from_update
@@ -48,6 +49,12 @@ def remove_fake_id_messages(messages: list[TResponseInputItem]) -> list[TRespons
         Filtered list without fake ID messages
     """
     return [msg for msg in messages if msg.get("id") != "__fake_id__"]
+
+
+def filter_memory_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
+    """Apply all memory filters to a message list."""
+    messages = remove_tool_messages(messages)
+    return remove_fake_id_messages(messages)
 
 
 class AgentCallback:
@@ -102,17 +109,18 @@ class AgentCallback:
         messages = []
         if message.reply_to_message is not None:
             key = self._make_cache_key(message.reply_to_message.message_id, message.chat.id)
-            try:
-                logger.debug("Loading conversation history from cache: {key}", key=key)
-                messages = await self.cache.get(key, default=[])
-                logger.debug("Loaded {count} messages from cache", count=len(messages))
-            except Exception as e:
-                logger.error("Failed to load from cache: {error}", error=str(e))
-                messages = []
+            logger.debug("Loading conversation history from cache: {key}", key=key)
+            session = RedisSession(
+                key,
+                cache=self.cache,
+                max_cache_size=self.max_cache_size,
+                ttl_seconds=settings.cache_ttl_seconds,
+            )
+            messages = await session.get_items()
+            logger.debug("Loaded {count} messages from cache", count=len(messages))
 
         # remove all tool messages from the memory
-        messages = remove_tool_messages(messages)
-        messages = remove_fake_id_messages(messages)
+        messages = filter_memory_messages(messages)
 
         # add the user message to the list of messages
         messages.append(cast(TResponseInputItem, {"role": "user", "content": message_text}))
@@ -123,7 +131,7 @@ class AgentCallback:
         logger.info("Agent completed. New items: {new_items}", new_items=result.new_items)
 
         # update the memory
-        input_items = result.to_input_list()
+        input_items = filter_memory_messages(result.to_input_list())
         if len(input_items) > self.max_cache_size:
             logger.debug("Trimming conversation history to {size} items", size=self.max_cache_size)
             input_items = input_items[-self.max_cache_size :]
@@ -138,16 +146,19 @@ class AgentCallback:
         new_key = self._make_cache_key(new_message.message_id, message.chat.id)
 
         # Save conversation history to cache with TTL
-        try:
-            logger.debug(
-                "Saving conversation history to cache: {key} with TTL {ttl}s",
-                key=new_key,
-                ttl=settings.cache_ttl_seconds,
-            )
-            await self.cache.set(new_key, input_items, ttl=settings.cache_ttl_seconds)
-            logger.debug("Successfully saved conversation history")
-        except Exception as e:
-            logger.error("Failed to save to cache: {error}", error=str(e))
+        logger.debug(
+            "Saving conversation history to cache: {key} with TTL {ttl}s",
+            key=new_key,
+            ttl=settings.cache_ttl_seconds,
+        )
+        new_session = RedisSession(
+            new_key,
+            cache=self.cache,
+            max_cache_size=self.max_cache_size,
+            ttl_seconds=settings.cache_ttl_seconds,
+        )
+        await new_session.set_items(input_items)
+        logger.debug("Finished saving conversation history")
 
     @safe_callback
     async def handle_command(self, update: Message | Update, context: object | None = None) -> None:
