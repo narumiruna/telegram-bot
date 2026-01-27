@@ -42,3 +42,21 @@ def logfire_is_enabled() -> bool:
 def langfuse_is_enabled() -> bool:
     """Check if Langfuse monitoring is enabled."""
     return all([langfuse_public_key, langfuse_secret_key, langfuse_host])
+
+
+# from pydantic_settings import BaseSettings
+# from pydantic_settings import SettingsConfigDict
+
+
+# class Settings(BaseSettings):
+#     bot_token: str
+#     logfire_token: str | None = None
+
+#     litellm_api_key: str
+#     litellm_base_url: str
+#     litellm_model: str
+
+#     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+
+# settings = Settings()  # ty:ignore[missing-argument]

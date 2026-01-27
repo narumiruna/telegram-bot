@@ -189,7 +189,6 @@ source = { editable = "." }
 dependencies = [
     { name = "aiocache", extra = ["redis"] },
     { name = "aiogram" },
-    { name = "certifi" },
     { name = "duckduckgo-search" },
     { name = "firecrawl-py" },
     { name = "httpx" },
@@ -204,6 +203,7 @@ dependencies = [
     { name = "openai" },
     { name = "openai-agents", extra = ["litellm"] },
     { name = "playwright" },
+    { name = "pydantic-settings" },
     { name = "pypdf" },
     { name = "python-dotenv" },
     { name = "rich" },
@@ -237,7 +237,6 @@ mlx = [
 requires-dist = [
     { name = "aiocache", extras = ["redis"], specifier = ">=0.12.3" },
     { name = "aiogram", specifier = ">=3.24.0" },
-    { name = "certifi", specifier = ">=2026.1.4" },
     { name = "duckduckgo-search", specifier = ">=8.1.1" },
     { name = "firecrawl-py", specifier = ">=4.13.4" },
     { name = "httpx", specifier = ">=0.28.1" },
@@ -252,6 +251,7 @@ requires-dist = [
     { name = "openai", specifier = ">=2.15.0" },
     { name = "openai-agents", extras = ["litellm"], specifier = ">=0.7.0" },
     { name = "playwright", specifier = ">=1.57.0" },
+    { name = "pydantic-settings", specifier = ">=2.12.0" },
     { name = "pypdf", specifier = ">=6.6.2" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "rich", specifier = ">=14.3.1" },

@@ -8,7 +8,6 @@ authors         = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 dependencies    = [
   "aiocache[redis]>=0.12.3",
   "aiogram>=3.24.0",
-  "certifi>=2026.1.4",
   "duckduckgo-search>=8.1.1",
   "firecrawl-py>=4.13.4",
   "httpx>=0.28.1",
@@ -23,6 +22,7 @@ dependencies    = [
   "openai>=2.15.0",
   "openai-agents[litellm]>=0.7.0",
   "playwright>=1.57.0",
+  "pydantic-settings>=2.12.0",
   "pypdf>=6.6.2",
   "python-dotenv>=1.2.1",
   "rich>=14.3.1",
