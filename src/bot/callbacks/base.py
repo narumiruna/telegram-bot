@@ -4,33 +4,31 @@ from abc import ABC
 from abc import abstractmethod
 from typing import Protocol
 
-from telegram import Update
-from telegram.ext import ContextTypes
+from aiogram.types import Message
 
 
 class CallbackProtocol(Protocol):
     """Protocol for all bot callbacks.
 
     This protocol allows both function-based and class-based callbacks,
-    as long as they follow the standard Telegram callback signature.
+    as long as they follow the standard aiogram callback signature.
 
     Examples:
         # Function-based callback
-        async def my_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        async def my_callback(message: Message) -> None:
             ...
 
         # Class-based callback
         class MyCallback:
-            async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+            async def __call__(self, message: Message) -> None:
                 ...
     """
 
-    async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle a Telegram update.
+    async def __call__(self, message: Message) -> None:
+        """Handle a Telegram message.
 
         Args:
-            update: The Telegram update to process
-            context: The callback context
+            message: The Telegram message to process
         """
         ...
 
@@ -47,11 +45,10 @@ class BaseCallback(ABC):
     """
 
     @abstractmethod
-    async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle a Telegram update.
+    async def __call__(self, message: Message) -> None:
+        """Handle a Telegram message.
 
         Args:
-            update: The Telegram update to process
-            context: The callback context
+            message: The Telegram message to process
         """
         pass

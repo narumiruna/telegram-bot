@@ -9,7 +9,7 @@ from __future__ import annotations
 import html
 from dataclasses import dataclass
 
-from telegram import Message
+from aiogram.types import Message
 
 from .constants import MAX_MESSAGE_LENGTH
 from .utils import async_create_page
@@ -55,7 +55,7 @@ class MessageResponse:
                 title=self.title or "Response",
                 html_content=telegraph_html,
             )
-            return await message.reply_text(url)
+            return await message.answer(url)
         else:
             # Send directly for short content
-            return await message.reply_text(self.content, parse_mode=self.parse_mode)
+            return await message.answer(self.content, parse_mode=self.parse_mode)

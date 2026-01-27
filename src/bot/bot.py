@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import os
 
+from aiogram import Bot
+from aiogram import Dispatcher
+from aiogram import F
+from aiogram import Router
+from aiogram.filters import Command
+from aiogram.filters import CommandStart
+from aiogram.types import ErrorEvent
 from loguru import logger
-from telegram import Update
-from telegram.ext import Application
-from telegram.ext import CommandHandler
-from telegram.ext import MessageHandler
-from telegram.ext import filters
 
 from .callbacks import ErrorCallback
 from .callbacks import HelpCallback
@@ -21,14 +23,20 @@ from .callbacks import summarize_callback
 from .callbacks.agent import AgentCallback
 
 
-def get_chat_filter() -> filters.BaseFilter:
+def get_chat_filter():
+    """Create a filter for allowed chats based on whitelist.
+    
+    Returns a filter function that checks if the chat_id is in the whitelist.
+    """
     whitelist = os.getenv("BOT_WHITELIST")
     if not whitelist:
         logger.warning("No whitelist specified, allowing all chats")
-        return filters.ALL
+        return lambda _: True
     else:
         chat_ids = [int(chat_id) for chat_id in whitelist.replace(" ", "").split(",")]
-        return filters.Chat(chat_ids)
+        def chat_filter(message) -> bool:
+            return message.chat.id in chat_ids
+        return chat_filter
 
 
 def get_bot_token() -> str:
@@ -38,19 +46,20 @@ def get_bot_token() -> str:
     return token
 
 
-def run_bot() -> None:  # noqa
+async def run_bot() -> None:  # noqa
+    # Create bot and dispatcher
+    bot = Bot(token=get_bot_token())
+    dp = Dispatcher()
+    
+    # Create router for handlers
+    router = Router()
+    
+    # Get chat filter
     chat_filter = get_chat_filter()
-
+    
+    # Initialize agent callback
     agent_callback = AgentCallback.from_env()
-
-    async def connect(application: Application) -> None:
-        await agent_callback.connect()
-
-    async def cleanup(application: Application) -> None:
-        await agent_callback.cleanup()
-
-    app = Application.builder().token(get_bot_token()).post_init(connect).post_shutdown(cleanup).build()
-
+    
     helps = [
         "code: https://github.com/narumiruna/bot",
         "/help - Show this help message",
@@ -64,31 +73,43 @@ def run_bot() -> None:  # noqa
         "/t - Query ticker from Yahoo Finance and Taiwan stock exchange",
         "/f - Format and normalize the document in 台灣話",
     ]
-
-    app.add_handlers(
-        [
-            # agent
-            CommandHandler("a", agent_callback.handle_command, filters=chat_filter, block=False),
-            CommandHandler("gpt", agent_callback.handle_command, filters=chat_filter, block=False),
-            # help
-            CommandHandler("help", HelpCallback(helps=helps), filters=chat_filter, block=False),
-            CommandHandler("s", summarize_callback, filters=chat_filter, block=False),
-            CommandHandler("jp", TranslationCallback("日本語"), filters=chat_filter, block=False),
-            CommandHandler("tc", TranslationCallback("台灣正體中文"), filters=chat_filter, block=False),
-            CommandHandler("en", TranslationCallback("English"), filters=chat_filter, block=False),
-            CommandHandler("t", query_ticker_callback, filters=chat_filter, block=False),
-            CommandHandler("yt", search_youtube_callback, filters=chat_filter, block=False),
-            CommandHandler("f", format_callback, filters=chat_filter, block=False),
-            CommandHandler("echo", echo_callback, block=False),
-        ]
-    )
-
-    # Message handlers should be placed at the end.
-    app.add_handler(
-        MessageHandler(filters=chat_filter & filters.REPLY, callback=agent_callback.handle_reply, block=False)
-    )
-    app.add_handler(MessageHandler(filters=chat_filter, callback=file_callback, block=False))
-
-    app.add_error_handler(ErrorCallback(os.getenv("DEVELOPER_CHAT_ID")), block=False)
-
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    
+    # Register command handlers
+    router.message.register(agent_callback.handle_command, Command("a"), F.func(chat_filter))
+    router.message.register(agent_callback.handle_command, Command("gpt"), F.func(chat_filter))
+    router.message.register(HelpCallback(helps=helps), Command("help"), F.func(chat_filter))
+    router.message.register(summarize_callback, Command("s"), F.func(chat_filter))
+    router.message.register(TranslationCallback("日本語"), Command("jp"), F.func(chat_filter))
+    router.message.register(TranslationCallback("台灣正體中文"), Command("tc"), F.func(chat_filter))
+    router.message.register(TranslationCallback("English"), Command("en"), F.func(chat_filter))
+    router.message.register(query_ticker_callback, Command("t"), F.func(chat_filter))
+    router.message.register(search_youtube_callback, Command("yt"), F.func(chat_filter))
+    router.message.register(format_callback, Command("f"), F.func(chat_filter))
+    router.message.register(echo_callback, Command("echo"))
+    
+    # Register reply handler (for replies to bot messages)
+    router.message.register(agent_callback.handle_reply, F.reply_to_message, F.func(chat_filter))
+    
+    # Register file handler (should be last among message handlers)
+    router.message.register(file_callback, F.document, F.func(chat_filter))
+    
+    # Register error handler
+    error_callback = ErrorCallback(os.getenv("DEVELOPER_CHAT_ID"))
+    
+    @router.error()
+    async def error_handler(event: ErrorEvent) -> None:
+        await error_callback(event, bot)
+    
+    # Include router in dispatcher
+    dp.include_router(router)
+    
+    # Connect to MCP servers
+    await agent_callback.connect()
+    
+    try:
+        # Start polling
+        await dp.start_polling(bot)
+    finally:
+        # Cleanup on shutdown
+        await agent_callback.cleanup()
+        await bot.session.close()

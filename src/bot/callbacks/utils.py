@@ -1,8 +1,8 @@
 import asyncio
 from functools import wraps
 
+from aiogram.types import Message
 from loguru import logger
-from telegram import Message
 
 from ..utils import load_url
 from ..utils import parse_urls
@@ -36,7 +36,7 @@ def get_message_text(
     include_reply_to_message: bool = True,
     include_user_name: bool = False,
 ) -> str:
-    message_text = message.text or ""
+    message_text = message.text or message.caption or ""
     message_text = strip_command(message_text)
 
     if include_user_name:
@@ -144,13 +144,13 @@ def safe_callback(callback_func):
 
     Example:
         @safe_callback
-        async def my_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        async def my_callback(message: Message) -> None:
             # callback implementation
             pass
 
         class MyCallback:
             @safe_callback
-            async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+            async def __call__(self, message: Message) -> None:
                 # callback implementation
                 pass
     """
@@ -158,14 +158,14 @@ def safe_callback(callback_func):
     @wraps(callback_func)
     async def wrapper(*args, **kwargs):
         # Handle both functions and methods
-        # Check if first arg has 'message' attribute (is Update-like)
-        update = None
-        if args and hasattr(args[0], "message"):
-            # Function (first arg is Update or Update-like)
-            update = args[0]
-        elif args and len(args) > 1 and hasattr(args[1], "message"):
-            # Method (first arg is self, second is Update or Update-like)
-            update = args[1]
+        # Check if first arg is Message-like
+        message = None
+        if args and isinstance(args[0], Message):
+            # Function (first arg is Message)
+            message = args[0]
+        elif args and len(args) > 1 and isinstance(args[1], Message):
+            # Method (first arg is self, second is Message)
+            message = args[1]
 
         try:
             return await callback_func(*args, **kwargs)
@@ -178,9 +178,9 @@ def safe_callback(callback_func):
             )
 
             # 通知用戶
-            if update and hasattr(update, "message") and update.message:
+            if message:
                 try:
-                    await update.message.reply_text(
+                    await message.answer(
                         "抱歉，處理您的請求時發生錯誤，請稍後再試。\n如果問題持續發生，請聯絡管理員。"
                     )
                 except Exception as reply_error:

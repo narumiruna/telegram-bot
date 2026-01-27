@@ -1,3 +1,5 @@
+import asyncio
+
 import typer
 from dotenv import find_dotenv
 from dotenv import load_dotenv
@@ -15,4 +17,4 @@ def main() -> None:
         override=True,
     )
     configure_logfire()
-    typer.run(run_bot)
+    asyncio.run(run_bot())

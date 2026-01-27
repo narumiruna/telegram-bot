@@ -3,23 +3,18 @@ from __future__ import annotations
 import html
 import json
 
-from telegram import Update
-from telegram.constants import ParseMode
-from telegram.ext import ContextTypes
+from aiogram.types import Message
 
 
-async def echo_callback(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
-    if not update.message:
-        return
-
+async def echo_callback(message: Message) -> None:
     text = html.escape(
         json.dumps(
-            update.to_dict(),
+            message.model_dump(),
             indent=2,
             ensure_ascii=False,
         )
     )
-    await update.message.reply_text(
+    await message.answer(
         text=f"<pre>{text}</pre>",
-        parse_mode=ParseMode.HTML,
+        parse_mode="HTML",
     )

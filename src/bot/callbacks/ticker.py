@@ -2,38 +2,40 @@ from __future__ import annotations
 
 import json
 
+from aiogram.types import Message
 from loguru import logger
-from telegram import Update
-from telegram.constants import ParseMode
-from telegram.ext import ContextTypes
 from twse.stock_info import get_stock_info
 
 from ..yahoo_finance import query_tickers
 from .utils import safe_callback
+from .utils import strip_command
 
 
 @safe_callback
-async def query_ticker_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not update.message:
+async def query_ticker_callback(message: Message) -> None:
+    # Extract command arguments from message text
+    text = strip_command(message.text or "")
+    if not text:
         return
-
-    if not context.args:
+    
+    symbols = text.split()
+    if not symbols:
         return
 
     # Query Yahoo Finance
     try:
-        yf_result = query_tickers(context.args)
+        yf_result = query_tickers(symbols)
     except Exception as e:
         logger.warning(
             "Failed to query Yahoo Finance for {symbols}: {error}",
-            symbols=context.args,
+            symbols=symbols,
             error=str(e),
         )
         yf_result = ""
 
     # Query TWSE
     twse_results = []
-    for symbol in context.args:
+    for symbol in symbols:
         try:
             twse_results += [get_stock_info(symbol.strip()).pretty_repr()]
         except json.JSONDecodeError as e:
@@ -56,9 +58,9 @@ async def query_ticker_callback(update: Update, context: ContextTypes.DEFAULT_TY
     result = "\n\n".join(results).strip()
 
     if not result:
-        await update.message.reply_text(
-            f"無法查詢到股票代碼 {', '.join(context.args)} 的資訊。\n請確認代碼是否正確，或稍後再試。"
+        await message.answer(
+            f"無法查詢到股票代碼 {', '.join(symbols)} 的資訊。\n請確認代碼是否正確，或稍後再試。"
         )
         return
 
-    await update.message.reply_text(result, parse_mode=ParseMode.MARKDOWN_V2)
+    await message.answer(result, parse_mode="MarkdownV2")

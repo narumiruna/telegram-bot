@@ -2,28 +2,31 @@ from __future__ import annotations
 
 import contextlib
 import os
+from pathlib import Path
 
+from aiogram import Bot
+from aiogram.types import Message
 from kabigon.loaders.pdf import read_pdf_content
 from kabigon.loaders.utils import read_html_content
-from telegram import Update
-from telegram.ext import ContextTypes
 
 from .. import chains
 from .utils import safe_callback
 
 
 @safe_callback
-async def file_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message = update.message
-    if not message:
-        return
-
+async def file_callback(message: Message, bot: Bot) -> None:
     document = message.document
     if not document:
         return
 
-    new_file = await context.bot.get_file(document.file_id)
-    file_path = await new_file.download_to_drive()
+    file = await bot.get_file(document.file_id)
+    if not file.file_path:
+        return
+    
+    # Download file
+    file_path = Path(f"/tmp/{document.file_name}")
+    await bot.download_file(file.file_path, file_path)
+    
     try:
         match file_path.suffix:
             case ".pdf":
