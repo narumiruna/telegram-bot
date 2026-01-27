@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import os
 
 from aiogram import Bot
 from aiogram import Dispatcher
@@ -22,7 +21,7 @@ from .callbacks import query_ticker_callback
 from .callbacks import search_youtube_callback
 from .callbacks import summarize_callback
 from .callbacks.agent import AgentCallback
-from .constants import SHUTDOWN_TIMEOUT
+from .settings import settings
 from .shutdown import ShutdownManager
 
 
@@ -31,12 +30,11 @@ def get_chat_filter():
 
     Returns a filter function that checks if the chat_id is in the whitelist.
     """
-    whitelist = os.getenv("BOT_WHITELIST")
-    if not whitelist:
+    chat_ids = settings.chat_ids
+    if not chat_ids:
         logger.warning("No whitelist specified, allowing all chats")
         return lambda _: True
     else:
-        chat_ids = [int(chat_id) for chat_id in whitelist.replace(" ", "").split(",")]
 
         def chat_filter(message) -> bool:
             return message.chat.id in chat_ids
@@ -45,7 +43,7 @@ def get_chat_filter():
 
 
 def get_bot_token() -> str:
-    token = os.getenv("BOT_TOKEN")
+    token = settings.bot_token
     if not token:
         raise ValueError("BOT_TOKEN is not set")
     return token
@@ -64,9 +62,8 @@ async def run_bot() -> None:  # noqa
         chat_filter = get_chat_filter()
 
         # Initialize agent callback
-        max_cache_size = int(os.getenv("AGENT_MAX_CACHE_SIZE", "50"))
-        agent_callback = AgentCallback(agent, max_cache_size=max_cache_size)
-        shutdown = ShutdownManager(SHUTDOWN_TIMEOUT)
+        agent_callback = AgentCallback(agent, max_cache_size=settings.agent_max_cache_size)
+        shutdown = ShutdownManager(settings.shutdown_timeout)
         shutdown.install_signal_handlers()
 
         helps = [
@@ -103,7 +100,7 @@ async def run_bot() -> None:  # noqa
         router.message.register(file_callback, F.document, F.func(chat_filter))
 
         # Register error handler
-        error_callback = ErrorCallback(os.getenv("DEVELOPER_CHAT_ID"))
+        error_callback = ErrorCallback(settings.developer_chat_id)
 
         @router.error()
         async def error_handler(event: ErrorEvent) -> None:

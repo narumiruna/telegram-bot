@@ -9,8 +9,7 @@ from agents.mcp.server import MCPServerStdio
 from agents.mcp.server import MCPServerStdioParams
 from loguru import logger
 
-from bot.constants import MCP_SERVER_TIMEOUT
-from bot.env import firecrawl_api_key
+from bot.settings import settings
 from bot.tools import execute_command
 from bot.tools import query_rate_history
 from bot.tools import web_search
@@ -70,7 +69,7 @@ def _build_mcp_servers() -> list[MCPServerStdio]:
                 args=["-y", "@playwright/mcp@latest"],
             ),
             name="playwright",
-            client_session_timeout_seconds=MCP_SERVER_TIMEOUT,
+            client_session_timeout_seconds=settings.mcp_server_timeout,
         ),
         MCPServerStdio(
             params=MCPServerStdioParams(
@@ -78,7 +77,7 @@ def _build_mcp_servers() -> list[MCPServerStdio]:
                 args=["yfmcp@latest"],
             ),
             name="yfmcp",
-            client_session_timeout_seconds=MCP_SERVER_TIMEOUT,
+            client_session_timeout_seconds=settings.mcp_server_timeout,
         ),
         MCPServerStdio(
             params=MCPServerStdioParams(
@@ -86,20 +85,20 @@ def _build_mcp_servers() -> list[MCPServerStdio]:
                 args=["gurume@latest", "mcp"],
             ),
             name="gurume",
-            client_session_timeout_seconds=MCP_SERVER_TIMEOUT,
+            client_session_timeout_seconds=settings.mcp_server_timeout,
         ),
     ]
 
-    if firecrawl_api_key:
+    if settings.firecrawl_api_key:
         servers.append(
             MCPServerStdio(
                 params=MCPServerStdioParams(
                     command="npx",
                     args=["-y", "firecrawl-mcp"],
-                    env={"FIRECRAWL_API_KEY": firecrawl_api_key},
+                    env={"FIRECRAWL_API_KEY": settings.firecrawl_api_key},
                 ),
                 name="firecrawl-mcp",
-                client_session_timeout_seconds=MCP_SERVER_TIMEOUT,
+                client_session_timeout_seconds=settings.mcp_server_timeout,
             )
         )
     else:

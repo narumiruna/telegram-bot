@@ -3,8 +3,7 @@ import asyncio
 from agents import Agent
 from loguru import logger
 
-from bot.constants import MCP_CLEANUP_TIMEOUT
-from bot.constants import MCP_CONNECT_TIMEOUT
+from bot.settings import settings
 
 
 class BaseAgent(Agent):
@@ -14,9 +13,9 @@ class BaseAgent(Agent):
                 logger.info(
                     "Connecting to MCP server: {name} (timeout: {timeout}s)",
                     name=mcp_server.name,
-                    timeout=MCP_CONNECT_TIMEOUT,
+                    timeout=settings.mcp_connect_timeout,
                 )
-                await asyncio.wait_for(mcp_server.connect(), timeout=MCP_CONNECT_TIMEOUT)
+                await asyncio.wait_for(mcp_server.connect(), timeout=settings.mcp_connect_timeout)
                 logger.info("Successfully connected to MCP server: {name}", name=mcp_server.name)
             except asyncio.CancelledError:
                 logger.info("MCP connect cancelled for server: {name}", name=mcp_server.name)
@@ -25,7 +24,7 @@ class BaseAgent(Agent):
                 logger.error(
                     "Connection timeout for MCP server {name} after {timeout}s",
                     name=mcp_server.name,
-                    timeout=MCP_CONNECT_TIMEOUT,
+                    timeout=settings.mcp_connect_timeout,
                 )
             except Exception as exc:
                 logger.error(
@@ -40,9 +39,9 @@ class BaseAgent(Agent):
                 logger.info(
                     "Cleaning up MCP server: {name} (timeout: {timeout}s)",
                     name=mcp_server.name,
-                    timeout=MCP_CLEANUP_TIMEOUT,
+                    timeout=settings.mcp_cleanup_timeout,
                 )
-                await asyncio.wait_for(mcp_server.cleanup(), timeout=MCP_CLEANUP_TIMEOUT)
+                await asyncio.wait_for(mcp_server.cleanup(), timeout=settings.mcp_cleanup_timeout)
                 logger.info("Successfully cleaned up MCP server: {name}", name=mcp_server.name)
             except asyncio.CancelledError:
                 logger.info("MCP cleanup cancelled for server: {name}", name=mcp_server.name)
@@ -51,7 +50,7 @@ class BaseAgent(Agent):
                 logger.error(
                     "Cleanup timeout for MCP server {name} after {timeout}s",
                     name=mcp_server.name,
-                    timeout=MCP_CLEANUP_TIMEOUT,
+                    timeout=settings.mcp_cleanup_timeout,
                 )
             except Exception as exc:
                 logger.error(

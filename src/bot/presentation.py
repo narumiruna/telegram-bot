@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock
 
 from aiogram.types import Message
 
-from .constants import MAX_MESSAGE_LENGTH
+from .settings import settings
 from .telegraph_utils import async_create_page
 
 
@@ -40,7 +40,7 @@ class MessageResponse:
     async def send(self, message: Message) -> Message:
         """Send response to Telegram.
 
-        If content exceeds MAX_MESSAGE_LENGTH, creates a Telegraph page
+        If content exceeds the max message length setting, creates a Telegraph page
         and sends the URL instead.
 
         Args:
@@ -66,7 +66,7 @@ class MessageResponse:
             send_direct = cast(Callable[..., Awaitable[Message]], reply_text)
         else:
             raise AttributeError("Message has no async send method (answer/reply_text)")
-        if len(self.content) > MAX_MESSAGE_LENGTH:
+        if len(self.content) > settings.max_message_length:
             # Create Telegraph page for long content
             telegraph_html = (
                 html.escape(self.content).replace("\n", "<br>")

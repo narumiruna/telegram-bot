@@ -2,18 +2,17 @@
 
 This module provides functionality for:
 - Configuring Logfire for application monitoring
-- Configuring Langfuse for LLM observability
 - Loading URLs with instrumentation and logging
 """
 
 import logfire
 from loguru import logger
 
-from bot.env import logfire_token
+from bot.settings import settings
 
 
 def logfire_is_enabled() -> bool:
-    return bool(logfire_token)
+    return bool(settings.logfire_token)
 
 
 def configure_logging() -> None:
@@ -24,7 +23,7 @@ def configure_logging() -> None:
 
 
 def configure_logfire() -> None:
-    logfire.configure(token=logfire_token)
+    logfire.configure(token=settings.logfire_token)
     logfire.instrument_openai_agents()
     # Note: httpx and requests instrumentation disabled to reduce noise
     # logfire.instrument_httpx()

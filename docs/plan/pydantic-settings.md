@@ -21,6 +21,9 @@ Consolidate environment variables and constants into a single `bot.settings` mod
 - `bot_whitelist: str | None = None` (env: `BOT_WHITELIST`)
 - `developer_chat_id: str | None = None` (env: `DEVELOPER_CHAT_ID`)
 
+### Agent
+- `agent_max_cache_size: int = 50` (env: `AGENT_MAX_CACHE_SIZE`)
+
 ### LLM / Providers
 - `openai_model: str = "gpt-4.1"` (env: `OPENAI_MODEL`)
 - `openai_temperature: float = 0.0` (env: `OPENAI_TEMPERATURE`)
@@ -38,6 +41,9 @@ Consolidate environment variables and constants into a single `bot.settings` mod
 - `mcp_connect_timeout: int = 30` (env: `MCP_CONNECT_TIMEOUT`)
 - `mcp_cleanup_timeout: int = 10` (env: `MCP_CLEANUP_TIMEOUT`)
 - `mcp_server_timeout: int = 300` (env: `MCP_SERVER_TIMEOUT`)
+
+### Shutdown
+- `shutdown_timeout: int = 20` (env: `SHUTDOWN_TIMEOUT`)
 
 ### UX
 - `max_message_length: int = 1000` (env: `MAX_MESSAGE_LENGTH`)

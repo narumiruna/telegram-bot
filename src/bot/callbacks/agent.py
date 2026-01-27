@@ -11,8 +11,8 @@ from aiogram.types import Update
 from loguru import logger
 
 from ..cache import get_cache_from_env
-from ..constants import CACHE_TTL_SECONDS
 from ..presentation import MessageResponse
+from ..settings import settings
 from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback
@@ -142,9 +142,9 @@ class AgentCallback:
             logger.debug(
                 "Saving conversation history to cache: {key} with TTL {ttl}s",
                 key=new_key,
-                ttl=CACHE_TTL_SECONDS,
+                ttl=settings.cache_ttl_seconds,
             )
-            await self.cache.set(new_key, input_items, ttl=CACHE_TTL_SECONDS)
+            await self.cache.set(new_key, input_items, ttl=settings.cache_ttl_seconds)
             logger.debug("Successfully saved conversation history")
         except Exception as e:
             logger.error("Failed to save to cache: {error}", error=str(e))
