@@ -21,6 +21,7 @@ from tenacity import stop_after_attempt
 
 from bot.tools import execute_command
 from bot.tools import query_rate_history
+from bot.tools import web_search
 
 from ..cache import get_cache_from_env
 from ..chains.url_processor import process_url_content
@@ -193,6 +194,7 @@ class AgentCallback:
             tools=[
                 query_rate_history,
                 execute_command,
+                web_search,
             ],
             mcp_servers=mcp_servers,
         )
