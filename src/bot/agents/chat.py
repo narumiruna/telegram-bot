@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import asyncio
-import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -14,12 +12,13 @@ from agents.mcp.server import MCPServerStdio
 from agents.mcp.server import MCPServerStdioParams
 from loguru import logger
 
+from bot.constants import MCP_SERVER_TIMEOUT
+from bot.core.agent import BaseAgent
+from bot.env import firecrawl_api_key
 from bot.tools import execute_command
 from bot.tools import query_rate_history
 from bot.tools import web_search
 
-from ..constants import MCP_CLEANUP_TIMEOUT
-from ..constants import MCP_CONNECT_TIMEOUT
 from ..model import get_openai_model
 from ..model import get_openai_model_settings
 
@@ -68,24 +67,15 @@ Current time: {current_time}。
 """.strip()  # noqa
 
 
-def _build_mcp_servers(mcp_timeout: int, firecrawl_api_key: str) -> list[MCPServerStdio]:
-    return [
+def _build_mcp_servers() -> list[MCPServerStdio]:
+    servers = [
         MCPServerStdio(
             params=MCPServerStdioParams(
                 command="npx",
                 args=["-y", "@playwright/mcp@latest"],
             ),
             name="playwright",
-            client_session_timeout_seconds=mcp_timeout,
-        ),
-        MCPServerStdio(
-            params=MCPServerStdioParams(
-                command="npx",
-                args=["-y", "firecrawl-mcp"],
-                env={"FIRECRAWL_API_KEY": firecrawl_api_key},
-            ),
-            name="firecrawl-mcp",
-            client_session_timeout_seconds=mcp_timeout,
+            client_session_timeout_seconds=MCP_SERVER_TIMEOUT,
         ),
         MCPServerStdio(
             params=MCPServerStdioParams(
@@ -93,7 +83,7 @@ def _build_mcp_servers(mcp_timeout: int, firecrawl_api_key: str) -> list[MCPServ
                 args=["yfmcp@latest"],
             ),
             name="yfmcp",
-            client_session_timeout_seconds=mcp_timeout,
+            client_session_timeout_seconds=MCP_SERVER_TIMEOUT,
         ),
         MCPServerStdio(
             params=MCPServerStdioParams(
@@ -101,85 +91,33 @@ def _build_mcp_servers(mcp_timeout: int, firecrawl_api_key: str) -> list[MCPServ
                 args=["gurume@latest", "mcp"],
             ),
             name="gurume",
-            client_session_timeout_seconds=mcp_timeout,
+            client_session_timeout_seconds=MCP_SERVER_TIMEOUT,
         ),
     ]
 
+    if firecrawl_api_key:
+        servers.append(
+            MCPServerStdio(
+                params=MCPServerStdioParams(
+                    command="npx",
+                    args=["-y", "firecrawl-mcp"],
+                    env={"FIRECRAWL_API_KEY": firecrawl_api_key},
+                ),
+                name="firecrawl-mcp",
+                client_session_timeout_seconds=MCP_SERVER_TIMEOUT,
+            )
+        )
+    else:
+        logger.warning("FIRECRAWL_API_KEY is not set; skipping Firecrawl MCP server setup.")
 
-async def _connect_mcp_servers(mcp_servers: list[MCPServerStdio]) -> list[MCPServerStdio]:
-    connected_servers: list[MCPServerStdio] = []
-    for mcp_server in list(mcp_servers):
-        try:
-            logger.info(
-                "Connecting to MCP server: {name} (timeout: {timeout}s)",
-                name=mcp_server.name,
-                timeout=MCP_CONNECT_TIMEOUT,
-            )
-            await asyncio.wait_for(mcp_server.__aenter__(), timeout=MCP_CONNECT_TIMEOUT)
-            logger.info("Successfully connected to MCP server: {name}", name=mcp_server.name)
-            connected_servers.append(mcp_server)
-        except asyncio.CancelledError:
-            logger.info("MCP connect cancelled for server: {name}", name=mcp_server.name)
-            raise
-        except TimeoutError:
-            logger.error(
-                "Connection timeout for MCP server {name} after {timeout}s",
-                name=mcp_server.name,
-                timeout=MCP_CONNECT_TIMEOUT,
-            )
-        except Exception as exc:
-            logger.error(
-                "Failed to connect to MCP server {name}: {error}",
-                name=mcp_server.name,
-                error=str(exc),
-            )
-    return connected_servers
-
-
-async def _cleanup_mcp_servers(connected_servers: list[MCPServerStdio]) -> None:
-    for mcp_server in reversed(connected_servers):
-        try:
-            logger.info(
-                "Cleaning up MCP server: {name} (timeout: {timeout}s)",
-                name=mcp_server.name,
-                timeout=MCP_CLEANUP_TIMEOUT,
-            )
-            await asyncio.wait_for(mcp_server.__aexit__(None, None, None), timeout=MCP_CLEANUP_TIMEOUT)
-            logger.info("Successfully cleaned up MCP server: {name}", name=mcp_server.name)
-        except asyncio.CancelledError:
-            logger.info("MCP cleanup cancelled for server: {name}", name=mcp_server.name)
-            raise
-        except TimeoutError:
-            logger.error(
-                "Cleanup timeout for MCP server {name} after {timeout}s",
-                name=mcp_server.name,
-                timeout=MCP_CLEANUP_TIMEOUT,
-            )
-        except Exception as exc:
-            logger.error(
-                "Failed to cleanup MCP server {name}: {error}",
-                name=mcp_server.name,
-                error=str(exc),
-            )
+    return servers
 
 
 @asynccontextmanager
 async def build_chat_agent() -> AsyncIterator[Agent]:
-    mcp_timeout = int(os.getenv("MCP_SERVER_TIMEOUT", "300"))
-
-    firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
-    if not firecrawl_api_key:
-        raise ValueError("FIRECRAWL_API_KEY environment variable is not set")
-
-    mcp_servers = _build_mcp_servers(mcp_timeout=mcp_timeout, firecrawl_api_key=firecrawl_api_key)
-    connected_servers: list[MCPServerStdio] = []
+    mcp_servers = _build_mcp_servers()
     try:
-        connected_servers = await _connect_mcp_servers(mcp_servers)
-        if len(connected_servers) != len(mcp_servers):
-            removed_count = len(mcp_servers) - len(connected_servers)
-            logger.warning("Disabling {count} MCP servers that failed to connect", count=removed_count)
-
-        agent = Agent(
+        agent = BaseAgent(
             name="agent",
             instructions=INSTRUCTIONS,
             model=get_openai_model(),
@@ -189,9 +127,10 @@ async def build_chat_agent() -> AsyncIterator[Agent]:
                 execute_command,
                 web_search,
             ],
-            mcp_servers=cast(list[MCPServer], connected_servers),
+            mcp_servers=cast(list[MCPServer], mcp_servers),
         )
+        await agent.connect_mcp_servers()
 
         yield agent
     finally:
-        await _cleanup_mcp_servers(connected_servers)
+        await agent.cleanup_mcp_servers()

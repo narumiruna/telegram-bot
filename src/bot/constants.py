@@ -18,3 +18,6 @@ MCP_CLEANUP_TIMEOUT: Final[int] = 10
 
 # Overall shutdown timeout in seconds (default: 20s)
 SHUTDOWN_TIMEOUT: Final[int] = 20
+
+# Timeout for MCP server responses in seconds
+MCP_SERVER_TIMEOUT: Final[int] = 300

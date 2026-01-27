@@ -24,6 +24,8 @@ langfuse_public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
 langfuse_secret_key = os.getenv("LANGFUSE_SECRET_KEY")
 langfuse_host = os.getenv("LANGFUSE_HOST")
 
+firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
+
 
 def get_chat_ids() -> list[int] | None:
     """Parse whitelist string into list of chat IDs."""
