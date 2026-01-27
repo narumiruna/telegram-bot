@@ -69,7 +69,6 @@ asyncio_mode                       = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
-exclude     = ["build"]
 line-length = 120
 
 [tool.ruff.lint]
