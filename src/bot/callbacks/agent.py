@@ -12,10 +12,9 @@ from agents import TResponseInputItem
 from agents import trace
 from agents.mcp.server import MCPServerStdio
 from agents.mcp.server import MCPServerStdioParams
+from aiogram.types import Message
+from aiogram.types import Update
 from loguru import logger
-from telegram import Message
-from telegram import Update
-from telegram.ext import ContextTypes
 from tenacity import retry
 from tenacity import retry_if_exception
 from tenacity import stop_after_attempt
@@ -34,6 +33,7 @@ from ..presentation import MessageResponse
 from ..retry_utils import is_retryable_error
 from ..utils import load_url
 from ..utils import parse_url
+from .utils import get_message_from_update
 from .utils import get_message_text
 from .utils import safe_callback
 
@@ -398,22 +398,27 @@ class AgentCallback:
             logger.error("Failed to save to cache: {error}", error=str(e))
 
     @safe_callback
-    async def handle_command(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
-        if update.message is None:
+    async def handle_command(self, update: Message | Update, context: object | None = None) -> None:
+        message = get_message_from_update(update)
+        if not message:
             return
 
         with trace("handle_command"):
-            await self.handle_message(update.message)
+            await self.handle_message(message)
 
     @safe_callback
-    async def handle_reply(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    async def handle_reply(self, update: Message | Update, context: object | None = None) -> None:
+        message = get_message_from_update(update)
+        if not message:
+            return
+
+        # Check if this is a reply to a bot message
         if (
-            update.message is None
-            or update.message.reply_to_message is None
-            or update.message.reply_to_message.from_user is None
-            or not update.message.reply_to_message.from_user.is_bot
+            message.reply_to_message is None
+            or message.reply_to_message.from_user is None
+            or not message.reply_to_message.from_user.is_bot
         ):
             return
 
         with trace("handle_reply"):
-            await self.handle_message(update.message)
+            await self.handle_message(message)

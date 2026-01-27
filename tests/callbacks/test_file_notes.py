@@ -11,10 +11,10 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-from telegram import Document
-from telegram import File
-from telegram import Message
-from telegram import Update
+from aiogram.types import Document
+from aiogram.types import File
+from aiogram.types import Message
+from aiogram.types import Update
 
 from bot.callbacks.file_notes import file_callback
 from bot.chains.formatter import Article
@@ -34,7 +34,7 @@ class TestFileCallback:
 
         document.file_id = "test_file_id"
         message.document = document
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
         update.message = message
 
         return update
@@ -115,8 +115,8 @@ class TestFileCallback:
         # Verify file cleanup
         mock_remove.assert_called_once_with(test_file_path)
 
-        # Verify response (MessageResponse.send() calls message.reply_text with parse_mode=None)
-        mock_update.message.reply_text.assert_called_once()
+        # Verify response (MessageResponse.send() calls message.answer with parse_mode=None)
+        mock_update.message.answer.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_html_content")
@@ -144,7 +144,7 @@ class TestFileCallback:
         mock_remove.assert_called_once_with(test_file_path)
 
         # Verify response
-        mock_update.message.reply_text.assert_called_once()
+        mock_update.message.answer.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_pdf_content")
@@ -179,7 +179,7 @@ class TestFileCallback:
         mock_async_create_page.assert_called_once()
 
         # Verify response with Telegraph URL
-        mock_update.message.reply_text.assert_called_once_with("https://telegra.ph/test-page-123")
+        mock_update.message.answer.assert_called_once_with("https://telegra.ph/test-page-123")
 
         # Verify cleanup
         mock_remove.assert_called_once_with(test_file_path)
@@ -204,7 +204,7 @@ class TestFileCallback:
         mock_remove.assert_called_once_with(test_file_path)
 
         # Verify no reply is sent for empty content
-        mock_update.message.reply_text.assert_not_called()
+        mock_update.message.answer.assert_not_called()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_html_content")
@@ -231,7 +231,7 @@ class TestFileCallback:
 
         # Whitespace-only content is truthy in Python, so it gets processed
         mock_format.assert_called_once_with("   \n\t  \n  ")
-        mock_update.message.reply_text.assert_called_once()
+        mock_update.message.answer.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.os.remove")
@@ -251,7 +251,7 @@ class TestFileCallback:
         mock_remove.assert_called_once_with(test_file_path)
 
         # Verify no reply for unsupported file type
-        mock_update.message.reply_text.assert_not_called()
+        mock_update.message.answer.assert_not_called()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_pdf_content")
@@ -274,8 +274,8 @@ class TestFileCallback:
         mock_remove.assert_called_once_with(test_file_path)
 
         # Verify user was notified of error
-        mock_update.message.reply_text.assert_called_once()
-        call_args = mock_update.message.reply_text.call_args[0][0]
+        mock_update.message.answer.assert_called_once()
+        call_args = mock_update.message.answer.call_args[0][0]
         assert "抱歉" in call_args
         assert "錯誤" in call_args
 
@@ -312,8 +312,8 @@ class TestFileCallback:
         mock_remove.assert_called_once_with(test_file_path)
 
         # Verify user was notified of error
-        mock_update.message.reply_text.assert_called_once()
-        call_args = mock_update.message.reply_text.call_args[0][0]
+        mock_update.message.answer.assert_called_once()
+        call_args = mock_update.message.answer.call_args[0][0]
         assert "抱歉" in call_args
         assert "錯誤" in call_args
 
@@ -346,7 +346,7 @@ class TestIntegrationScenarios:
         # Configure mocks
         document.file_id = "pdf_file_123"
         message.document = document
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
         update.message = message
 
         test_file_path = Path("/tmp/uploaded.pdf")
@@ -370,7 +370,7 @@ class TestIntegrationScenarios:
         mock_remove.assert_called_once_with(test_file_path)
 
         # Verify response (MessageResponse.send() is called)
-        message.reply_text.assert_called_once()
+        message.answer.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.file_notes.read_html_content")
@@ -391,7 +391,7 @@ class TestIntegrationScenarios:
 
         document.file_id = "html_file_456"
         message.document = document
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
         update.message = message
 
         test_file_path = Path("/tmp/uploaded.html")
@@ -425,5 +425,5 @@ class TestIntegrationScenarios:
         mock_async_create_page.assert_called_once()
 
         # Verify response with Telegraph URL
-        message.reply_text.assert_called_once_with("https://telegra.ph/long-html-document-789")
+        message.answer.assert_called_once_with("https://telegra.ph/long-html-document-789")
         mock_remove.assert_called_once_with(test_file_path)

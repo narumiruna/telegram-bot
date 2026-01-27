@@ -3,8 +3,7 @@ from __future__ import annotations
 from unittest.mock import Mock
 
 import pytest
-from telegram import Update
-from telegram.ext import ContextTypes
+from aiogram.types import Message
 
 from src.bot.callbacks import BaseCallback
 
@@ -15,7 +14,7 @@ class TestCallbackProtocol:
     def test_function_conforms_to_protocol(self) -> None:
         """Test that a function-based callback conforms to CallbackProtocol."""
 
-        async def my_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        async def my_callback(message: Message) -> None:
             pass
 
         # This is a static type check, but we can verify the signature
@@ -25,7 +24,7 @@ class TestCallbackProtocol:
         """Test that a class-based callback conforms to CallbackProtocol."""
 
         class MyCallback:
-            async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+            async def __call__(self, message: Message) -> None:
                 pass
 
         callback = MyCallback()
@@ -53,7 +52,7 @@ class TestBaseCallback:
         """Test that concrete callbacks with __call__ can be instantiated."""
 
         class CompleteCallback(BaseCallback):
-            async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+            async def __call__(self, message: Message) -> None:
                 pass
 
         callback = CompleteCallback()
@@ -67,11 +66,10 @@ class TestBaseCallback:
             def __init__(self) -> None:
                 self.called = False
 
-            async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+            async def __call__(self, message: Message) -> None:
                 self.called = True
 
         callback = TestCallback()
-        mock_update = Mock(spec=Update)
-        mock_context = Mock()
-        await callback(mock_update, mock_context)
+        mock_message = Mock(spec=Message)
+        await callback(mock_message)
         assert callback.called

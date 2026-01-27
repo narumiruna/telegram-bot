@@ -105,9 +105,10 @@ def get_info(ticker: yf.Ticker) -> dict[str, Any]:
         # Check if we got valid data
         if not info or not isinstance(info, dict):
             raise TickerError(ticker.ticker, "Received empty or invalid data") from None
-        return info
     except Exception as e:
         raise TickerError(ticker.ticker, str(e)) from e
+
+    return info
 
 
 def format_ticker_info(ticker: yf.Ticker) -> str:

@@ -1,8 +1,10 @@
 import asyncio
 from functools import wraps
+from typing import Any
 
+from aiogram.types import Message
+from aiogram.types import Update
 from loguru import logger
-from telegram import Message
 
 from ..utils import load_url
 from ..utils import parse_urls
@@ -36,7 +38,7 @@ def get_message_text(
     include_reply_to_message: bool = True,
     include_user_name: bool = False,
 ) -> str:
-    message_text = message.text or ""
+    message_text = getattr(message, "text", None) or getattr(message, "caption", None) or ""
     message_text = strip_command(message_text)
 
     if include_user_name:
@@ -45,7 +47,7 @@ def get_message_text(
             message_text = f"{name}: {message_text}"
 
     if include_reply_to_message:
-        reply_to_message = message.reply_to_message
+        reply_to_message = getattr(message, "reply_to_message", None)
         if reply_to_message:
             reply_to_message_text = get_message_text(
                 reply_to_message,
@@ -57,6 +59,25 @@ def get_message_text(
 
     logger.info("Message text: {text}", text=message_text)
     return message_text
+
+
+def _is_message_like(obj: Any) -> bool:
+    if obj is None:
+        return False
+    if hasattr(obj, "message") and not isinstance(obj, Message):
+        return False
+    return isinstance(obj, Message) or hasattr(obj, "answer") or hasattr(obj, "reply_text")
+
+
+def _extract_message(args: tuple[Any, ...]) -> Message | None:
+    for arg in args:
+        if _is_message_like(arg):
+            return arg
+    for arg in args:
+        message = getattr(arg, "message", None)
+        if _is_message_like(message):
+            return message
+    return None
 
 
 def strip_command(text: str) -> str:
@@ -144,28 +165,20 @@ def safe_callback(callback_func):
 
     Example:
         @safe_callback
-        async def my_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        async def my_callback(message: Message) -> None:
             # callback implementation
             pass
 
         class MyCallback:
             @safe_callback
-            async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+            async def __call__(self, message: Message) -> None:
                 # callback implementation
                 pass
     """
 
     @wraps(callback_func)
     async def wrapper(*args, **kwargs):
-        # Handle both functions and methods
-        # Check if first arg has 'message' attribute (is Update-like)
-        update = None
-        if args and hasattr(args[0], "message"):
-            # Function (first arg is Update or Update-like)
-            update = args[0]
-        elif args and len(args) > 1 and hasattr(args[1], "message"):
-            # Method (first arg is self, second is Update or Update-like)
-            update = args[1]
+        message = _extract_message(args)
 
         try:
             return await callback_func(*args, **kwargs)
@@ -178,11 +191,9 @@ def safe_callback(callback_func):
             )
 
             # 通知用戶
-            if update and hasattr(update, "message") and update.message:
+            if message:
                 try:
-                    await update.message.reply_text(
-                        "抱歉，處理您的請求時發生錯誤，請稍後再試。\n如果問題持續發生，請聯絡管理員。"
-                    )
+                    await message.answer("抱歉，處理您的請求時發生錯誤，請稍後再試。\n如果問題持續發生，請聯絡管理員。")
                 except Exception as reply_error:
                     logger.error(
                         "Failed to send error message to user: {error}",
@@ -193,3 +204,16 @@ def safe_callback(callback_func):
             raise
 
     return wrapper
+
+
+def get_message_from_update(update_or_message: Message | Update | None) -> Message | None:
+    if update_or_message is None:
+        return None
+    message = getattr(update_or_message, "message", None)
+    if message is not None and (
+        isinstance(message, Message) or hasattr(message, "answer") or hasattr(message, "reply_text")
+    ):
+        return message
+    if isinstance(update_or_message, Message):
+        return update_or_message
+    return None

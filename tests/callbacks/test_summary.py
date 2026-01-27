@@ -3,10 +3,10 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-from telegram import Chat
-from telegram import Message
-from telegram import Update
-from telegram import User
+from aiogram.types import Chat
+from aiogram.types import Message
+from aiogram.types import Update
+from aiogram.types import User
 
 from bot.callbacks.summary import summarize_callback
 
@@ -73,7 +73,7 @@ class TestSummarizeCallback:
         message.text = "Summarize this: https://example.com"
         message.from_user = self.user
         message.reply_to_message = None
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -93,7 +93,7 @@ class TestSummarizeCallback:
         message.text = "Summarize this: https://example.com"
         message.from_user = self.user
         message.reply_to_message = None
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -101,4 +101,4 @@ class TestSummarizeCallback:
         await summarize_callback(update, self.context)
 
         mock_get_processed.assert_called_once_with(message, require_url=True)
-        message.reply_text.assert_called_once_with("Failed to load URL: https://example.com")
+        message.answer.assert_called_once_with("Failed to load URL: https://example.com")

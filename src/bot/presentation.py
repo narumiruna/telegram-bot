@@ -6,10 +6,15 @@ automatically handling Telegraph page creation for long messages.
 
 from __future__ import annotations
 
+import asyncio
 import html
+from collections.abc import Awaitable
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import cast
+from unittest.mock import AsyncMock
 
-from telegram import Message
+from aiogram.types import Message
 
 from .constants import MAX_MESSAGE_LENGTH
 from .utils import async_create_page
@@ -44,6 +49,23 @@ class MessageResponse:
         Returns:
             The sent message
         """
+        answer = getattr(message, "answer", None)
+        reply_text = getattr(message, "reply_text", None)
+
+        def is_async_callable(func: object | None) -> bool:
+            return isinstance(func, AsyncMock) or asyncio.iscoroutinefunction(func)
+
+        send_direct: Callable[..., Awaitable[Message]]
+        if is_async_callable(answer):
+            send_direct = cast(Callable[..., Awaitable[Message]], answer)
+        elif is_async_callable(reply_text):
+            send_direct = cast(Callable[..., Awaitable[Message]], reply_text)
+        elif callable(answer):
+            send_direct = cast(Callable[..., Awaitable[Message]], answer)
+        elif callable(reply_text):
+            send_direct = cast(Callable[..., Awaitable[Message]], reply_text)
+        else:
+            raise AttributeError("Message has no async send method (answer/reply_text)")
         if len(self.content) > MAX_MESSAGE_LENGTH:
             # Create Telegraph page for long content
             telegraph_html = (
@@ -55,7 +77,7 @@ class MessageResponse:
                 title=self.title or "Response",
                 html_content=telegraph_html,
             )
-            return await message.reply_text(url)
+            return await send_direct(url)
         else:
             # Send directly for short content
-            return await message.reply_text(self.content, parse_mode=self.parse_mode)
+            return await send_direct(self.content, parse_mode=self.parse_mode)

@@ -2,40 +2,47 @@ from __future__ import annotations
 
 import json
 
+from aiogram.enums import ParseMode
+from aiogram.types import Message
+from aiogram.types import Update
 from loguru import logger
-from telegram import Update
-from telegram.constants import ParseMode
-from telegram.ext import ContextTypes
 from twse.stock_info import get_stock_info
 
 from ..yahoo_finance import query_tickers
+from .utils import get_message_from_update
 from .utils import safe_callback
+from .utils import strip_command
 
 
-@safe_callback
-async def query_ticker_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not update.message:
-        return
+def _get_symbols(message: Message, context: object | None) -> list[str]:
+    context_args = getattr(context, "args", None)
+    if context_args:
+        return list(context_args)
 
-    if not context.args:
-        return
+    text = strip_command(message.text or "")
+    if not text:
+        return []
 
-    # Query Yahoo Finance
+    return text.split()
+
+
+def _query_yahoo(symbols: list[str]) -> str:
     try:
-        yf_result = query_tickers(context.args)
+        return query_tickers(symbols)
     except Exception as e:
         logger.warning(
             "Failed to query Yahoo Finance for {symbols}: {error}",
-            symbols=context.args,
+            symbols=symbols,
             error=str(e),
         )
-        yf_result = ""
+        return ""
 
-    # Query TWSE
-    twse_results = []
-    for symbol in context.args:
+
+def _query_twse(symbols: list[str]) -> list[str]:
+    results = []
+    for symbol in symbols:
         try:
-            twse_results += [get_stock_info(symbol.strip()).pretty_repr()]
+            result = get_stock_info(symbol.strip()).pretty_repr()
         except json.JSONDecodeError as e:
             logger.warning(
                 "Failed to query TWSE for {symbol}: {error}",
@@ -43,22 +50,35 @@ async def query_ticker_callback(update: Update, context: ContextTypes.DEFAULT_TY
                 error=str(e),
             )
             continue
+        if result:
+            results.append(result)
+    return results
 
-    # Combine results
+
+def _combine_results(yf_result: str, twse_results: list[str]) -> str:
     results = []
     if yf_result:
-        results += [yf_result]
+        results.append(yf_result)
+    results.extend([result for result in twse_results if result])
+    return "\n\n".join(results).strip()
 
-    for twse_result in twse_results:
-        if twse_result:
-            results += [twse_result]
 
-    result = "\n\n".join(results).strip()
-
-    if not result:
-        await update.message.reply_text(
-            f"無法查詢到股票代碼 {', '.join(context.args)} 的資訊。\n請確認代碼是否正確，或稍後再試。"
-        )
+@safe_callback
+async def query_ticker_callback(update: Message | Update, context: object | None = None) -> None:
+    message = get_message_from_update(update)
+    if not message:
         return
 
-    await update.message.reply_text(result, parse_mode=ParseMode.MARKDOWN_V2)
+    symbols = _get_symbols(message, context)
+    if not symbols:
+        return
+
+    yf_result = _query_yahoo(symbols)
+    twse_results = _query_twse(symbols)
+    result = _combine_results(yf_result, twse_results)
+
+    if not result:
+        await message.answer(f"無法查詢到股票代碼 {', '.join(symbols)} 的資訊。\n請確認代碼是否正確，或稍後再試。")
+        return
+
+    await message.answer(result, parse_mode=ParseMode.MARKDOWN_V2)

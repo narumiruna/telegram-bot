@@ -23,7 +23,8 @@ def execute_command(command: str) -> str:
             capture_output=True,
             text=True,
         )
-        return result.stdout
     except subprocess.CalledProcessError as e:
         logger.error("Command failed with error: {error}", error=e.stderr)
         return f"Error executing command: {e.stderr}"
+
+    return result.stdout
