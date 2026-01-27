@@ -2,9 +2,9 @@ name: Deploy
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "v*.*.*"
+  # push:
+  #   tags:
+  #     - "v*.*.*"
 
 env:
   UNIT: bot
