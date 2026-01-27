@@ -1,104 +1,97 @@
-import os
 from unittest.mock import Mock
-from unittest.mock import patch
 
 import pytest
 
 from bot.bot import get_bot_token
 from bot.bot import get_chat_filter
+from bot.settings import settings
 
 
-def test_get_bot_token_success() -> None:
+def test_get_bot_token_success(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test successful token retrieval"""
-    with patch.dict(os.environ, {"BOT_TOKEN": "test_token_123"}):
-        token = get_bot_token()
-        assert token == "test_token_123"
+    monkeypatch.setattr(settings, "bot_token", "test_token_123")
+    token = get_bot_token()
+    assert token == "test_token_123"
 
 
-def test_get_bot_token_missing() -> None:
+def test_get_bot_token_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test error when BOT_TOKEN is not set"""
-    with (
-        patch.dict(os.environ, {}, clear=True),
-        pytest.raises(ValueError, match="BOT_TOKEN is not set"),
-    ):
+    monkeypatch.setattr(settings, "bot_token", "")
+    with pytest.raises(ValueError, match="BOT_TOKEN is not set"):
         get_bot_token()
 
 
-def test_get_bot_token_empty() -> None:
+def test_get_bot_token_empty(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test error when BOT_TOKEN is empty"""
-    with (
-        patch.dict(os.environ, {"BOT_TOKEN": ""}),
-        pytest.raises(ValueError, match="BOT_TOKEN is not set"),
-    ):
+    monkeypatch.setattr(settings, "bot_token", "")
+    with pytest.raises(ValueError, match="BOT_TOKEN is not set"):
         get_bot_token()
 
 
-def test_get_chat_filter_no_whitelist() -> None:
+def test_get_chat_filter_no_whitelist(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test chat filter when no whitelist is specified - allows all"""
-    with patch.dict(os.environ, {}, clear=True):
-        chat_filter = get_chat_filter()
-        # Should allow any message
-        mock_message = Mock()
-        mock_message.chat.id = 12345
-        assert chat_filter(mock_message) is True
+    monkeypatch.setattr(settings, "bot_whitelist", None)
+    chat_filter = get_chat_filter()
+    # Should allow any message
+    mock_message = Mock()
+    mock_message.chat.id = 12345
+    assert chat_filter(mock_message) is True
 
 
-def test_get_chat_filter_empty_whitelist() -> None:
+def test_get_chat_filter_empty_whitelist(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test chat filter when whitelist is empty - allows all"""
-    with patch.dict(os.environ, {"BOT_WHITELIST": ""}):
-        chat_filter = get_chat_filter()
-        # Should allow any message
-        mock_message = Mock()
-        mock_message.chat.id = 12345
-        assert chat_filter(mock_message) is True
+    monkeypatch.setattr(settings, "bot_whitelist", "")
+    chat_filter = get_chat_filter()
+    # Should allow any message
+    mock_message = Mock()
+    mock_message.chat.id = 12345
+    assert chat_filter(mock_message) is True
 
 
-def test_get_chat_filter_single_chat() -> None:
+def test_get_chat_filter_single_chat(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test chat filter with single chat ID"""
-    with patch.dict(os.environ, {"BOT_WHITELIST": "123456789"}):
-        chat_filter = get_chat_filter()
-        # Should allow whitelisted chat
-        mock_message = Mock()
-        mock_message.chat.id = 123456789
-        assert chat_filter(mock_message) is True
-        # Should reject non-whitelisted chat
-        mock_message.chat.id = 999999999
-        assert chat_filter(mock_message) is False
+    monkeypatch.setattr(settings, "bot_whitelist", "123456789")
+    chat_filter = get_chat_filter()
+    # Should allow whitelisted chat
+    mock_message = Mock()
+    mock_message.chat.id = 123456789
+    assert chat_filter(mock_message) is True
+    # Should reject non-whitelisted chat
+    mock_message.chat.id = 999999999
+    assert chat_filter(mock_message) is False
 
 
-def test_get_chat_filter_multiple_chats() -> None:
+def test_get_chat_filter_multiple_chats(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test chat filter with multiple chat IDs"""
-    with patch.dict(os.environ, {"BOT_WHITELIST": "123456789,987654321"}):
-        chat_filter = get_chat_filter()
-        # Should allow both whitelisted chats
-        mock_message = Mock()
-        mock_message.chat.id = 123456789
-        assert chat_filter(mock_message) is True
-        mock_message.chat.id = 987654321
-        assert chat_filter(mock_message) is True
-        # Should reject non-whitelisted chat
-        mock_message.chat.id = 111111111
-        assert chat_filter(mock_message) is False
+    monkeypatch.setattr(settings, "bot_whitelist", "123456789,987654321")
+    chat_filter = get_chat_filter()
+    # Should allow both whitelisted chats
+    mock_message = Mock()
+    mock_message.chat.id = 123456789
+    assert chat_filter(mock_message) is True
+    mock_message.chat.id = 987654321
+    assert chat_filter(mock_message) is True
+    # Should reject non-whitelisted chat
+    mock_message.chat.id = 111111111
+    assert chat_filter(mock_message) is False
 
 
-def test_get_chat_filter_with_spaces() -> None:
+def test_get_chat_filter_with_spaces(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test chat filter with spaces in whitelist"""
-    with patch.dict(os.environ, {"BOT_WHITELIST": "123456789, 987654321, 555666777"}):
-        chat_filter = get_chat_filter()
-        # Should allow all whitelisted chats
-        mock_message = Mock()
-        for chat_id in [123456789, 987654321, 555666777]:
-            mock_message.chat.id = chat_id
-            assert chat_filter(mock_message) is True
-        # Should reject non-whitelisted chat
-        mock_message.chat.id = 111111111
-        assert chat_filter(mock_message) is False
+    monkeypatch.setattr(settings, "bot_whitelist", "123456789, 987654321, 555666777")
+    chat_filter = get_chat_filter()
+    # Should allow all whitelisted chats
+    mock_message = Mock()
+    for chat_id in [123456789, 987654321, 555666777]:
+        mock_message.chat.id = chat_id
+        assert chat_filter(mock_message) is True
+    # Should reject non-whitelisted chat
+    mock_message.chat.id = 111111111
+    assert chat_filter(mock_message) is False
 
 
-def test_get_chat_filter_invalid_chat_id() -> None:
+def test_get_chat_filter_invalid_chat_id(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test error handling for invalid chat IDs"""
-    with (
-        patch.dict(os.environ, {"BOT_WHITELIST": "invalid_id"}),
-        pytest.raises(ValueError),
-    ):
+    monkeypatch.setattr(settings, "bot_whitelist", "invalid_id")
+    with pytest.raises(ValueError):
         get_chat_filter()

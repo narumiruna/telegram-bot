@@ -42,7 +42,7 @@ async def test_send_short_message_without_parse_mode(mock_message):
 @patch("bot.presentation.async_create_page")
 async def test_send_long_message_creates_telegraph_page(mock_create_page, mock_message):
     """Test that long messages create a Telegraph page"""
-    # Create a message longer than MAX_MESSAGE_LENGTH (1000 characters)
+    # Create a message longer than the max message length (1000 characters)
     content = "x" * 1001
     response = MessageResponse(content=content, title="Long Message")
 
@@ -81,7 +81,7 @@ async def test_send_long_message_with_default_title(mock_create_page, mock_messa
 @pytest.mark.asyncio
 @patch("bot.presentation.async_create_page")
 async def test_send_exactly_max_length_message(mock_create_page, mock_message):
-    """Test message exactly at MAX_MESSAGE_LENGTH (1000 chars) sends directly"""
+    """Test message exactly at max message length (1000 chars) sends directly"""
     content = "z" * 1000  # Exactly at the limit
     response = MessageResponse(content=content)
 

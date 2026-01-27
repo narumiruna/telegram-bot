@@ -33,9 +33,9 @@ async def test_message_response_short_content(mock_message_with_reply):
 @patch("bot.presentation.async_create_page")
 async def test_message_response_long_content(mock_create_page, mock_message_with_reply):
     """Test MessageResponse with long content triggers Telegraph."""
-    from bot.constants import MAX_MESSAGE_LENGTH
+    from bot.settings import settings
 
-    long_content = "A" * (MAX_MESSAGE_LENGTH + 100)
+    long_content = "A" * (settings.max_message_length + 100)
     response = MessageResponse(content=long_content, title="Long Response", parse_mode="HTML")
 
     # Mock message and Telegraph

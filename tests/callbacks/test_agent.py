@@ -340,7 +340,7 @@ class TestAgentCallback:
     @patch("bot.callbacks.agent.Runner")
     async def test_cache_ttl_is_set(self, mock_runner, mock_get_processed_message_text, mock_get_cache):
         """Test that cache is saved with TTL"""
-        from bot.constants import CACHE_TTL_SECONDS
+        from bot.settings import settings
 
         mock_agent = Mock()
         mock_cache = Mock()
@@ -375,7 +375,7 @@ class TestAgentCallback:
         mock_cache.set.assert_called_once()
         call_args = mock_cache.set.call_args
         assert call_args[0][0] == "bot:67890:12345"  # cache key (new_message.message_id:chat.id)
-        assert call_args[1]["ttl"] == CACHE_TTL_SECONDS  # TTL parameter
+        assert call_args[1]["ttl"] == settings.cache_ttl_seconds  # TTL parameter
 
     @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_processed_message_text")

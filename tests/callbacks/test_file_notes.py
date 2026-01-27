@@ -19,7 +19,7 @@ from aiogram.types import Update
 from bot.callbacks.file_notes import file_callback
 from bot.chains.formatter import Article
 from bot.chains.formatter import Section
-from bot.constants import MAX_MESSAGE_LENGTH
+from bot.settings import settings
 
 
 class TestFileCallback:
@@ -290,7 +290,8 @@ class TestFileCallback:
         """Test when Telegraph page creation fails."""
         # Setup mocks for long content
         long_article = Article(
-            title="Long Document", sections=[Section(title="🔍 Long Section", content="A" * MAX_MESSAGE_LENGTH)]
+            title="Long Document",
+            sections=[Section(title="🔍 Long Section", content="A" * settings.max_message_length)],
         )
 
         test_file_path = Path("/tmp/test.pdf")
@@ -319,11 +320,11 @@ class TestFileCallback:
 
 
 class TestMaxLengthConstant:
-    """Test the MAX_MESSAGE_LENGTH constant usage."""
+    """Test the max message length setting usage."""
 
     def test_max_length_value(self):
-        """Test that MAX_MESSAGE_LENGTH has expected value."""
-        assert MAX_MESSAGE_LENGTH == 1_000
+        """Test that the max message length has expected value."""
+        assert settings.max_message_length == 1000
 
 
 class TestIntegrationScenarios:
