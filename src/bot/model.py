@@ -3,7 +3,6 @@ from __future__ import annotations
 from functools import cache
 from typing import Literal
 
-import logfire
 from agents import Model
 from agents import ModelSettings
 from agents import OpenAIChatCompletionsModel
@@ -12,7 +11,6 @@ from agents.extensions.models.litellm_model import LitellmModel
 from openai import AsyncAzureOpenAI
 from openai import AsyncOpenAI
 
-from .observability import logfire_is_enabled
 from .settings import settings
 
 
@@ -32,9 +30,6 @@ def get_openai_model(api_type: Literal["responses", "chat_completions"] = "respo
         return LitellmModel(model=model_name, api_key=settings.litellm_api_key)
 
     client = get_openai_client()
-
-    if logfire_is_enabled():
-        logfire.instrument_openai(client)
 
     match api_type:
         case "responses":

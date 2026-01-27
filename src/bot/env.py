@@ -27,8 +27,3 @@ firecrawl_api_key = settings.firecrawl_api_key
 def get_chat_ids() -> list[int] | None:
     """Parse whitelist string into list of chat IDs."""
     return settings.chat_ids
-
-
-def logfire_is_enabled() -> bool:
-    """Check if Logfire monitoring is enabled."""
-    return bool(settings.logfire_token)
