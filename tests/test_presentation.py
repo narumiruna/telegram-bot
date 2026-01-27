@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-from telegram import Message
+from aiogram.types import Message
 
 from bot.presentation import MessageResponse
 
@@ -12,7 +12,7 @@ from bot.presentation import MessageResponse
 @pytest.fixture
 def mock_message():
     message = Mock(spec=Message)
-    message.reply_text = AsyncMock()
+    message.answer = AsyncMock()
     return message
 
 
@@ -24,7 +24,7 @@ async def test_send_short_message(mock_message):
 
     await response.send(mock_message)
 
-    mock_message.reply_text.assert_called_once_with(content, parse_mode="HTML")
+    mock_message.answer.assert_called_once_with(content, parse_mode="HTML")
 
 
 @pytest.mark.asyncio
@@ -35,7 +35,7 @@ async def test_send_short_message_without_parse_mode(mock_message):
 
     await response.send(mock_message)
 
-    mock_message.reply_text.assert_called_once_with(content, parse_mode=None)
+    mock_message.answer.assert_called_once_with(content, parse_mode=None)
 
 
 @pytest.mark.asyncio
@@ -57,7 +57,7 @@ async def test_send_long_message_creates_telegraph_page(mock_create_page, mock_m
     )
 
     # Should send the Telegraph URL
-    mock_message.reply_text.assert_called_once_with("https://telegra.ph/test-page")
+    mock_message.answer.assert_called_once_with("https://telegra.ph/test-page")
 
 
 @pytest.mark.asyncio
@@ -91,7 +91,7 @@ async def test_send_exactly_max_length_message(mock_create_page, mock_message):
     mock_create_page.assert_not_called()
 
     # Should send directly
-    mock_message.reply_text.assert_called_once_with(content, parse_mode="HTML")
+    mock_message.answer.assert_called_once_with(content, parse_mode="HTML")
 
 
 @pytest.mark.asyncio
@@ -128,4 +128,4 @@ async def test_send_long_plain_text_escapes_html(mock_create_page, mock_message)
         title="Plain",
         html_content=html.escape(content).replace("\n", "<br>"),
     )
-    mock_message.reply_text.assert_called_once_with("https://telegra.ph/plain")
+    mock_message.answer.assert_called_once_with("https://telegra.ph/plain")

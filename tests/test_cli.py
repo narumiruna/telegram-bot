@@ -5,11 +5,11 @@ import pytest
 from bot.cli import main
 
 
-@patch("bot.cli.typer.run")
+@patch("bot.cli.asyncio.run")
 @patch("bot.cli.configure_logfire")
 @patch("bot.cli.load_dotenv")
 @patch("bot.cli.find_dotenv")
-def test_main_success(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run) -> None:
+def test_main_success(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_asyncio_run) -> None:
     """Test successful execution of main function"""
     # Setup mocks
     mock_find_dotenv.return_value = ".env"
@@ -28,7 +28,7 @@ def test_main_success(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire
         override=True,
     )
     mock_configure_logfire.assert_called_once()
-    mock_typer_run.assert_called_once()
+    mock_asyncio_run.assert_called_once()
 
 
 @patch("bot.cli.find_dotenv")
@@ -40,11 +40,11 @@ def test_main_dotenv_not_found_error(mock_find_dotenv) -> None:
         main()
 
 
-@patch("bot.cli.typer.run")
+@patch("bot.cli.asyncio.run")
 @patch("bot.cli.configure_logfire")
 @patch("bot.cli.load_dotenv")
 @patch("bot.cli.find_dotenv")
-def test_main_load_dotenv_failure(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run) -> None:
+def test_main_load_dotenv_failure(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_asyncio_run) -> None:
     """Test error handling when load_dotenv fails"""
     mock_find_dotenv.return_value = ".env"
     mock_load_dotenv.side_effect = Exception("Failed to load .env")
@@ -52,16 +52,16 @@ def test_main_load_dotenv_failure(mock_find_dotenv, mock_load_dotenv, mock_confi
     with pytest.raises(Exception, match="Failed to load .env"):
         main()
 
-    # configure_logfire and typer.run should not be called
+    # configure_logfire and asyncio.run should not be called
     mock_configure_logfire.assert_not_called()
-    mock_typer_run.assert_not_called()
+    mock_asyncio_run.assert_not_called()
 
 
-@patch("bot.cli.typer.run")
+@patch("bot.cli.asyncio.run")
 @patch("bot.cli.configure_logfire")
 @patch("bot.cli.load_dotenv")
 @patch("bot.cli.find_dotenv")
-def test_main_configure_logfire_failure(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run):
+def test_main_configure_logfire_failure(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_asyncio_run):
     """Test error handling when configure_logfire fails"""
     mock_find_dotenv.return_value = ".env"
     mock_load_dotenv.return_value = True
@@ -70,29 +70,29 @@ def test_main_configure_logfire_failure(mock_find_dotenv, mock_load_dotenv, mock
     with pytest.raises(Exception, match="Logfire configuration failed"):
         main()
 
-    # typer.run should not be called
-    mock_typer_run.assert_not_called()
+    # asyncio.run should not be called
+    mock_asyncio_run.assert_not_called()
 
 
-@patch("bot.cli.typer.run")
+@patch("bot.cli.asyncio.run")
 @patch("bot.cli.configure_logfire")
 @patch("bot.cli.load_dotenv")
 @patch("bot.cli.find_dotenv")
-def test_main_typer_run_failure(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run) -> None:
-    """Test error handling when typer.run fails"""
+def test_main_asyncio_run_failure(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_asyncio_run) -> None:
+    """Test error handling when asyncio.run fails"""
     mock_find_dotenv.return_value = ".env"
     mock_load_dotenv.return_value = True
-    mock_typer_run.side_effect = Exception("Failed to run bot")
+    mock_asyncio_run.side_effect = Exception("Failed to run bot")
 
     with pytest.raises(Exception, match="Failed to run bot"):
         main()
 
 
-@patch("bot.cli.typer.run")
+@patch("bot.cli.asyncio.run")
 @patch("bot.cli.configure_logfire")
 @patch("bot.cli.load_dotenv")
 @patch("bot.cli.find_dotenv")
-def test_main_dotenv_parameters(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_typer_run) -> None:
+def test_main_dotenv_parameters(mock_find_dotenv, mock_load_dotenv, mock_configure_logfire, mock_asyncio_run) -> None:
     """Test that dotenv functions are called with correct parameters"""
     mock_find_dotenv.return_value = "/path/to/.env"
     mock_load_dotenv.return_value = True

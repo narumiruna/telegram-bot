@@ -3,10 +3,10 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-from telegram import Chat
-from telegram import Message
-from telegram import Update
-from telegram import User
+from aiogram.types import Chat
+from aiogram.types import Message
+from aiogram.types import Update
+from aiogram.types import User
 
 from bot.callbacks.translate import TranslationCallback
 
@@ -48,7 +48,7 @@ class TestTranslationCallback:
         message.text = "This is content to translate"
         message.from_user = self.user
         message.reply_to_message = None
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -56,8 +56,8 @@ class TestTranslationCallback:
         await self.callback(update, self.context)
 
         mock_translate.assert_called_once_with("This is content to translate", target_lang="zh")
-        # MessageResponse.send() is called internally, which calls message.reply_text
-        message.reply_text.assert_called_once()
+        # MessageResponse.send() is called internally, which calls message.answer
+        message.answer.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.callbacks.translate.chains.translate")
@@ -70,7 +70,7 @@ class TestTranslationCallback:
         message.text = "Translate this URL: https://example.com"
         message.from_user = self.user
         message.reply_to_message = None
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -80,7 +80,7 @@ class TestTranslationCallback:
         mock_get_processed.assert_called_once_with(message, require_url=False)
         mock_translate.assert_called_once_with("Content from URL", target_lang="zh")
         # MessageResponse.send() is called internally
-        message.reply_text.assert_called_once()
+        message.answer.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("bot.presentation.async_create_page")
@@ -94,7 +94,7 @@ class TestTranslationCallback:
         message.text = "Long message to translate"
         message.from_user = self.user
         message.reply_to_message = None
-        message.reply_text = AsyncMock()
+        message.answer = AsyncMock()
 
         update = Mock(spec=Update)
         update.message = message
@@ -104,7 +104,7 @@ class TestTranslationCallback:
         mock_translate.assert_called_once_with("Long message to translate", target_lang="zh")
         # MessageResponse.send() will create Telegraph page for long content
         mock_async_create_page.assert_called_once()
-        message.reply_text.assert_called_once_with("https://telegra.ph/translation-page")
+        message.answer.assert_called_once_with("https://telegra.ph/translation-page")
 
     def test_translation_callback_init(self):
         callback = TranslationCallback(lang="en")
