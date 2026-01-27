@@ -1,26 +1,21 @@
-from __future__ import annotations
-
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import cast
 from zoneinfo import ZoneInfo
 
 from agents import Agent
-from agents.mcp import MCPServer
+from agents.mcp import MCPServerManager
 from agents.mcp.server import MCPServerStdio
 from agents.mcp.server import MCPServerStdioParams
 from loguru import logger
 
 from bot.constants import MCP_SERVER_TIMEOUT
-from bot.core.agent import BaseAgent
 from bot.env import firecrawl_api_key
 from bot.tools import execute_command
 from bot.tools import query_rate_history
 from bot.tools import web_search
 
 from ..model import get_openai_model
-from ..model import get_openai_model_settings
 
 current_time = datetime.now(ZoneInfo("Asia/Taipei"))
 
@@ -116,21 +111,16 @@ def _build_mcp_servers() -> list[MCPServerStdio]:
 @asynccontextmanager
 async def build_chat_agent() -> AsyncIterator[Agent]:
     mcp_servers = _build_mcp_servers()
-    try:
-        agent = BaseAgent(
-            name="agent",
+    async with MCPServerManager(mcp_servers) as manager:
+        agent = Agent(
+            name="chat-agent",
             instructions=INSTRUCTIONS,
             model=get_openai_model(),
-            model_settings=get_openai_model_settings(),
             tools=[
                 query_rate_history,
                 execute_command,
                 web_search,
             ],
-            mcp_servers=cast(list[MCPServer], mcp_servers),
+            mcp_servers=manager.active_servers,
         )
-        await agent.connect_mcp_servers()
-
         yield agent
-    finally:
-        await agent.cleanup_mcp_servers()
