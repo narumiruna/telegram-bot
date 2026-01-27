@@ -32,33 +32,35 @@
 
 ### Core Components
 
-**Bot Framework**: Built on `python-telegram-bot` with callback-based handlers for commands and messages.
+**Bot Framework**: Built on `aiogram` v3 with Router/Dispatcher pattern for commands and messages.
 
 **Agent System**: Uses `openai-agents` with MCP (Model Context Protocol) server integration for external tool access via `AgentCallback`.
 
 ### Callback Architecture
 
-Hybrid architecture supporting function-based and class-based patterns (unified 2025-12-27):
+Hybrid architecture supporting function-based and class-based patterns (unified 2025-12-27, migrated to aiogram 2026-01-27):
 
 **Function-based callbacks** (preferred for simple, stateless operations):
 ```python
+from aiogram.types import Message
 from src.bot.callbacks.utils import safe_callback
 
 @safe_callback
-async def my_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def my_callback(message: Message) -> None:
     # Simple implementation
     pass
 ```
 
 **Class-based callbacks** (use when state management needed):
 ```python
+from aiogram.types import Message
 from src.bot.callbacks import BaseCallback
 
 class MyCallback(BaseCallback):
     def __init__(self, config: str) -> None:
         self.config = config
 
-    async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    async def __call__(self, message: Message) -> None:
         # Implementation using self.config
         pass
 ```
@@ -177,7 +179,7 @@ All workflows use uv as Python package/dependency manager. Testing environment u
 6. When creating new callbacks:
    - Use function-based callbacks for simple, stateless operations (decorate with `@safe_callback`)
    - Use class-based callbacks (inherit from `BaseCallback`) only when state management is needed
-   - Always implement the signature: `async def __call__(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None`
+   - Always implement the signature: `async def __call__(self, message: Message) -> None` (aiogram v3)
    - Use `get_processed_message_text()` helper for consistent message text extraction and URL loading
    - Add tests in `tests/callbacks/` following existing patterns
 
