@@ -9,10 +9,9 @@ from aiogram.types import ErrorEvent
 from loguru import logger
 
 from ..utils import async_create_page
-from .base import BaseCallback
 
 
-class ErrorCallback(BaseCallback):
+class ErrorCallback:
     def __init__(self, chat_id: str | None = None) -> None:
         self.chat_id = chat_id
 

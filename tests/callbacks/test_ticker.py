@@ -4,11 +4,11 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
+from aiogram.enums import ParseMode
 from aiogram.types import Chat
 from aiogram.types import Message
 from aiogram.types import Update
 from aiogram.types import User
-
 
 from bot.callbacks.ticker import query_ticker_callback
 
