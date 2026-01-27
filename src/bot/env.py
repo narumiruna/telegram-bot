@@ -39,11 +39,6 @@ def logfire_is_enabled() -> bool:
     return bool(logfire_token)
 
 
-def langfuse_is_enabled() -> bool:
-    """Check if Langfuse monitoring is enabled."""
-    return all([langfuse_public_key, langfuse_secret_key, langfuse_host])
-
-
 # from pydantic_settings import BaseSettings
 # from pydantic_settings import SettingsConfigDict
 
