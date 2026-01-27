@@ -49,6 +49,6 @@ Migrate only the conversation memory mechanism. No changes to agent instructions
 - No introduction of new dependencies unless justified.
 
 ## Open Decisions
-- Whether to keep reply-scoped context or expand to chat-scoped context.
+- Session scope: keep reply-scoped context (only replies to a bot message continue the same session).
 - Whether tool messages should remain excluded from stored history.
 * End Patch
