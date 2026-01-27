@@ -6,8 +6,8 @@ from aiogram.types import Message
 from aiogram.types import Update
 from loguru import logger
 
+from ..url_parser import parse_urls
 from ..utils import load_url
-from ..utils import parse_urls
 
 
 def get_user_display_name(message: Message) -> str | None:

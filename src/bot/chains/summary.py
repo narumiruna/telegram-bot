@@ -7,7 +7,7 @@ from pydantic import Field
 from ..core.prompting import PromptSpec
 from ..lazy import lazy_run
 from ..presentation import MessageResponse
-from ..utils import async_create_page
+from ..telegraph_utils import async_create_page
 from .instructions import BASE_INSTRUCTIONS
 
 SUMMARY_PROMPT = PromptSpec(
