@@ -57,4 +57,5 @@ Migrate only the conversation memory mechanism. No changes to agent instructions
 - pop/clear: not required for now.
 - Filters: remove tool messages and `id == "__fake_id__"`.
 - Redis failures: no fallback; skip persistence and retrieval when unavailable.
+- Session key format: keep `bot:{message_id}:{chat_id}`.
 * End Patch
