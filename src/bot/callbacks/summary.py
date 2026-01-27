@@ -1,21 +1,26 @@
 from __future__ import annotations
 
 from aiogram.types import Message
+from aiogram.types import Update
 from loguru import logger
 
 from .. import chains
+from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback
 
 
 @safe_callback
-async def summarize_callback(message: Message) -> None:
+async def summarize_callback(update: Message | Update, context: object | None = None) -> None:
+    message = get_message_from_update(update)
+    if not message:
+        return
+
     text, error = await get_processed_message_text(message, require_url=True)
     if error:
         await message.answer(error)
         return
     if not text:
-        await message.answer("請提供要摘要的 URL，例如：/s https://example.com")
         return
 
     response = await chains.summarize(text)

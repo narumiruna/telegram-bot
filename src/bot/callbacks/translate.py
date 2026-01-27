@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from aiogram.types import Message
+from aiogram.types import Update
 from loguru import logger
 
 from .. import chains
 from ..presentation import MessageResponse
 from .base import BaseCallback
+from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback
 
@@ -15,7 +17,11 @@ class TranslationCallback(BaseCallback):
         self.lang = lang
 
     @safe_callback
-    async def __call__(self, message: Message) -> None:
+    async def __call__(self, update: Message | Update, context: object | None = None) -> None:
+        message = get_message_from_update(update)
+        if not message:
+            return
+
         message_text, error = await get_processed_message_text(message, require_url=False)
         if error:
             await message.answer(error)
