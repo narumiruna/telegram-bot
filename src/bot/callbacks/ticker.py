@@ -39,11 +39,11 @@ def _query_yahoo(symbols: list[str]) -> str:
         return ""
 
 
-def _query_twse(symbols: list[str]) -> list[str]:
+async def _query_twse(symbols: list[str]) -> list[str]:
     results = []
     for symbol in symbols:
         try:
-            result = get_stock_info(symbol.strip()).pretty_repr()
+            result = await get_stock_info(symbol.strip())
         except json.JSONDecodeError as e:
             logger.warning(
                 "Failed to query TWSE for {symbol}: {error}",
@@ -51,8 +51,8 @@ def _query_twse(symbols: list[str]) -> list[str]:
                 error=str(e),
             )
             continue
-        if result:
-            results.append(result)
+        if result.msg_array:
+            results.append(result.pretty_repr())
     return results
 
 
@@ -75,7 +75,7 @@ async def query_ticker_callback(update: Message | Update, context: object | None
         return
 
     yf_result = _query_yahoo(symbols)
-    twse_results = _query_twse(symbols)
+    twse_results = await _query_twse(symbols)
     result = _combine_results(yf_result, twse_results)
 
     if not result:
