@@ -258,7 +258,7 @@ requires-dist = [
     { name = "telegraph", specifier = ">=2.2.0" },
     { name = "tenacity", specifier = ">=9.1.2" },
     { name = "tripplus", specifier = ">=0.1.1" },
-    { name = "twse", specifier = ">=0.4.1" },
+    { name = "twse", specifier = ">=0.5.0" },
     { name = "typer-slim", specifier = ">=0.21.1" },
     { name = "yfinance", specifier = ">=1.1.0" },
     { name = "youtube-search", specifier = ">=2.2.0" },
