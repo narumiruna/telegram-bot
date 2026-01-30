@@ -124,7 +124,6 @@ class TestAgentHelperFunctions:
 
 
 class TestAgentCallback:
-    @patch("bot.callbacks.agent.get_cache_from_env")
     def test_init(self, mock_get_cache):
         """Test AgentCallback initialization"""
         mock_agent = Mock()
@@ -135,9 +134,7 @@ class TestAgentCallback:
 
         assert callback.agent == mock_agent
         assert callback.max_cache_size == 100
-        assert callback.cache == mock_cache
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     def test_init_default_cache_size(self, mock_get_cache):
         """Test AgentCallback initialization with default cache size"""
         mock_agent = Mock()
@@ -148,7 +145,6 @@ class TestAgentCallback:
 
         assert callback.max_cache_size == 50
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_processed_message_text")
     @patch("bot.callbacks.agent.Runner")
     async def test_handle_message_simple(self, mock_runner, mock_get_processed_message_text, mock_get_cache):
@@ -194,7 +190,6 @@ class TestAgentCallback:
         # Verify cache was updated
         mock_cache.set.assert_called_once()
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_processed_message_text")
     async def test_handle_message_empty_text(self, mock_get_processed_message_text, mock_get_cache):
         """Test handling message with empty text"""
@@ -211,7 +206,6 @@ class TestAgentCallback:
         # Should return early without processing
         mock_get_processed_message_text.assert_called_once()
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.trace")
     async def test_handle_command(self, mock_trace, mock_get_cache):
         """Test handling command update"""
@@ -231,7 +225,6 @@ class TestAgentCallback:
         callback.handle_message.assert_called_once_with(mock_update.message)  # type: ignore
         mock_trace.assert_called_once_with("handle_command")
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     async def test_handle_command_no_message(self, mock_get_cache):
         """Test handling command with no message"""
         mock_agent = Mock()
@@ -249,7 +242,6 @@ class TestAgentCallback:
         # Should return early without calling handle_message
         callback.handle_message.assert_not_called()  # type: ignore
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.trace")
     async def test_handle_reply_valid_bot_reply(self, mock_trace, mock_get_cache):
         """Test handling reply to bot message"""
@@ -278,7 +270,6 @@ class TestAgentCallback:
         callback.handle_message.assert_called_once_with(mock_message)  # type: ignore
         mock_trace.assert_called_once_with("handle_reply")
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     async def test_handle_reply_not_bot_reply(self, mock_get_cache):
         """Test handling reply to non-bot message"""
         mock_agent = Mock()
@@ -306,7 +297,6 @@ class TestAgentCallback:
         # Should not call handle_message for replies to humans
         callback.handle_message.assert_not_called()  # type: ignore
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     async def test_handle_reply_no_reply_message(self, mock_get_cache):
         """Test handling message that's not a reply"""
         mock_agent = Mock()
@@ -335,7 +325,6 @@ class TestAgentCallback:
         key = callback._make_cache_key(message_id=67890, chat_id=12345)
         assert key == "bot:67890:12345"
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_processed_message_text")
     @patch("bot.callbacks.agent.Runner")
     async def test_cache_ttl_is_set(self, mock_runner, mock_get_processed_message_text, mock_get_cache):
@@ -377,7 +366,6 @@ class TestAgentCallback:
         assert call_args[0][0] == "bot:67890:12345"  # cache key (new_message.message_id:chat.id)
         assert call_args[1]["ttl"] == settings.cache_ttl_seconds  # TTL parameter
 
-    @patch("bot.callbacks.agent.get_cache_from_env")
     @patch("bot.callbacks.agent.get_processed_message_text")
     @patch("bot.callbacks.agent.Runner")
     async def test_cache_persists_in_reply_thread(self, mock_runner, mock_get_processed_message_text, mock_get_cache):

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+import aiocache
 from agents import TResponseInputItem
 from agents.memory.session import SessionABC
-from aiocache import BaseCache
 from loguru import logger
+
+from bot.settings import settings
 
 
 class RedisSession(SessionABC):
@@ -15,12 +17,11 @@ class RedisSession(SessionABC):
         self,
         session_id: str,
         *,
-        cache: BaseCache,
         max_cache_size: int,
         ttl_seconds: int,
     ) -> None:
         self.session_id = session_id
-        self._cache = cache
+        self._cache = aiocache.Cache.from_url(settings.cache_url)
         self._max_cache_size = max_cache_size
         self._ttl_seconds = ttl_seconds
 

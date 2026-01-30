@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     litellm_api_key: str | None = Field(default=None, validation_alias="LITELLM_API_KEY")
 
     # Cache settings
-    cache_url: str | None = Field(default=None, validation_alias="CACHE_URL")
+    cache_url: str = Field(default="memory://", validation_alias="CACHE_URL")
     cache_ttl_seconds: int = Field(default=604800, validation_alias="CACHE_TTL_SECONDS")
 
     # Observability settings

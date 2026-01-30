@@ -10,7 +10,6 @@ from aiogram.types import Message
 from aiogram.types import Update
 from loguru import logger
 
-from bot.cache import get_cache_from_env
 from bot.memory import RedisSession
 from bot.presentation import MessageResponse
 from bot.settings import settings
@@ -83,9 +82,6 @@ class AgentCallback:
         # max_cache_size is the maximum number of messages to keep in the cache
         self.max_cache_size = max_cache_size
 
-        # message.chat.id -> list of messages
-        self.cache = get_cache_from_env()
-
     async def handle_message(self, message: Message) -> None:
         """Handle incoming message and generate response.
 
@@ -113,7 +109,6 @@ class AgentCallback:
             logger.debug("Loading conversation history from cache: {key}", key=key)
             session = RedisSession(
                 key,
-                cache=self.cache,
                 max_cache_size=self.max_cache_size,
                 ttl_seconds=settings.cache_ttl_seconds,
             )
@@ -154,7 +149,6 @@ class AgentCallback:
         )
         new_session = RedisSession(
             new_key,
-            cache=self.cache,
             max_cache_size=self.max_cache_size,
             ttl_seconds=settings.cache_ttl_seconds,
         )
