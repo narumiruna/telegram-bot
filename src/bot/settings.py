@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     agent_max_cache_size: int = Field(default=50, validation_alias="AGENT_MAX_CACHE_SIZE")
 
     # OpenAI / LLM settings
-    openai_model: str = Field(default="gpt-4.1", validation_alias="OPENAI_MODEL")
+    openai_model: str = Field(default="gpt-5-mini", validation_alias="OPENAI_MODEL")
     openai_temperature: float = Field(default=0.0, validation_alias="OPENAI_TEMPERATURE")
     azure_openai_api_key: str | None = Field(default=None, validation_alias="AZURE_OPENAI_API_KEY")
     litellm_api_key: str | None = Field(default=None, validation_alias="LITELLM_API_KEY")

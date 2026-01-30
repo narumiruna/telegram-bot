@@ -38,9 +38,10 @@ jobs:
           cat <<'EOF' > .env
           BOT_TOKEN=${{ secrets.BOT_TOKEN }}
           BOT_WHITELIST=${{ vars.BOT_WHITELIST }}
-          OPENAI_MODEL=${{ vars.OPENAI_MODEL }}
-          OPENAI_BASE_URL=${{ vars.OPENAI_BASE_URL }}
-          LITELLM_API_KEY=${{ secrets.LITELLM_API_KEY }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          # OPENAI_MODEL=${{ vars.OPENAI_MODEL }}
+          # OPENAI_BASE_URL=${{ vars.OPENAI_BASE_URL }}
+          # LITELLM_API_KEY=${{ secrets.LITELLM_API_KEY }}
           LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }}
           LOGFIRE_ENVIRONMENT=prod
           FFMPEG_PATH=/opt/homebrew/bin/ffmpeg
