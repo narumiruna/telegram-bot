@@ -11,9 +11,10 @@ from loguru import logger
 
 from bot.model import get_openai_model
 from bot.settings import settings
-from bot.tools import execute_command
-from bot.tools import query_rate_history
-from bot.tools import web_search
+
+# from bot.tools import execute_command
+# from bot.tools import query_rate_history
+# from bot.tools import web_search
 
 current_time = datetime.now(ZoneInfo("Asia/Taipei"))
 
@@ -62,14 +63,14 @@ Current time: {current_time}。
 
 def _build_mcp_servers() -> list[MCPServerStdio]:
     servers = [
-        MCPServerStdio(
-            params=MCPServerStdioParams(
-                command="npx",
-                args=["-y", "@playwright/mcp@latest"],
-            ),
-            name="playwright",
-            client_session_timeout_seconds=settings.mcp_server_timeout,
-        ),
+        # MCPServerStdio(
+        #     params=MCPServerStdioParams(
+        #         command="npx",
+        #         args=["-y", "@playwright/mcp@latest"],
+        #     ),
+        #     name="playwright",
+        #     client_session_timeout_seconds=settings.mcp_server_timeout,
+        # ),
         MCPServerStdio(
             params=MCPServerStdioParams(
                 command="uvx",
@@ -78,14 +79,14 @@ def _build_mcp_servers() -> list[MCPServerStdio]:
             name="yfmcp",
             client_session_timeout_seconds=settings.mcp_server_timeout,
         ),
-        MCPServerStdio(
-            params=MCPServerStdioParams(
-                command="uvx",
-                args=["gurume@latest", "mcp"],
-            ),
-            name="gurume",
-            client_session_timeout_seconds=settings.mcp_server_timeout,
-        ),
+        # MCPServerStdio(
+        #     params=MCPServerStdioParams(
+        #         command="uvx",
+        #         args=["gurume@latest", "mcp"],
+        #     ),
+        #     name="gurume",
+        #     client_session_timeout_seconds=settings.mcp_server_timeout,
+        # ),
     ]
 
     if settings.firecrawl_api_key:
@@ -114,11 +115,11 @@ async def build_chat_agent() -> AsyncIterator[Agent]:
             name="chat-agent",
             instructions=INSTRUCTIONS,
             model=get_openai_model(),
-            tools=[
-                query_rate_history,
-                execute_command,
-                web_search,
-            ],
+            # tools=[
+            #     query_rate_history,
+            #     execute_command,
+            #     web_search,
+            # ],
             mcp_servers=manager.active_servers,
         )
         yield agent
