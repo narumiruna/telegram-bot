@@ -110,20 +110,20 @@ def _build_mcp_servers() -> list[MCPServerStdio]:
         # ),
     ]
 
-    # if settings.firecrawl_api_key:
-    #     servers.append(
-    #         MCPServerStdio(
-    #             params=MCPServerStdioParams(
-    #                 command="npx",
-    #                 args=["-y", "firecrawl-mcp"],
-    #                 env={"FIRECRAWL_API_KEY": settings.firecrawl_api_key},
-    #             ),
-    #             name="firecrawl-mcp",
-    #             client_session_timeout_seconds=settings.mcp_server_timeout,
-    #         )
-    #     )
-    # else:
-    #     logger.warning("FIRECRAWL_API_KEY is not set; skipping Firecrawl MCP server setup.")
+    if settings.firecrawl_api_key:
+        servers.append(
+            MCPServerStdio(
+                params=MCPServerStdioParams(
+                    command="npx",
+                    args=["-y", "firecrawl-mcp"],
+                    env={"FIRECRAWL_API_KEY": settings.firecrawl_api_key},
+                ),
+                name="firecrawl-mcp",
+                client_session_timeout_seconds=settings.mcp_server_timeout,
+            )
+        )
+    else:
+        logger.warning("FIRECRAWL_API_KEY is not set; skipping Firecrawl MCP server setup.")
 
     if settings.serpapi_api_key is not None:
         servers.append(
