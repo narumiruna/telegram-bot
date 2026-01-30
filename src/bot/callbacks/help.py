@@ -1,18 +1,22 @@
-from __future__ import annotations
-
 from aiogram.types import Message
 
-from .base import BaseCallback
-from .utils import safe_callback
 
-
-class HelpCallback(BaseCallback):
-    def __init__(self, helps: list[str]) -> None:
-        self.helps = helps
-
-    @safe_callback
-    async def __call__(self, message: Message) -> None:
-        await message.answer(
-            "\n".join(self.helps),
-            disable_web_page_preview=True,
-        )
+async def help_callback(message: Message) -> None:
+    await message.answer(
+        "\n".join(
+            [
+                "code: https://github.com/narumiruna/bot",
+                "/help - Show this help message",
+                "/a - An agent that can assist with various tasks",
+                "/s - Summarize a document or URL content",
+                "/jp - Translate text to Japanese",
+                "/tc - Translate text to Traditional Chinese",
+                "/en - Translate text to English",
+                "/echo - Echo the message",
+                "/yt - Search YouTube",
+                "/t - Query ticker from Yahoo Finance and Taiwan stock exchange",
+                "/f - Format and normalize the document in 台灣話",
+            ]
+        ),
+        disable_web_page_preview=True,
+    )

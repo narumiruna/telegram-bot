@@ -12,7 +12,6 @@ from loguru import logger
 
 from .agents import build_chat_agent
 from .callbacks import ErrorCallback
-from .callbacks import HelpCallback
 from .callbacks import TranslationCallback
 from .callbacks import echo_callback
 from .callbacks import file_callback
@@ -65,24 +64,10 @@ async def run_bot() -> None:
         shutdown = ShutdownManager(settings.shutdown_timeout)
         shutdown.install_signal_handlers()
 
-        helps = [
-            "code: https://github.com/narumiruna/bot",
-            "/help - Show this help message",
-            "/a - An agent that can assist with various tasks",
-            "/s - Summarize a document or URL content",
-            "/jp - Translate text to Japanese",
-            "/tc - Translate text to Traditional Chinese",
-            "/en - Translate text to English",
-            "/echo - Echo the message",
-            "/yt - Search YouTube",
-            "/t - Query ticker from Yahoo Finance and Taiwan stock exchange",
-            "/f - Format and normalize the document in 台灣話",
-        ]
-
         # Register command handlers
         router.message.register(agent_callback.handle_command, Command("a"), F.func(chat_filter))
         router.message.register(agent_callback.handle_command, Command("gpt"), F.func(chat_filter))
-        router.message.register(HelpCallback(helps=helps), Command("help"), F.func(chat_filter))
+        router.message.register(help, Command("help"), F.func(chat_filter))
         router.message.register(summarize_callback, Command("s"), F.func(chat_filter))
         router.message.register(TranslationCallback("日本語"), Command("jp"), F.func(chat_filter))
         router.message.register(TranslationCallback("台灣正體中文"), Command("tc"), F.func(chat_filter))

@@ -4,7 +4,7 @@ from .echo import echo_callback
 from .error import ErrorCallback
 from .file_notes import file_callback
 from .format import format_callback
-from .help import HelpCallback
+from .help import help_callback
 from .summary import summarize_callback
 from .ticker import query_ticker_callback
 from .translate import TranslationCallback
