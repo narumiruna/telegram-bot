@@ -45,6 +45,7 @@ jobs:
           LOGFIRE_ENVIRONMENT=prod
           FFMPEG_PATH=/opt/homebrew/bin/ffmpeg
           FIRECRAWL_API_KEY=${{ secrets.FIRECRAWL_API_KEY }}
+          SERPAPI_API_KEY=${{ secrets.SERPAPI_API_KEY }}
           EOF
       - name: Preparing environment
         working-directory: ${{ env.WORKDIR }}
