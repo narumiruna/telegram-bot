@@ -5,8 +5,8 @@ from agents import Model
 from agents import ModelSettings
 from agents import Runner
 
-from .model import get_openai_model
-from .model import get_openai_model_settings
+from .provider import get_openai_model
+from .provider import get_openai_model_settings
 
 
 async def lazy_run(

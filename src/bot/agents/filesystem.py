@@ -5,7 +5,7 @@ from agents import Agent
 from agents.mcp import MCPServerManager
 from agents.mcp import MCPServerStdio
 
-from bot.model import get_openai_model
+from bot.provider import get_openai_model
 
 
 async def build_filesystem_agent() -> AsyncIterator[Agent]:

@@ -11,7 +11,7 @@ from agents.mcp.server import MCPServerStreamableHttp
 from agents.mcp.server import MCPServerStreamableHttpParams
 from loguru import logger
 
-from bot.model import get_openai_model
+from bot.provider import get_openai_model
 from bot.settings import settings
 
 # from bot.tools import execute_command
