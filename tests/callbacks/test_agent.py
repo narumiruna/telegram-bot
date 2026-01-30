@@ -123,23 +123,42 @@ class TestAgentHelperFunctions:
         # (Removed invalid/unfinished code block here)
 
 
+@pytest.fixture
+def mock_redis_session(monkeypatch):
+    sessions: list[Mock] = []
+    queued_items: list[list[dict[str, str]]] = []
+
+    def set_next_items(*items: list[dict[str, str]]) -> None:
+        queued_items.clear()
+        queued_items.extend(items)
+
+    def _factory(*args, **kwargs):
+        session = Mock()
+        default_items = queued_items.pop(0) if queued_items else []
+        session.get_items = AsyncMock(return_value=default_items)
+        session.set_items = AsyncMock()
+        session._init_args = args
+        session._init_kwargs = kwargs
+        sessions.append(session)
+        return session
+
+    monkeypatch.setattr("bot.callbacks.agent.RedisSession", _factory)
+    return {"sessions": sessions, "set_next_items": set_next_items}
+
+
 class TestAgentCallback:
-    def test_init(self, mock_get_cache):
+    def test_init(self, mock_redis_session):
         """Test AgentCallback initialization"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
 
         callback = AgentCallback(mock_agent, max_cache_size=100)
 
         assert callback.agent == mock_agent
         assert callback.max_cache_size == 100
 
-    def test_init_default_cache_size(self, mock_get_cache):
+    def test_init_default_cache_size(self, mock_redis_session):
         """Test AgentCallback initialization with default cache size"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
 
         callback = AgentCallback(mock_agent)
 
@@ -147,14 +166,9 @@ class TestAgentCallback:
 
     @patch("bot.callbacks.agent.get_processed_message_text")
     @patch("bot.callbacks.agent.Runner")
-    async def test_handle_message_simple(self, mock_runner, mock_get_processed_message_text, mock_get_cache):
+    async def test_handle_message_simple(self, mock_runner, mock_get_processed_message_text, mock_redis_session):
         """Test handling a simple message without reply"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_cache.get = AsyncMock(return_value=[])
-        mock_cache.set = AsyncMock()
-        mock_get_cache.return_value = mock_cache
-
         mock_get_processed_message_text.return_value = ("Hello, how are you?", None)
 
         # Mock runner result
@@ -188,14 +202,14 @@ class TestAgentCallback:
         assert call_args[1]["input"][0]["content"] == "Hello, how are you?"
 
         # Verify cache was updated
-        mock_cache.set.assert_called_once()
+        sessions = mock_redis_session["sessions"]
+        assert len(sessions) == 1
+        sessions[0].set_items.assert_called_once()
 
     @patch("bot.callbacks.agent.get_processed_message_text")
-    async def test_handle_message_empty_text(self, mock_get_processed_message_text, mock_get_cache):
+    async def test_handle_message_empty_text(self, mock_get_processed_message_text, mock_redis_session):
         """Test handling message with empty text"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
 
         mock_get_processed_message_text.return_value = (None, None)
         mock_message = Mock()
@@ -207,11 +221,9 @@ class TestAgentCallback:
         mock_get_processed_message_text.assert_called_once()
 
     @patch("bot.callbacks.agent.trace")
-    async def test_handle_command(self, mock_trace, mock_get_cache):
+    async def test_handle_command(self, mock_trace, mock_redis_session):
         """Test handling command update"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
 
         mock_update = Mock()
         mock_update.message = Mock()
@@ -225,11 +237,9 @@ class TestAgentCallback:
         callback.handle_message.assert_called_once_with(mock_update.message)  # type: ignore
         mock_trace.assert_called_once_with("handle_command")
 
-    async def test_handle_command_no_message(self, mock_get_cache):
+    async def test_handle_command_no_message(self, mock_redis_session):
         """Test handling command with no message"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
 
         mock_update = Mock()
         mock_update.message = None
@@ -243,11 +253,9 @@ class TestAgentCallback:
         callback.handle_message.assert_not_called()  # type: ignore
 
     @patch("bot.callbacks.agent.trace")
-    async def test_handle_reply_valid_bot_reply(self, mock_trace, mock_get_cache):
+    async def test_handle_reply_valid_bot_reply(self, mock_trace, mock_redis_session):
         """Test handling reply to bot message"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
 
         # Setup valid reply to bot message
         mock_bot_user = Mock()
@@ -270,11 +278,9 @@ class TestAgentCallback:
         callback.handle_message.assert_called_once_with(mock_message)  # type: ignore
         mock_trace.assert_called_once_with("handle_reply")
 
-    async def test_handle_reply_not_bot_reply(self, mock_get_cache):
+    async def test_handle_reply_not_bot_reply(self, mock_redis_session):
         """Test handling reply to non-bot message"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
 
         # Setup reply to human message
         mock_human_user = Mock()
@@ -297,11 +303,9 @@ class TestAgentCallback:
         # Should not call handle_message for replies to humans
         callback.handle_message.assert_not_called()  # type: ignore
 
-    async def test_handle_reply_no_reply_message(self, mock_get_cache):
+    async def test_handle_reply_no_reply_message(self, mock_redis_session):
         """Test handling message that's not a reply"""
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_get_cache.return_value = mock_cache
 
         mock_message = Mock()
         mock_message.reply_to_message = None
@@ -327,15 +331,11 @@ class TestAgentCallback:
 
     @patch("bot.callbacks.agent.get_processed_message_text")
     @patch("bot.callbacks.agent.Runner")
-    async def test_cache_ttl_is_set(self, mock_runner, mock_get_processed_message_text, mock_get_cache):
+    async def test_cache_ttl_is_set(self, mock_runner, mock_get_processed_message_text, mock_redis_session):
         """Test that cache is saved with TTL"""
         from bot.settings import settings
 
         mock_agent = Mock()
-        mock_cache = Mock()
-        mock_cache.get = AsyncMock(return_value=[])
-        mock_cache.set = AsyncMock()
-        mock_get_cache.return_value = mock_cache
 
         mock_get_processed_message_text.return_value = ("Test message", None)
 
@@ -360,27 +360,26 @@ class TestAgentCallback:
         callback = AgentCallback(mock_agent)
         await callback.handle_message(mock_message)
 
-        # Verify cache.set was called with TTL
-        mock_cache.set.assert_called_once()
-        call_args = mock_cache.set.call_args
-        assert call_args[0][0] == "bot:67890:12345"  # cache key (new_message.message_id:chat.id)
-        assert call_args[1]["ttl"] == settings.cache_ttl_seconds  # TTL parameter
+        # Verify session was created with TTL
+        sessions = mock_redis_session["sessions"]
+        assert len(sessions) == 1
+        sessions[0].set_items.assert_called_once()
+        assert sessions[0]._init_args[0] == "bot:67890:12345"
+        assert sessions[0]._init_kwargs["ttl_seconds"] == settings.cache_ttl_seconds
 
     @patch("bot.callbacks.agent.get_processed_message_text")
     @patch("bot.callbacks.agent.Runner")
-    async def test_cache_persists_in_reply_thread(self, mock_runner, mock_get_processed_message_text, mock_get_cache):
+    async def test_cache_persists_in_reply_thread(
+        self, mock_runner, mock_get_processed_message_text, mock_redis_session
+    ):
         """Test that cache persists conversation history when replying to a message"""
         mock_agent = Mock()
-        mock_cache = Mock()
-
         # Simulate existing conversation in cache
         existing_messages = [
             {"role": "user", "content": "Previous message"},
             {"role": "assistant", "content": "Previous response"},
         ]
-        mock_cache.get = AsyncMock(return_value=existing_messages)
-        mock_cache.set = AsyncMock()
-        mock_get_cache.return_value = mock_cache
+        mock_redis_session["set_next_items"](existing_messages)
 
         mock_get_processed_message_text.return_value = ("New message", None)
 
@@ -409,8 +408,10 @@ class TestAgentCallback:
         callback = AgentCallback(mock_agent)
         await callback.handle_message(mock_message)
 
-        # Verify cache.get was called with reply_to_message's key
-        mock_cache.get.assert_called_once_with("bot:11111:12345", default=[])
+        sessions = mock_redis_session["sessions"]
+        assert len(sessions) == 2
+        assert sessions[0]._init_args[0] == "bot:11111:12345"
+        assert sessions[1]._init_args[0] == "bot:67890:12345"
 
         # Verify runner received existing messages plus new message
         call_args = mock_runner.run.call_args
