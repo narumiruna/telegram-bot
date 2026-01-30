@@ -14,6 +14,6 @@ DEFAULT_MEMORY_URL: Final[str] = "memory://"
 @cache
 def get_cache_from_env() -> BaseCache:
     url = settings.cache_url
-    if "cache_url" not in settings.model_fields_set:
+    if not url:
         logger.warning("No cache url provided, using {url}", url=DEFAULT_REDIS_URL)
     return Cache.from_url(url)
