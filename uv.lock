@@ -2988,14 +2988,14 @@ wheels = [
 
 [[package]]
 name = "twse"
-version = "0.5.0"
+version = "0.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/24/1e/1ac8d515a89c5d717e101dd941e0aa7f553b048656fb5036ce500ffbde1b/twse-0.5.0-py3-none-any.whl", hash = "sha256:b4aab2e153cbf6c5d75a3d4123c51dc6742de2c43a786fdbd61fba280f3e9fd4", size = 6114, upload-time = "2026-01-28T12:04:48.649Z" },
+    { url = "https://files.pythonhosted.org/packages/3b/69/a9a16cd564d0137db3a4b83dca3653df3b124561c2efaaac514409da8bb4/twse-0.5.1-py3-none-any.whl", hash = "sha256:b560c3ebd6da38b5e45a53d4583625b7d9beaed37f98e7938ef072532091f5d2", size = 6115, upload-time = "2026-01-28T12:29:39.318Z" },
 ]
 
 [[package]]
@@ -3106,8 +3106,8 @@ name = "uvicorn"
 version = "0.40.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "click" },
-    { name = "h11" },
+    { name = "click", marker = "sys_platform != 'emscripten'" },
+    { name = "h11", marker = "sys_platform != 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/c3/d1/8f3c683c9561a4e6689dd3b1d345c815f10f86acd044ee1fb9a4dcd0b8c5/uvicorn-0.40.0.tar.gz", hash = "sha256:839676675e87e73694518b5574fd0f24c9d97b46bea16df7b8c05ea1a51071ea", size = 81761, upload-time = "2025-12-21T14:16:22.45Z" }
 wheels = [
