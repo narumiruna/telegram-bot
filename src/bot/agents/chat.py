@@ -5,6 +5,8 @@ from zoneinfo import ZoneInfo
 
 from agents import Agent
 from agents.mcp import MCPServerManager
+from agents.mcp.server import MCPServerSse
+from agents.mcp.server import MCPServerSseParams
 from agents.mcp.server import MCPServerStdio
 from agents.mcp.server import MCPServerStdioParams
 from loguru import logger
@@ -103,6 +105,17 @@ def _build_mcp_servers() -> list[MCPServerStdio]:
         )
     else:
         logger.warning("FIRECRAWL_API_KEY is not set; skipping Firecrawl MCP server setup.")
+
+    if settings.serpapi_api_key is not None:
+        servers.append(
+            MCPServerSse(
+                params=MCPServerSseParams(url=f"https://mcp.serpapi.com/{settings.serpapi_api_key}/mcp"),
+                name="serpapi",
+                client_session_timeout_seconds=settings.mcp_server_timeout,
+            )
+        )
+    else:
+        logger.warning("SERPAPI_API_KEY is not set; skipping SerpAPI MCP server setup.")
 
     return servers
 

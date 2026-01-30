@@ -52,6 +52,7 @@ class Settings(BaseSettings):
 
     # Other integrations
     firecrawl_api_key: str | None = Field(default=None, validation_alias="FIRECRAWL_API_KEY")
+    serpapi_api_key: str | None = Field(default=None, validation_alias="SERPAPI_API_KEY")
 
     @property
     def chat_ids(self) -> list[int] | None:
