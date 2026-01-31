@@ -13,18 +13,18 @@ from .instructions import BASE_INSTRUCTIONS
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
 
+# class Section(BaseModel):
+#     title: str
+#     content: str
 
-class Section(BaseModel):
-    title: str
-    content: str
-
-    def __str__(self) -> str:
-        return f"{self.title}\n{self.content}"
+#     def __str__(self) -> str:
+#         return f"{self.title}\n{self.content}"
 
 
 class Article(BaseModel):
     title: str
-    sections: list[Section]
+    # sections: list[Section]
+    sections: list[str]
 
     def __str__(self) -> str:
         lines = [f"📝 {self.title}"]
