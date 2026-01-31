@@ -60,7 +60,7 @@ technical, or other complex documents, rephrase the content in plain language ap
 Respond in plain text only. Do not use Markdown, HTML, or any other markup syntax.
 
 For each section:
-- Begin with a relevant emoji (matching the section's theme) and a concise title in {lang} on the first line,
+- Begin with a relevant emoji (matching the section's theme) and a concise section title in {lang} on the first line,
   separated by a single space.
 - On the next line, present the well-organized content in {lang}, ensuring the main message and essential details
   are preserved.
