@@ -15,19 +15,19 @@ from .utils import chunk_on_delimiter
 
 
 class Section(BaseModel):
-    title: str
+    section_title: str
     content: str
 
     def __str__(self) -> str:
-        return f"{self.title}\n{self.content}"
+        return f"{self.section_title}\n{self.content}"
 
 
 class Article(BaseModel):
-    title: str
+    article_title: str
     sections: list[Section]
 
     def __str__(self) -> str:
-        lines = [f"📝 {self.title}"]
+        lines = [f"📝 {self.article_title}"]
         lines += [str(section) for section in self.sections]
         return "\n\n".join(lines)
 
@@ -39,7 +39,7 @@ class Article(BaseModel):
         """
         return MessageResponse(
             content=str(self),
-            title=self.title,
+            title=self.article_title,
             parse_mode=None,  # Plain text
         )
 

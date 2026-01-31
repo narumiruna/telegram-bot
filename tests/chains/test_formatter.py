@@ -12,20 +12,20 @@ from bot.presentation import MessageResponse
 
 class TestSection:
     def test_str_representation(self) -> None:
-        section = Section(title="標題", content="內容")
+        section = Section(section_title="標題", content="內容")
         assert str(section) == "標題\n內容"
 
     def test_model_validation(self) -> None:
-        section = Section(title="測試標題", content="測試內容")
-        assert section.title == "測試標題"
+        section = Section(section_title="測試標題", content="測試內容")
+        assert section.section_title == "測試標題"
         assert section.content == "測試內容"
 
 
 class TestArticle:
     def test_str_representation_single_section(self) -> None:
         article = Article(
-            title="文章標題",
-            sections=[Section(title="章節1", content="內容1")],
+            article_title="文章標題",
+            sections=[Section(section_title="章節1", content="內容1")],
         )
 
         result = str(article)
@@ -35,11 +35,11 @@ class TestArticle:
 
     def test_str_representation_multiple_sections(self) -> None:
         article = Article(
-            title="文章標題",
+            article_title="文章標題",
             sections=[
-                Section(title="章節1", content="內容1"),
-                Section(title="章節2", content="內容2"),
-                Section(title="章節3", content="內容3"),
+                Section(section_title="章節1", content="內容1"),
+                Section(section_title="章節2", content="內容2"),
+                Section(section_title="章節3", content="內容3"),
             ],
         )
 
@@ -53,15 +53,15 @@ class TestArticle:
         assert "內容3" in result
 
     def test_str_representation_empty_sections(self) -> None:
-        article = Article(title="空文章", sections=[])
+        article = Article(article_title="空文章", sections=[])
 
         result = str(article)
         assert "📝 空文章" in result
 
     def test_to_message_response(self) -> None:
         article = Article(
-            title="測試文章",
-            sections=[Section(title="測試章節", content="測試內容")],
+            article_title="測試文章",
+            sections=[Section(section_title="測試章節", content="測試內容")],
         )
 
         response = article.to_message_response()
@@ -75,10 +75,10 @@ class TestArticle:
 
     def test_to_message_response_preserves_formatting(self) -> None:
         article = Article(
-            title="格式測試",
+            article_title="格式測試",
             sections=[
-                Section(title="第一節", content="第一段內容"),
-                Section(title="第二節", content="第二段內容"),
+                Section(section_title="第一節", content="第一段內容"),
+                Section(section_title="第二節", content="第二段內容"),
             ],
         )
 
@@ -95,8 +95,8 @@ class TestFormatInternal:
     async def test_format_internal_success(self) -> None:
         """測試 _format 函數的基本功能"""
         mock_article = Article(
-            title="測試文章",
-            sections=[Section(title="測試章節", content="測試內容")],
+            article_title="測試文章",
+            sections=[Section(section_title="測試章節", content="測試內容")],
         )
 
         with (
@@ -120,8 +120,8 @@ class TestFormatInternal:
     async def test_format_internal_with_default_lang(self) -> None:
         """測試 _format 函數使用預設語言"""
         mock_article = Article(
-            title="文章",
-            sections=[Section(title="章節", content="內容")],
+            article_title="文章",
+            sections=[Section(section_title="章節", content="內容")],
         )
 
         with (
@@ -142,8 +142,8 @@ class TestFormatInternal:
     async def test_format_internal_with_english(self) -> None:
         """測試 _format 函數使用英文"""
         mock_article = Article(
-            title="Test Article",
-            sections=[Section(title="Test Section", content="Test Content")],
+            article_title="Test Article",
+            sections=[Section(section_title="Test Section", content="Test Content")],
         )
 
         with (
@@ -167,8 +167,8 @@ class TestFormat:
         """測試單一 chunk 的情況"""
         short_text = "短文本"
         mock_article = Article(
-            title="標題",
-            sections=[Section(title="章節", content="內容")],
+            article_title="標題",
+            sections=[Section(section_title="章節", content="內容")],
         )
 
         with (
@@ -192,10 +192,10 @@ class TestFormat:
         chunks = ["chunk1", "chunk2", "chunk3"]
         chunk_notes = ["note1", "note2", "note3"]
         mock_article = Article(
-            title="標題",
+            article_title="標題",
             sections=[
-                Section(title="章節1", content="內容1"),
-                Section(title="章節2", content="內容2"),
+                Section(section_title="章節1", content="內容1"),
+                Section(section_title="章節2", content="內容2"),
             ],
         )
 
@@ -221,8 +221,8 @@ class TestFormat:
         """測試使用自訂語言"""
         text = "Test text"
         mock_article = Article(
-            title="Title",
-            sections=[Section(title="Section", content="Content")],
+            article_title="Title",
+            sections=[Section(section_title="Section", content="Content")],
         )
 
         with (
@@ -242,7 +242,7 @@ class TestFormat:
     async def test_format_empty_text(self) -> None:
         """測試空文本的情況"""
         empty_text = ""
-        mock_article = Article(title="", sections=[])
+        mock_article = Article(article_title="", sections=[])
 
         with (
             patch("bot.chains.formatter.chunk_on_delimiter") as mock_chunk,
@@ -262,8 +262,8 @@ class TestFormat:
         chunks = ["part1", "part2", "part3"]
         notes = ["processed1", "processed2", "processed3"]
         mock_article = Article(
-            title="完整文章",
-            sections=[Section(title="綜合", content="所有內容")],
+            article_title="完整文章",
+            sections=[Section(section_title="綜合", content="所有內容")],
         )
 
         with (

@@ -56,10 +56,10 @@ class TestFileCallback:
     def sample_article(self):
         """Create a sample Article object for testing."""
         return Article(
-            title="Test Document",
+            article_title="Test Document",
             sections=[
-                Section(title="🔍 Section 1", content="This is the first section content."),
-                Section(title="📊 Section 2", content="This is the second section content."),
+                Section(section_title="🔍 Section 1", content="This is the first section content."),
+                Section(section_title="📊 Section 2", content="This is the second section content."),
             ],
         )
 
@@ -157,10 +157,10 @@ class TestFileCallback:
         """Test successful PDF processing with long content that requires Telegraph page."""
         # Setup mocks for long content
         long_content_sections = [
-            Section(title="🔍 Long Section", content="A" * 500),
-            Section(title="📊 Another Long Section", content="B" * 600),
+            Section(section_title="🔍 Long Section", content="A" * 500),
+            Section(section_title="📊 Another Long Section", content="B" * 600),
         ]
-        long_article = Article(title="Long Document", sections=long_content_sections)
+        long_article = Article(article_title="Long Document", sections=long_content_sections)
 
         test_file_path = Path("/tmp/test.pdf")
         mock_context.bot.get_file.return_value.download_to_drive.return_value = test_file_path
@@ -290,8 +290,8 @@ class TestFileCallback:
         """Test when Telegraph page creation fails."""
         # Setup mocks for long content
         long_article = Article(
-            title="Long Document",
-            sections=[Section(title="🔍 Long Section", content="A" * settings.max_message_length)],
+            article_title="Long Document",
+            sections=[Section(section_title="🔍 Long Section", content="A" * settings.max_message_length)],
         )
 
         test_file_path = Path("/tmp/test.pdf")
@@ -357,7 +357,8 @@ class TestIntegrationScenarios:
 
         mock_read_pdf.return_value = "Extracted PDF text content"
         mock_format.return_value = Article(
-            title="Processed Document", sections=[Section(title="📄 Content", content="Formatted content")]
+            article_title="Processed article_Document",
+            sections=[Section(section_title="📄 Content", content="Formatted content")],
         )
 
         # Execute workflow
@@ -404,11 +405,11 @@ class TestIntegrationScenarios:
 
         # Create long content that will trigger Telegraph
         long_article = Article(
-            title="Long HTML Document",
+            article_title="article_Long HTML Document",
             sections=[
-                Section(title="📊 Section 1", content="A" * 400),
-                Section(title="🔍 Section 2", content="B" * 400),
-                Section(title="📈 Section 3", content="C" * 400),
+                Section(section_title="📊 Section 1", content="A" * 400),
+                Section(section_title="🔍 Section 2", content="B" * 400),
+                Section(section_title="📈 Section 3", content="C" * 400),
             ],
         )
         mock_format.return_value = long_article
