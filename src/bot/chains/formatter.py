@@ -52,6 +52,8 @@ FORMAT_PROMPT = PromptSpec(
 Extract and organize information from the input text, then translate it into {lang}.
 Do not invent or add information.
 
+Create an overall article title that summarizes the entire input in {lang}; avoid generic placeholders like "Article" or "Summary".
+
 Use clear, accessible language that is easy for the general public to understand. When the input includes legal,
 technical, or other complex documents, rephrase the content in plain language appropriate for ordinary readers.
 
@@ -82,7 +84,7 @@ Input text:
 ```
 {text}
 ```
-""",
+""",  # noqa: E501
     output_type=Article,
 )
 
