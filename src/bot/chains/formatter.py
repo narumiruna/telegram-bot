@@ -14,22 +14,17 @@ from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
 
 
-class Section(BaseModel):
-    section_title: str
+class Article(BaseModel):
+    title: str
     content: str
 
     def __str__(self) -> str:
-        return f"{self.section_title}\n{self.content}"
-
-
-class Article(BaseModel):
-    article_title: str
-    sections: list[Section]
-
-    def __str__(self) -> str:
-        lines = [f"📝 {self.article_title}"]
-        lines += [str(section) for section in self.sections]
-        return "\n\n".join(lines)
+        return "\n\n".join(
+            [
+                f"📝 {self.title}",
+                self.content,
+            ]
+        )
 
     def to_message_response(self) -> MessageResponse:
         """Convert article to a MessageResponse for sending.
@@ -39,7 +34,7 @@ class Article(BaseModel):
         """
         return MessageResponse(
             content=str(self),
-            title=self.article_title,
+            title=self.title,
             parse_mode=None,  # Plain text
         )
 
@@ -49,43 +44,50 @@ FORMAT_PROMPT = PromptSpec(
     version=1,
     name="format",
     input_template="""
-Extract and organize information from the input text, then translate it into {lang}.
-Do not invent or add information.
+Extract, reorganize, and translate the input text into {lang}.
+Do not fabricate, infer, or add any information beyond the input.
 
-Create an overall article title that summarizes the entire input in {lang}; avoid generic placeholders like "Article" or "Summary".
+Generate a clear, specific article title in {lang} that accurately summarizes the entire input.
+Do not use generic titles such as “Article” or “Summary”.
 
-Use clear, accessible language that is easy for the general public to understand. When the input includes legal,
-technical, or other complex documents, rephrase the content in plain language appropriate for ordinary readers.
+Rewrite the content in plain, accessible language suitable for the general public.
+If the input is legal, technical, or otherwise complex, simplify the wording while preserving all essential facts and meaning.
 
-Respond in plain text only. Do not use Markdown, HTML, or any other markup syntax.
+Output rules:
+
+Respond in plain text only.
+Do not use Markdown, HTML, or any markup syntax.
+
+Structure rules:
+
+Organize the content into multiple sections when there are distinct topics, themes, paragraphs, headings, or bullet points.
+If boundaries are unclear, infer a reasonable structure and separate the content into clear sections.
 
 For each section:
-- Begin with a relevant emoji (matching the section's theme) and a concise section title in {lang} on the first line,
-  separated by a single space.
-- On the next line, present the well-organized content in {lang}, ensuring the main message and essential details
-  are preserved.
-- Use multiple sections if the input covers distinct topics, major points, or separate thematic paragraphs.
 
-If the input text is empty, respond with:
-[No content provided]
+First line: one relevant emoji + one concise section title in {lang}, separated by a single space.
+Second line: the reorganized content in {lang}, preserving the core message and key details.
+If the original section already has a title or emoji, revise the title if needed and choose a new emoji that better matches the reorganized content.
 
-If a section already includes an emoji or title, update the title as needed and select a new emoji that fits
-the reorganized content.
+Special cases:
 
-If section boundaries are unclear, treat each major paragraph, bullet point, or heading as a distinct section.
-When the structure is confusing, do your best to organize the information into clear, separate sections.
+If the input text is empty, output exactly:
+  [No content provided]
 
-After completing all sections, review the output to ensure all requirements are met and revise minimally if needed.
+Final checks:
 
-Translate ALL content into **{lang}**.
-ALL output MUST be written in **{lang}**.
+Ensure all content is translated into {lang}.
+Ensure every requirement above is satisfied.
+Make only minimal revisions during final review.
+
+ALL output MUST be written entirely in {lang}.
 
 Input text:
+
 ```
 {text}
 ```
 """,  # noqa: E501
-    output_type=Article,
 )
 
 
