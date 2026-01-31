@@ -13,23 +13,26 @@ from .instructions import BASE_INSTRUCTIONS
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
 
+# class Section(BaseModel):
+#     emoji: str
+#     section_title: str
+#     content: str
 
-class Section(BaseModel):
-    section_title: str
-    content: str
-
-    def __str__(self) -> str:
-        return f"{self.section_title}\n{self.content}"
+#     def __str__(self) -> str:
+#         return f"{self.emoji} {self.section_title}\n{self.content}"
 
 
 class Article(BaseModel):
-    article_title: str
-    sections: list[Section]
+    title: str
+    content: str
 
     def __str__(self) -> str:
-        lines = [f"📝 {self.article_title}"]
-        lines += [str(section) for section in self.sections]
-        return "\n\n".join(lines)
+        return "\n\n".join(
+            [
+                f"📝 {self.title}",
+                self.content,
+            ]
+        )
 
     def to_message_response(self) -> MessageResponse:
         """Convert article to a MessageResponse for sending.
@@ -39,7 +42,7 @@ class Article(BaseModel):
         """
         return MessageResponse(
             content=str(self),
-            title=self.article_title,
+            title=self.title,
             parse_mode=None,  # Plain text
         )
 
@@ -85,7 +88,6 @@ Input text:
 {text}
 ```
 """,  # noqa: E501
-    output_type=Article,
 )
 
 
