@@ -1,7 +1,7 @@
+import logging
 import httpx
 from agents import function_tool
 from bs4 import BeautifulSoup
-from loguru import logger
 from tenacity import retry
 from tenacity import retry_if_exception
 from tenacity import stop_after_attempt
@@ -9,6 +9,8 @@ from tenacity import wait_exponential
 from tenacity import wait_random
 
 from bot.retry_utils import is_retryable_error
+
+logger = logging.getLogger(__name__)
 
 
 @function_tool

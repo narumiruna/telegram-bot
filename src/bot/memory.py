@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable
 
 import aiocache
 from agents import TResponseInputItem
 from agents.memory.session import SessionABC
-from loguru import logger
 
 from bot.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class RedisSession(SessionABC):

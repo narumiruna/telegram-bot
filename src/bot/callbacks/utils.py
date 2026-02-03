@@ -1,13 +1,15 @@
+import logging
 import asyncio
 from functools import wraps
 from typing import Any
 
 from aiogram.types import Message
 from aiogram.types import Update
-from loguru import logger
 
 from bot.url_parser import parse_urls
 from bot.utils import load_url
+
+logger = logging.getLogger(__name__)
 
 
 def get_user_display_name(message: Message) -> str | None:

@@ -1,7 +1,9 @@
+import logging
 import subprocess
 
 from agents import function_tool
-from loguru import logger
+
+logger = logging.getLogger(__name__)
 
 
 @function_tool

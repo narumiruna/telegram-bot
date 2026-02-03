@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import cast
 
 from agents import Agent
@@ -8,7 +9,6 @@ from agents import TResponseInputItem
 from agents import trace
 from aiogram.types import Message
 from aiogram.types import Update
-from loguru import logger
 
 from bot.memory import RedisSession
 from bot.presentation import MessageResponse
@@ -17,6 +17,8 @@ from bot.settings import settings
 from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback
+
+logger = logging.getLogger(__name__)
 
 
 def remove_tool_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:

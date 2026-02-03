@@ -1,8 +1,10 @@
+import logging
 from typing import Literal
 
 from agents import function_tool
-from loguru import logger
 from tripplus import RedemptionRequest
+
+logger = logging.getLogger(__name__)
 
 
 @function_tool

@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -9,7 +10,6 @@ from agents.mcp.server import MCPServerStdio
 from agents.mcp.server import MCPServerStdioParams
 from agents.mcp.server import MCPServerStreamableHttp
 from agents.mcp.server import MCPServerStreamableHttpParams
-from loguru import logger
 
 from bot.provider import get_openai_model
 from bot.settings import settings
@@ -17,6 +17,8 @@ from bot.settings import settings
 # from bot.tools import execute_command
 # from bot.tools import query_rate_history
 from bot.tools import web_search
+
+logger = logging.getLogger(__name__)
 
 current_time = datetime.now(ZoneInfo("Asia/Taipei"))
 

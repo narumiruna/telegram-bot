@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import logging
 import json
 
 from aiogram.enums import ParseMode
 from aiogram.types import Message
 from aiogram.types import Update
-from loguru import logger
 from twse.stock_info import get_stock_info
 
 from bot.yahoo_finance import query_tickers
@@ -13,6 +13,8 @@ from bot.yahoo_finance import query_tickers
 from .utils import get_message_from_update
 from .utils import safe_callback
 from .utils import strip_command
+
+logger = logging.getLogger(__name__)
 
 
 def _get_symbols(message: Message, context: object | None) -> list[str]:

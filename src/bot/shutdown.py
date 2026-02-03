@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import logging
 import asyncio
 import signal
 from collections.abc import Iterable
 
-from loguru import logger
+logger = logging.getLogger(__name__)
 
 
 class ShutdownManager:

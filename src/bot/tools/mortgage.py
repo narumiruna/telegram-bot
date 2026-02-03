@@ -1,6 +1,8 @@
+import logging
 from agents import function_tool
-from loguru import logger
 from mortgage import Loan
+
+logger = logging.getLogger(__name__)
 
 
 @function_tool

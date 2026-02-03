@@ -1,13 +1,15 @@
+import logging
 import asyncio
 from textwrap import dedent
 
-from loguru import logger
 
 from bot.core.prompting import PromptSpec
 from bot.lazy import lazy_run
 
 from .instructions import BASE_INSTRUCTIONS
 from .utils import chunk_on_delimiter
+
+logger = logging.getLogger(__name__)
 
 URL_CHUNK_REWRITE_PROMPT = PromptSpec(
     id="rewrite_url_chunk",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import UTC
 from datetime import datetime
 from enum import Enum
@@ -7,7 +8,6 @@ from zoneinfo import ZoneInfo
 
 import httpx
 from agents import function_tool
-from loguru import logger
 from pydantic import BaseModel
 from pydantic import field_validator
 from tenacity import retry
@@ -17,6 +17,8 @@ from tenacity import wait_exponential
 from tenacity import wait_random
 
 from bot.retry_utils import is_retryable_error
+
+logger = logging.getLogger(__name__)
 
 
 # {"source":"EUR","target":"USD","value":1.05425,"time":1697653800557}

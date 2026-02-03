@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import asyncio
 
 from aiogram import Bot
@@ -8,7 +9,6 @@ from aiogram import F
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import ErrorEvent
-from loguru import logger
 
 from .agents import build_chat_agent
 from .callbacks import ErrorCallback
@@ -22,6 +22,8 @@ from .callbacks import summarize_callback
 from .callbacks.agent import AgentCallback
 from .settings import settings
 from .shutdown import ShutdownManager
+
+logger = logging.getLogger(__name__)
 
 
 def get_chat_filter():

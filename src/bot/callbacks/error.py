@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import logging
 import html
 import json
 import traceback
 
 from aiogram import Bot
 from aiogram.types import ErrorEvent
-from loguru import logger
 
 from bot.telegraph_utils import async_create_page
+
+logger = logging.getLogger(__name__)
 
 
 class ErrorCallback:

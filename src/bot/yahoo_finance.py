@@ -1,8 +1,10 @@
+import logging
 import re
 from typing import Any
 
 import yfinance as yf
-from loguru import logger
+
+logger = logging.getLogger(__name__)
 
 
 class TickerError(Exception):

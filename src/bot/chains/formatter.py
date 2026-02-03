@@ -1,8 +1,8 @@
+import logging
 import asyncio
 from textwrap import dedent
 
 from agents import trace
-from loguru import logger
 from pydantic import BaseModel
 
 from bot.core.prompting import PromptSpec
@@ -12,6 +12,8 @@ from bot.presentation import MessageResponse
 from .instructions import BASE_INSTRUCTIONS
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
+
+logger = logging.getLogger(__name__)
 
 
 class Article(BaseModel):
