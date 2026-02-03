@@ -1,5 +1,5 @@
-import logging
 import asyncio
+import logging
 from textwrap import dedent
 
 from agents import trace
@@ -113,7 +113,7 @@ async def _format(text: str, target_lang: str = "台灣正體中文") -> Article
             output_type=Article,
         )
 
-    logger.info("Formatted article: {article}", article=article)
+    logger.info("Formatted article: %s", article)
     return article
 
 

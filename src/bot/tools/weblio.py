@@ -1,4 +1,5 @@
 import logging
+
 import httpx
 from agents import function_tool
 from bs4 import BeautifulSoup
@@ -29,7 +30,7 @@ def query_weblio(query: str) -> str:
     Returns:
         str: A string containing the definitions of the word.
     """
-    logger.info("Querying Weblio for {query}", query=query)
+    logger.info("Querying Weblio for %s", query)
 
     url = f"https://www.weblio.jp/content/{query}"
     response = httpx.get(url, timeout=30.0)

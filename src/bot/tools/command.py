@@ -16,7 +16,7 @@ def execute_command(command: str) -> str:
     Returns:
         str: The output of the command.
     """
-    logger.info("Executing command: {command}", command=command)
+    logger.info("Executing command: %s", command)
     try:
         result = subprocess.run(
             command,
@@ -26,7 +26,7 @@ def execute_command(command: str) -> str:
             text=True,
         )
     except subprocess.CalledProcessError as e:
-        logger.error("Command failed with error: {error}", error=e.stderr)
+        logger.error("Command failed with error: %s", e.stderr)
         return f"Error executing command: {e.stderr}"
 
     return result.stdout

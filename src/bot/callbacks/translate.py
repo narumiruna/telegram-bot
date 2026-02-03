@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+
 from aiogram.types import Message
 from aiogram.types import Update
 
@@ -33,7 +34,7 @@ class TranslationCallback(BaseCallback):
             return
 
         translated_text = await chains.translate(message_text, target_lang=self.lang)
-        logger.info("Translated text to {lang}: {text}", lang=self.lang, text=translated_text)
+        logger.info("Translated text to %s: %s", self.lang, translated_text)
 
         response = MessageResponse(
             content=translated_text,

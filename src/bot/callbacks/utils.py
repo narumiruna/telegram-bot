@@ -1,5 +1,5 @@
-import logging
 import asyncio
+import logging
 from functools import wraps
 from typing import Any
 
@@ -59,7 +59,7 @@ def get_message_text(
             if reply_to_message_text:
                 message_text = f"{reply_to_message_text}\n\n{message_text}"
 
-    logger.info("Message text: {text}", text=message_text)
+    logger.info("Message text: %s", message_text)
     return message_text
 
 
@@ -139,7 +139,7 @@ async def get_processed_message_text(
         return message_text, None
 
     # 嘗試載入所有 URL
-    logger.info("Parsed URLs: {urls}", urls=urls)
+    logger.info("Parsed URLs: %s", urls)
     try:
         # 並行載入所有 URL
         contents = await asyncio.gather(*[load_url(url) for url in urls])
@@ -148,7 +148,7 @@ async def get_processed_message_text(
         raise
     except Exception as e:
         error_msg = f"Failed to load URL(s): {', '.join(urls)}"
-        logger.warning("{error}, got error: {exception}", error=error_msg, exception=e)
+        logger.warning("%s, got error: %s", error_msg, e)
         return None, error_msg
     else:
         # 組合所有內容
@@ -193,14 +193,14 @@ def safe_callback(callback_func):
         try:
             return await callback_func(*args, **kwargs)
         except asyncio.CancelledError:
-            logger.info("Callback {func} cancelled.", func=callback_func.__name__)
+            logger.info("Callback %s cancelled.", callback_func.__name__)
             raise
         except Exception as e:
             # 記錄錯誤
             logger.exception(
-                "Error in callback {func}: {error}",
-                func=callback_func.__name__,
-                error=str(e),
+                "Error in callback %s: %s",
+                callback_func.__name__,
+                str(e),
             )
 
             # 通知用戶
@@ -209,8 +209,8 @@ def safe_callback(callback_func):
                     await message.answer("抱歉，處理您的請求時發生錯誤，請稍後再試。\n如果問題持續發生，請聯絡管理員。")
                 except Exception as reply_error:
                     logger.error(
-                        "Failed to send error message to user: {error}",
-                        error=str(reply_error),
+                        "Failed to send error message to user: %s",
+                        str(reply_error),
                     )
 
             # 重新拋出例外讓全域錯誤處理器處理

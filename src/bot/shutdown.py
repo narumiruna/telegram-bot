@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import logging
 import asyncio
+import logging
 import signal
 from collections.abc import Iterable
 
@@ -30,7 +30,7 @@ class ShutdownManager:
         if self._event.is_set():
             return
         signal_name = sig.name if isinstance(sig, signal.Signals) else "unknown"
-        logger.info("Received shutdown signal: {signal}", signal=signal_name)
+        logger.info("Received shutdown signal: %s", signal_name)
         self._event.set()
 
     async def wait(self) -> None:
@@ -41,7 +41,7 @@ class ShutdownManager:
         if not pending:
             return
 
-        logger.info("Cancelling {count} task(s) due to {reason}", count=len(pending), reason=reason)
+        logger.info("Cancelling %s task(s) due to %s", len(pending), reason)
         for task in pending:
             task.cancel()
 
@@ -52,8 +52,8 @@ class ShutdownManager:
             )
         except TimeoutError:
             logger.warning(
-                "Timeout waiting for {count} task(s) to cancel",
-                count=len(pending),
+                "Timeout waiting for %s task(s) to cancel",
+                len(pending),
             )
             return
 
@@ -61,4 +61,4 @@ class ShutdownManager:
             if isinstance(result, asyncio.CancelledError):
                 continue
             if isinstance(result, BaseException):
-                logger.opt(exception=result).error("Task error during {reason}", reason=reason)
+                logger.error("Task error during %s", reason, exc_info=result)

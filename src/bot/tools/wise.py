@@ -138,7 +138,7 @@ async def query_rate(source: str, target: str) -> str:
         source (str): The source currency code (e.g., "EUR").
         target (str): The target currency code (e.g., "USD").
     """
-    logger.debug(f"Querying rate for {source} to {target}")
+    logger.debug("Querying rate for %s to %s", source, target)
 
     req = RateRequest(source=source, target=target)
     rate = await req.async_do()
@@ -156,7 +156,7 @@ async def query_rate_history(source: str, target: str, length: int, resolution: 
         resolution (Resolution): The resolution of the data points.
         unit (Unit): The unit of time for the data points.
     """
-    logger.debug(f"Querying rate history for {source} to {target}")
+    logger.debug("Querying rate history for %s to %s", source, target)
 
     req = RateHistoryRequest(
         source=source,

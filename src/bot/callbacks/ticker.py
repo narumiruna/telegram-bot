@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import logging
 import json
+import logging
 
 from aiogram.enums import ParseMode
 from aiogram.types import Message
@@ -33,11 +33,7 @@ def _query_yahoo(symbols: list[str]) -> str:
     try:
         return query_tickers(symbols)
     except Exception as e:
-        logger.warning(
-            "Failed to query Yahoo Finance for {symbols}: {error}",
-            symbols=symbols,
-            error=str(e),
-        )
+        logger.warning("Failed to query Yahoo Finance for %s: %s", symbols, e)
         return ""
 
 
@@ -47,11 +43,7 @@ async def _query_twse(symbols: list[str]) -> list[str]:
         try:
             result = await get_stock_info(symbol.strip())
         except json.JSONDecodeError as e:
-            logger.warning(
-                "Failed to query TWSE for {symbol}: {error}",
-                symbol=symbol,
-                error=str(e),
-            )
+            logger.warning("Failed to query TWSE for %s: %s", symbol, e)
             continue
         if result.msg_array:
             results.append(result.pretty_repr())

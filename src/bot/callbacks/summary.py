@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+
 from aiogram.types import Message
 from aiogram.types import Update
 
@@ -28,5 +29,5 @@ async def summarize_callback(update: Message | Update, context: object | None = 
 
     response = await chains.summarize(text)
 
-    logger.info("Summarized text: {text}", text=response.content)
+    logger.info("Summarized text: %s", response.content)
     await response.send(message)

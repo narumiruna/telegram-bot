@@ -1,5 +1,5 @@
-import logging
 import asyncio
+import logging
 from textwrap import dedent
 
 from pydantic import BaseModel
@@ -135,7 +135,7 @@ async def extract_notes(text: str, target_lang: str = "台灣正體中文") -> R
         output_type=ResearchReport,
     )
 
-    logger.info("Formatted report: {report}", report=report)
+    logger.info("Formatted report: %s", report)
     return report
 
 

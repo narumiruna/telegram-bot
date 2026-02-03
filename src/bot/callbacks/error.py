@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import logging
 import html
 import json
+import logging
 import traceback
 
 from aiogram import Bot
@@ -18,7 +18,7 @@ class ErrorCallback:
         self.chat_id = chat_id
 
     async def __call__(self, event: ErrorEvent, bot: Bot) -> None:
-        logger.error("Exception while handling an update: {error}", error=event.exception)
+        logger.error("Exception while handling an update: %s", event.exception)
 
         if self.chat_id is None:
             return
