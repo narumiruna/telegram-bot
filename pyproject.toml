@@ -40,7 +40,6 @@ bot = "bot.cli:main"
 
 [dependency-groups]
 dev = [
-  "pip>=25.3",
   "prek>=0.3.0",
   "pytest>=9.0.2",
   "pytest-asyncio>=1.3.0",
