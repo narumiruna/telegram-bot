@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import logging
+
 from aiogram.types import Message
 from aiogram.types import Update
-from loguru import logger
 
 from bot import chains
 from bot.presentation import MessageResponse
@@ -11,6 +12,8 @@ from .base import BaseCallback
 from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback
+
+logger = logging.getLogger(__name__)
 
 
 class TranslationCallback(BaseCallback):
@@ -31,7 +34,7 @@ class TranslationCallback(BaseCallback):
             return
 
         translated_text = await chains.translate(message_text, target_lang=self.lang)
-        logger.info("Translated text to {lang}: {text}", lang=self.lang, text=translated_text)
+        logger.info("Translated text to %s: %s", self.lang, translated_text)
 
         response = MessageResponse(
             content=translated_text,

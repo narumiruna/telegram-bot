@@ -1,8 +1,8 @@
 import asyncio
+import logging
 from textwrap import dedent
 
 from agents import trace
-from loguru import logger
 from pydantic import BaseModel
 
 from bot.core.prompting import PromptSpec
@@ -12,6 +12,8 @@ from bot.presentation import MessageResponse
 from .instructions import BASE_INSTRUCTIONS
 from .notes import create_notes_from_chunk
 from .utils import chunk_on_delimiter
+
+logger = logging.getLogger(__name__)
 
 
 class Article(BaseModel):
@@ -111,7 +113,7 @@ async def _format(text: str, target_lang: str = "台灣正體中文") -> Article
             output_type=Article,
         )
 
-    logger.info("Formatted article: {article}", article=article)
+    logger.info("Formatted article: %s", article)
     return article
 
 

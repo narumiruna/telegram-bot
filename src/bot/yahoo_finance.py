@@ -1,8 +1,10 @@
+import logging
 import re
 from typing import Any
 
 import yfinance as yf
-from loguru import logger
+
+logger = logging.getLogger(__name__)
 
 
 class TickerError(Exception):
@@ -83,7 +85,7 @@ def query_tickers(symbols: str | list[str]) -> str:
             ticker = yf.Ticker(symbol)
             results.append(format_ticker_info(ticker))
         except Exception as e:
-            logger.info("Failed to get ticker for {symbol}, got error: {error}", symbol=symbol, error=e)
+            logger.info("Failed to get ticker for %s, got error: %s", symbol, e)
 
     return "\n\n".join(results).strip()
 

@@ -1,6 +1,9 @@
+import logging
+
 from agents import function_tool
-from loguru import logger
 from mortgage import Loan
+
+logger = logging.getLogger(__name__)
 
 
 @function_tool
@@ -44,5 +47,5 @@ def compute_loan_details(principal: float, interest: float, term: int) -> str:
 
     res = "\n".join(lines)
 
-    logger.info("Loan summary: {text}", text=res)
+    logger.info("Loan summary: %s", res)
     return res

@@ -1,8 +1,10 @@
+import logging
 from typing import Literal
 
 from agents import function_tool
-from loguru import logger
 from tripplus import RedemptionRequest
+
+logger = logging.getLogger(__name__)
 
 
 @function_tool
@@ -30,8 +32,8 @@ def search_award(ori: str, dst: str, cabin: Literal["y", "c", "f"], type: Litera
         type=type,
         programs="ALL",
     )
-    logger.debug("RedemptionRequest: {req}", req=req)
+    logger.debug("RedemptionRequest: %s", req)
 
     resp = req.do().model_dump_json()
-    logger.debug("RedemptionResponse: {resp}", resp=resp)
+    logger.debug("RedemptionResponse: %s", resp)
     return resp

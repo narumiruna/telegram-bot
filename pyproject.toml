@@ -13,7 +13,6 @@ dependencies    = [
   "httpx>=0.28.1",
   "kabigon>=0.16.0",
   "logfire[httpx,redis,requests]>=4.21.0",
-  "loguru>=0.7.3",
   "lxml>=6.0.2",
   "markdown2>=2.5.4",
   "markdownify>=1.2.2",

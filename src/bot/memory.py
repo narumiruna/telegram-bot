@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable
 
 import aiocache
 from agents import TResponseInputItem
 from agents.memory.session import SessionABC
-from loguru import logger
 
 from bot.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class RedisSession(SessionABC):
@@ -29,7 +31,7 @@ class RedisSession(SessionABC):
         try:
             items = await self._cache.get(self.session_id, default=[])
         except Exception as exc:  # pragma: no cover - defensive logging
-            logger.error("Failed to load session {key}: {error}", key=self.session_id, error=str(exc))
+            logger.error("Failed to load session %s: %s", self.session_id, str(exc))
             return []
         if not isinstance(items, list):
             return []
@@ -41,7 +43,7 @@ class RedisSession(SessionABC):
         try:
             existing_items = await self._cache.get(self.session_id, default=[])
         except Exception as exc:  # pragma: no cover - defensive logging
-            logger.error("Failed to load session {key}: {error}", key=self.session_id, error=str(exc))
+            logger.error("Failed to load session %s: %s", self.session_id, str(exc))
             return
         if not isinstance(existing_items, list):
             existing_items = []
@@ -53,7 +55,7 @@ class RedisSession(SessionABC):
         try:
             items = await self._cache.get(self.session_id, default=[])
         except Exception as exc:  # pragma: no cover - defensive logging
-            logger.error("Failed to load session {key}: {error}", key=self.session_id, error=str(exc))
+            logger.error("Failed to load session %s: %s", self.session_id, str(exc))
             return None
         if not isinstance(items, list) or not items:
             return None
@@ -65,7 +67,7 @@ class RedisSession(SessionABC):
         try:
             await self._cache.delete(self.session_id)
         except Exception as exc:  # pragma: no cover - defensive logging
-            logger.error("Failed to clear session {key}: {error}", key=self.session_id, error=str(exc))
+            logger.error("Failed to clear session %s: %s", self.session_id, str(exc))
 
     async def set_items(self, items: Iterable[TResponseInputItem]) -> None:
         merged = self._trim_items(list(items))
@@ -80,4 +82,4 @@ class RedisSession(SessionABC):
         try:
             await self._cache.set(self.session_id, items, ttl=self._ttl_seconds)
         except Exception as exc:  # pragma: no cover - defensive logging
-            logger.error("Failed to save session {key}: {error}", key=self.session_id, error=str(exc))
+            logger.error("Failed to save session %s: %s", self.session_id, str(exc))

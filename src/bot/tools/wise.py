@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import UTC
 from datetime import datetime
 from enum import Enum
@@ -7,7 +8,6 @@ from zoneinfo import ZoneInfo
 
 import httpx
 from agents import function_tool
-from loguru import logger
 from pydantic import BaseModel
 from pydantic import field_validator
 from tenacity import retry
@@ -17,6 +17,8 @@ from tenacity import wait_exponential
 from tenacity import wait_random
 
 from bot.retry_utils import is_retryable_error
+
+logger = logging.getLogger(__name__)
 
 
 # {"source":"EUR","target":"USD","value":1.05425,"time":1697653800557}
@@ -136,7 +138,7 @@ async def query_rate(source: str, target: str) -> str:
         source (str): The source currency code (e.g., "EUR").
         target (str): The target currency code (e.g., "USD").
     """
-    logger.debug(f"Querying rate for {source} to {target}")
+    logger.debug("Querying rate for %s to %s", source, target)
 
     req = RateRequest(source=source, target=target)
     rate = await req.async_do()
@@ -154,7 +156,7 @@ async def query_rate_history(source: str, target: str, length: int, resolution: 
         resolution (Resolution): The resolution of the data points.
         unit (Unit): The unit of time for the data points.
     """
-    logger.debug(f"Querying rate history for {source} to {target}")
+    logger.debug("Querying rate history for %s to %s", source, target)
 
     req = RateHistoryRequest(
         source=source,

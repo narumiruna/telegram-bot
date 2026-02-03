@@ -1,13 +1,14 @@
 import asyncio
+import logging
 from textwrap import dedent
-
-from loguru import logger
 
 from bot.core.prompting import PromptSpec
 from bot.lazy import lazy_run
 
 from .instructions import BASE_INSTRUCTIONS
 from .utils import chunk_on_delimiter
+
+logger = logging.getLogger(__name__)
 
 URL_CHUNK_REWRITE_PROMPT = PromptSpec(
     id="rewrite_url_chunk",
@@ -84,9 +85,7 @@ async def process_url_content(text: str) -> str:
     # Use a reasonable chunk size for URL content (smaller than notes.py default)
     chunks = chunk_on_delimiter(text, max_length=10_000)
 
-    logger.info(
-        "Processing URL content: {chunks} chunks from {length} characters", chunks=len(chunks), length=len(text)
-    )
+    logger.info("Processing URL content: %d chunks from %d characters", len(chunks), len(text))
 
     if len(chunks) <= 1:
         # For short or empty content, return original as-is
@@ -94,7 +93,7 @@ async def process_url_content(text: str) -> str:
         return text
 
     # For long content, rewrite each chunk in parallel
-    logger.info("Long URL content detected, processing {chunks} chunks in parallel", chunks=len(chunks))
+    logger.info("Long URL content detected, processing %s chunks in parallel", len(chunks))
 
     chunk_rewrites = await asyncio.gather(*[rewrite_url_chunk(chunk) for chunk in chunks])
 
@@ -108,9 +107,9 @@ async def process_url_content(text: str) -> str:
     )
 
     logger.info(
-        "URL content processing completed: {input_length} -> {output_length} characters",
-        input_length=len(text),
-        output_length=len(final_rewrite),
+        "URL content processing completed: %d -> %d characters",
+        len(text),
+        len(final_rewrite),
     )
 
     return final_rewrite

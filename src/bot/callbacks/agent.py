@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import cast
 
 from agents import Agent
@@ -8,7 +9,6 @@ from agents import TResponseInputItem
 from agents import trace
 from aiogram.types import Message
 from aiogram.types import Update
-from loguru import logger
 
 from bot.memory import RedisSession
 from bot.presentation import MessageResponse
@@ -17,6 +17,8 @@ from bot.settings import settings
 from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback
+
+logger = logging.getLogger(__name__)
 
 
 def remove_tool_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
@@ -100,20 +102,20 @@ class AgentCallback:
         if not message_text:
             return
 
-        logger.info("Handling message from chat {chat_id}", chat_id=message.chat.id)
+        logger.info("Handling message from chat %s", message.chat.id)
 
         # if the message is a reply to another message, get the previous messages
         messages = []
         if message.reply_to_message is not None:
             key = self._make_cache_key(message.reply_to_message.message_id, message.chat.id)
-            logger.debug("Loading conversation history from cache: {key}", key=key)
+            logger.debug("Loading conversation history from cache: %s", key)
             session = RedisSession(
                 key,
                 max_cache_size=self.max_cache_size,
                 ttl_seconds=settings.cache_ttl_seconds,
             )
             messages = await session.get_items()
-            logger.debug("Loaded {count} messages from cache", count=len(messages))
+            logger.debug("Loaded %s messages from cache", len(messages))
 
         # remove all tool messages from the memory
         messages = filter_memory_messages(messages)
@@ -122,14 +124,14 @@ class AgentCallback:
         messages.append(cast(TResponseInputItem, {"role": "user", "content": message_text}))
 
         # send the messages to the agent
-        logger.info("Running agent with {count} messages", count=len(messages))
+        logger.info("Running agent with %s messages", len(messages))
         result = await Runner.run(self.agent, input=messages)
-        logger.info("Agent completed. New items: {new_items}", new_items=result.new_items)
+        logger.info("Agent completed. New items: %s", result.new_items)
 
         # update the memory
         input_items = filter_memory_messages(result.to_input_list())
         if len(input_items) > self.max_cache_size:
-            logger.debug("Trimming conversation history to {size} items", size=self.max_cache_size)
+            logger.debug("Trimming conversation history to %s items", self.max_cache_size)
             input_items = input_items[-self.max_cache_size :]
 
         # Send response using MessageResponse for consistency and Telegraph fallback
@@ -143,9 +145,9 @@ class AgentCallback:
 
         # Save conversation history to cache with TTL
         logger.debug(
-            "Saving conversation history to cache: {key} with TTL {ttl}s",
-            key=new_key,
-            ttl=settings.cache_ttl_seconds,
+            "Saving conversation history to cache: %s with TTL %ss",
+            new_key,
+            settings.cache_ttl_seconds,
         )
         new_session = RedisSession(
             new_key,

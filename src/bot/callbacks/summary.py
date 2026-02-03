@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import logging
+
 from aiogram.types import Message
 from aiogram.types import Update
-from loguru import logger
 
 from bot import chains
 
 from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback
+
+logger = logging.getLogger(__name__)
 
 
 @safe_callback
@@ -26,5 +29,5 @@ async def summarize_callback(update: Message | Update, context: object | None = 
 
     response = await chains.summarize(text)
 
-    logger.info("Summarized text: {text}", text=response.content)
+    logger.info("Summarized text: %s", response.content)
     await response.send(message)
