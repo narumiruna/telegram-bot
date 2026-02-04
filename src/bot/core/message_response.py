@@ -23,7 +23,7 @@ class MessageResponse(BaseModel):
         return self.content
 
     async def answer(self, message: Message) -> Message:
-        if len(self.content) < settings.max_message_length:
+        if len(self.content) <= settings.max_message_length:
             return await message.answer(self.build_text(), parse_mode=self.parse_mode)
 
         logger.info("Content too long, uploading to Telegraph")
