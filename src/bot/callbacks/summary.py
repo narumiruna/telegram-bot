@@ -8,9 +8,8 @@ from aiogram.types import Message
 
 from bot.agents.summary import summarize
 from bot.callbacks.utils import check_message_type
-
-from .utils import get_processed_message_text
-from .utils import safe_callback
+from bot.callbacks.utils import get_processed_message_text
+from bot.callbacks.utils import safe_callback
 
 logger = logging.getLogger(__name__)
 

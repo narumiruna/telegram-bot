@@ -15,9 +15,8 @@ from kabigon.loaders.pdf import read_pdf_content
 from kabigon.loaders.utils import read_html_content
 
 from bot.agents.writer import write_article
-
-from .utils import get_message_from_update
-from .utils import safe_callback
+from bot.callbacks.utils import get_message_from_update
+from bot.callbacks.utils import safe_callback
 
 
 def _get_bot(context: object | None) -> Bot | None:
