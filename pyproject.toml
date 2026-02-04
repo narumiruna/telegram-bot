@@ -12,7 +12,6 @@ dependencies    = [
   "httpx>=0.28.1",
   "kabigon>=0.16.0",
   "logfire[httpx,redis,requests]>=4.21.0",
-  "lxml>=6.0.2",
   "markdown2>=2.5.4",
   "mortgage>=1.0.5",
   "nest-asyncio>=1.6.0",
