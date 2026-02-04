@@ -17,7 +17,7 @@ from unittest.mock import AsyncMock
 from aiogram.types import Message
 
 from bot.settings import settings
-from bot.telegraph_utils import async_create_page
+from bot.utils.page import async_create_page
 
 
 @dataclass

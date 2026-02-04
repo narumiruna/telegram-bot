@@ -8,7 +8,7 @@ import traceback
 from aiogram import Bot
 from aiogram.types import ErrorEvent
 
-from bot.telegraph_utils import async_create_page
+from bot.utils.page import async_create_page
 
 logger = logging.getLogger(__name__)
 
