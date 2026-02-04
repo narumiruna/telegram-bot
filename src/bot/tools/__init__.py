@@ -1,6 +1,5 @@
 from .award import search_award
 from .command import execute_command
-from .content_extractor import extract_content_from_url
 from .datetime import get_current_time
 from .duckduckgo import web_search
 from .monster_hunter_weapon import draw_monster_hunter_weapon
@@ -16,7 +15,6 @@ __all__ = [
     "draw_monster_hunter_weapon",
     "draw_tarot_card",
     "execute_command",
-    "extract_content_from_url",
     "get_current_time",
     "query_rate",
     "query_rate_history",
