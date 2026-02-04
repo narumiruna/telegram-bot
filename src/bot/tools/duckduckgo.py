@@ -10,7 +10,7 @@ from tenacity import stop_after_attempt
 from tenacity import wait_exponential
 from tenacity import wait_random
 
-from bot.retry_utils import is_retryable_error
+from bot.utils.retry import is_retryable_error
 
 
 @function_tool

@@ -1,9 +1,3 @@
-"""
-Common retry utilities for the bot package.
-
-Provides shared retry logic and error categorization functions.
-"""
-
 import httpx
 from openai import RateLimitError
 
