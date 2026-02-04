@@ -14,7 +14,7 @@ from aiogram.types import Update
 from kabigon.loaders.pdf import read_pdf_content
 from kabigon.loaders.utils import read_html_content
 
-from bot import chains
+from bot.agents.writer import write_article
 
 from .utils import get_message_from_update
 from .utils import safe_callback
@@ -75,7 +75,5 @@ async def file_callback(update: Message | Update, context: object | None = None)
     if not text:
         return
 
-    article = await chains.format(text)
-    response = article.to_message_response()
-
-    await response.send(message)
+    article = await write_article(text)
+    await article.answer(message)
