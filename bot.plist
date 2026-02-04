@@ -2,12 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <key>EnvironmentVariables</key>
-    <dict>
-      <key>PATH</key>
-      <string>/Users/narumi/.local/bin/env:/Users/narumi/.local/state/fnm_multishells/58089_1769531330351/bin:/Users/narumi/.local/share/fnm:/Users/narumi/.pyenv/shims:/Users/narumi/.pyenv/bin:/Users/narumi/.bun/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/opt/mysql-client/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/narumi/.cargo/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Users/narumi/.local/bin:/Users/narumi/.atuin/bin:/Applications/Visual
-        Studio Code.app/Contents/Resources/app/bin</string>
-    </dict>
     <key>Label</key>
     <string>bot</string>
     <key>ProgramArguments</key>
