@@ -14,7 +14,11 @@ async def echo_callback(message: Message) -> None:
             ensure_ascii=False,
         )
     )
+
+    if len(text) > 4096:
+        text = text[:4096] + "\n..."
+
     await message.answer(
-        text=f"<pre>{text}</pre>",
+        text=f"<blockquote expandable>{text}</blockquote>",
         parse_mode="HTML",
     )

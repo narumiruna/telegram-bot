@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from datetime import UTC
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from zoneinfo import ZoneInfo
 
 import httpx
@@ -45,12 +45,12 @@ class Rate(BaseModel):
         return f"{self.source}/{self.target}: {self.value} at {time_str}"
 
 
-class Resolution(str, Enum):
+class Resolution(StrEnum):
     HOURLY = "hourly"
     DAILY = "daily"
 
 
-class Unit(str, Enum):
+class Unit(StrEnum):
     DAY = "day"
     MONTH = "month"
     YEAR = "year"
