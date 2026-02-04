@@ -45,6 +45,8 @@ def get_chat_filter() -> Callable[[Message], bool]:
 async def run_bot() -> None:
     async with build_chat_agent() as agent:
         # Create bot and dispatcher
+        if not settings.bot_token:
+            raise ValueError("BOT_TOKEN is not set")
         bot = Bot(token=settings.bot_token)
         dp = Dispatcher()
 

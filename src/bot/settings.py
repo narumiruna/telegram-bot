@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     )
 
     # Bot settings
-    bot_token: str
+    bot_token: str = Field(default="")
     bot_whitelist: str | None = Field(default=None)
     developer_chat_id: str | None = Field(default=None)
 
@@ -56,4 +56,4 @@ class Settings(BaseSettings):
         return [int(chat_id.strip()) for chat_id in self.bot_whitelist.replace(" ", "").split(",")]
 
 
-settings = Settings()  # ty:ignore[missing-argument]
+settings = Settings()
