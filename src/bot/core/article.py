@@ -18,7 +18,7 @@ class Article(BaseModel):
 
     async def answer(self, message: Message, with_title: bool = True) -> None:
         response = MessageResponse(
-            content=str(self),
+            content=self.content,
             title=self.title if with_title else None,
             parse_mode=None,  # Plain text
         )
