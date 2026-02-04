@@ -14,7 +14,6 @@ dependencies    = [
   "logfire[httpx,redis,requests]>=4.21.0",
   "lxml>=6.0.2",
   "markdown2>=2.5.4",
-  "markdownify>=1.2.2",
   "mortgage>=1.0.5",
   "nest-asyncio>=1.6.0",
   "openai>=2.16.0",
