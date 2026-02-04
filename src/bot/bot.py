@@ -11,9 +11,9 @@ from aiogram.filters import Command
 from aiogram.types import ErrorEvent
 
 from bot.callbacks import ErrorCallback
-from bot.callbacks import TranslationCallback
 from bot.callbacks import echo_callback
 from bot.callbacks import file_callback
+from bot.callbacks import generate_translation_callback
 from bot.callbacks import query_ticker_callback
 from bot.callbacks import search_youtube_callback
 from bot.callbacks import summarize_callback
@@ -73,9 +73,9 @@ async def run_bot() -> None:
         router.message.register(agent_callback.handle_command, Command("gpt"), F.func(chat_filter))
         router.message.register(help_callback, Command("help"), F.func(chat_filter))
         router.message.register(summarize_callback, Command("s"), F.func(chat_filter))
-        router.message.register(TranslationCallback("日本語"), Command("jp"), F.func(chat_filter))
-        router.message.register(TranslationCallback("台灣正體中文"), Command("tc"), F.func(chat_filter))
-        router.message.register(TranslationCallback("English"), Command("en"), F.func(chat_filter))
+        router.message.register(generate_translation_callback("日本語"), Command("jp"), F.func(chat_filter))
+        router.message.register(generate_translation_callback("台灣正體中文"), Command("tc"), F.func(chat_filter))
+        router.message.register(generate_translation_callback("English"), Command("en"), F.func(chat_filter))
         router.message.register(query_ticker_callback, Command("t"), F.func(chat_filter))
         router.message.register(search_youtube_callback, Command("yt"), F.func(chat_filter))
         router.message.register(writer_callback, Command("f"), F.func(chat_filter))

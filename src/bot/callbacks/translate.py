@@ -1,42 +1,31 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 
+import logfire
+from aiogram.filters import CommandObject
 from aiogram.types import Message
-from aiogram.types import Update
 
-from bot import chains
-from bot.callbacks.utils import get_message_from_update
+from bot.agents.translation import translate
 from bot.callbacks.utils import get_processed_message_text
 from bot.callbacks.utils import safe_callback
-from bot.core.presentation import MessageResponse
 
 logger = logging.getLogger(__name__)
 
 
-class TranslationCallback:
-    def __init__(self, lang: str) -> None:
-        self.lang = lang
-
+def generate_translation_callback(lang: str) -> Callable[[Message, CommandObject], None]:
     @safe_callback
-    async def __call__(self, update: Message | Update, context: object | None = None) -> None:
-        message = get_message_from_update(update)
-        if not message:
-            return
+    async def callback(message: Message, command: CommandObject) -> None:
+        with logfire.span("translation_callback"):
+            message_text, error = await get_processed_message_text(message, require_url=False)
+            if error:
+                await message.answer(error)
+                return
+            if not message_text:
+                return
 
-        message_text, error = await get_processed_message_text(message, require_url=False)
-        if error:
-            await message.answer(error)
-            return
-        if not message_text:
-            return
+            translated_article = await translate(message_text, lang=lang)
+            await translated_article.answer(message, with_title=False)
 
-        translated_text = await chains.translate(message_text, target_lang=self.lang)
-        logger.info("Translated text to %s: %s", self.lang, translated_text)
-
-        response = MessageResponse(
-            content=translated_text,
-            title="Translation",
-            parse_mode=None,  # Plain text
-        )
-        await response.send(message)
+    return callback
