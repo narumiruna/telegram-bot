@@ -1,6 +1,6 @@
 import pytest
 
-from bot.chains.utils import chunk_on_delimiter
+from bot.utils.chunk import chunk_on_delimiter
 
 
 class TestChunkOnDelimiter:
