@@ -1,41 +1,48 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/bot/`: main bot package (aiogram v3, callbacks, chains, tools, integrations).
-- `src/bot/callbacks/`: command handlers and utilities.
-- `src/bot/chains/`: LLM-powered processing (summary/translation/formatting).
-- `src/bot/tools/`: data source helpers (finance, search, etc.).
-- `tests/`: pytest suite mirroring the package layout (e.g., `tests/callbacks/`).
+- `src/bot/` contains the Telegram bot implementation.
+- `src/bot/callbacks/` holds Telegram command handlers (e.g., `summary.py`, `translate.py`).
+- `src/bot/chains/` includes LLM processing chains (formatting, summaries, notes).
+- `src/bot/tools/` provides data-source integrations (Yahoo Finance, Wise, DuckDuckGo).
+- `tests/` mirrors source structure with pytest-based coverage.
+- `config/` stores MCP server configs such as `config/default.json`.
+- `docs/` contains supplemental documentation.
 
 ## Build, Test, and Development Commands
-- `uv sync`: install/sync dependencies.
-- `uv run bot`: run the Telegram bot (requires `.env`).
-- `uv run pytest -v -s tests`: run full test suite.
-- `uv run pytest tests/path/to/test.py::test_name -v -s`: run a focused test.
-- `uv run ruff check src`: lint.
-- `uv run ruff format`: format.
-- `uv run ty check src`: type check.
-- `uv run prek run -a`: run all pre-commit hooks (required by CONSTITUTION.md).
+- `uv sync`: install dependencies into the uv-managed environment.
+- `uv run bot`: start the bot using `config/default.json`.
+- `uv run bot --config config/custom.json`: start with a custom MCP config.
+- `uv run pytest -v -s tests`: run the full test suite with verbose output.
+- `uv run pytest -v -s --cov=src tests`: run tests with coverage reporting.
+- `uv run ruff check src`: lint the codebase.
+- `uv run ty check src`: run static type checks.
+- `prek run -a`: run repository pre-commit hooks.
 
 ## Coding Style & Naming Conventions
-- Python 3.12+.
-- Formatting/linting via Ruff (line length 120; single-line imports).
-- Naming: `snake_case` for functions/vars, `PascalCase` for classes, `test_*.py` for tests.
-- Prefer small, surgical changes; avoid unrelated refactors.
+- Python 3.13+, async-first design, and type hints everywhere.
+- Follow PEP 8 with a 120-character line length (Ruff).
+- Use `snake_case` for functions/variables, `PascalCase` for classes, and `UPPER_SNAKE_CASE` for constants.
+- Prefer single-responsibility modules and small, focused callbacks.
 
 ## Testing Guidelines
-- Frameworks: `pytest`, `pytest-asyncio`.
-- Tests should reflect real behavior; avoid over-mocking.
-- Keep tests close to feature area (e.g., callback changes → `tests/callbacks/`).
+- Frameworks: `pytest`, `pytest-asyncio`, and `pytest-cov`.
+- Test files use `test_*.py` and live under `tests/` with structure matching `src/`.
+- Use `uv run pytest tests/<path>.py -v` for targeted runs.
 
 ## Commit & Pull Request Guidelines
-- Commits: short, imperative subjects (“Fix …”, “Add …”), one logical change per commit.
-- PRs: describe what/why, include test commands and required env vars; add screenshots for user-facing formatting changes.
+- Commit messages are short, imperative, and sentence-cased (e.g., `Refactor settings`, `Add validation`).
+- Version bumps use the format `Bump version: X → Y`.
+- Pull requests should include:
+  - A concise summary of changes.
+  - Testing notes (commands run and results).
+  - Configuration or `.env` updates when relevant.
+  - Screenshots only if UI-facing behavior changes.
 
-## Security & Configuration Tips
-- Do not commit secrets. Use `.env` for `BOT_TOKEN`, `OPENAI_API_KEY`, and related keys.
-- MCP configuration is environment-based; keep config files free of hard-coded secrets.
+## Configuration & Secrets
+- Local configuration lives in `.env` (see `README.md` for required keys).
+- MCP servers are configured in `config/*.json`.
+- Keep secrets out of git history; use environment variables for tokens.
 
-## Callback & Response Patterns
-- Use function-based callbacks for stateless handlers; class-based only when state is needed.
-- Use `MessageResponse` for user-facing output; long messages auto-expand via Telegraph.
+## Agent-Specific Notes
+- Review `CONSTITUTION.md` for non-negotiable constraints that apply to all changes.
