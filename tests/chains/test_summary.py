@@ -7,7 +7,7 @@ from bot.chains.summary import ChainOfThought
 from bot.chains.summary import Summary
 from bot.chains.summary import ThoughtStep
 from bot.chains.summary import summarize
-from bot.presentation import MessageResponse
+from bot.core.presentation import MessageResponse
 
 
 class TestThoughtStep:

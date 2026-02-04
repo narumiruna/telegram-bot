@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from aiogram.types import Message
 
-from bot.presentation import MessageResponse
+from bot.core.presentation import MessageResponse
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ async def test_send_short_message_without_parse_mode(mock_message):
 
 
 @pytest.mark.asyncio
-@patch("bot.presentation.async_create_page")
+@patch("bot.core.presentation.async_create_page")
 async def test_send_long_message_creates_telegraph_page(mock_create_page, mock_message):
     """Test that long messages create a Telegraph page"""
     # Create a message longer than the max message length (1000 characters)
@@ -61,7 +61,7 @@ async def test_send_long_message_creates_telegraph_page(mock_create_page, mock_m
 
 
 @pytest.mark.asyncio
-@patch("bot.presentation.async_create_page")
+@patch("bot.core.presentation.async_create_page")
 async def test_send_long_message_with_default_title(mock_create_page, mock_message):
     """Test that long messages use default title if not provided"""
     content = "y" * 1001
@@ -79,7 +79,7 @@ async def test_send_long_message_with_default_title(mock_create_page, mock_messa
 
 
 @pytest.mark.asyncio
-@patch("bot.presentation.async_create_page")
+@patch("bot.core.presentation.async_create_page")
 async def test_send_exactly_max_length_message(mock_create_page, mock_message):
     """Test message exactly at max message length (1000 chars) sends directly"""
     content = "z" * 1000  # Exactly at the limit
@@ -95,7 +95,7 @@ async def test_send_exactly_max_length_message(mock_create_page, mock_message):
 
 
 @pytest.mark.asyncio
-@patch("bot.presentation.async_create_page")
+@patch("bot.core.presentation.async_create_page")
 async def test_newlines_converted_to_br_tags(mock_create_page, mock_message):
     """Test that newlines are converted to <br> tags in Telegraph pages"""
     content = "Line 1\nLine 2\nLine 3\n" * 300  # Make it long enough
@@ -114,7 +114,7 @@ async def test_newlines_converted_to_br_tags(mock_create_page, mock_message):
 
 
 @pytest.mark.asyncio
-@patch("bot.presentation.async_create_page")
+@patch("bot.core.presentation.async_create_page")
 async def test_send_long_plain_text_escapes_html(mock_create_page, mock_message):
     """Test that long plain text is HTML-escaped for Telegraph pages"""
     content = ("<promise>foo</promise>\n" * 200) + ("x" * 1001)

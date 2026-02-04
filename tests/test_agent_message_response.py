@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from bot.presentation import MessageResponse
+from bot.core.presentation import MessageResponse
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ async def test_message_response_short_content(mock_message_with_reply):
 
 
 @pytest.mark.asyncio
-@patch("bot.presentation.async_create_page")
+@patch("bot.core.presentation.async_create_page")
 async def test_message_response_long_content(mock_create_page, mock_message_with_reply):
     """Test MessageResponse with long content triggers Telegraph."""
     from bot.settings import settings

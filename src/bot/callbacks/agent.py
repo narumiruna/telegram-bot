@@ -10,8 +10,8 @@ from agents import trace
 from aiogram.types import Message
 from aiogram.types import Update
 
+from bot.core.presentation import MessageResponse
 from bot.memory import RedisSession
-from bot.presentation import MessageResponse
 from bot.settings import settings
 
 from .utils import get_message_from_update

@@ -4,9 +4,9 @@ import markdown2
 from pydantic import BaseModel
 from pydantic import Field
 
+from bot.core.presentation import MessageResponse
 from bot.core.prompting import PromptSpec
 from bot.lazy import lazy_run
-from bot.presentation import MessageResponse
 from bot.telegraph_utils import async_create_page
 
 from .instructions import BASE_INSTRUCTIONS
