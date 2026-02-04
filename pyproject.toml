@@ -18,7 +18,6 @@ dependencies    = [
   "nest-asyncio>=1.6.0",
   "openai-agents[litellm]>=0.7.0",
   "pydantic-settings>=2.12.0",
-  "pypdf>=6.6.2",
   "python-dotenv>=1.2.1",
   "rich>=14.3.2",
   "telegraph>=2.2.0",
