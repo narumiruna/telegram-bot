@@ -8,7 +8,6 @@ from aiogram.types import Update
 from bot import chains
 from bot.presentation import MessageResponse
 
-from .base import BaseCallback
 from .utils import get_message_from_update
 from .utils import get_processed_message_text
 from .utils import safe_callback
@@ -16,7 +15,7 @@ from .utils import safe_callback
 logger = logging.getLogger(__name__)
 
 
-class TranslationCallback(BaseCallback):
+class TranslationCallback:
     def __init__(self, lang: str) -> None:
         self.lang = lang
 

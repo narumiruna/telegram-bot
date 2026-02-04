@@ -178,7 +178,6 @@ The bot can process uploaded files:
 src/bot/
 ├── callbacks/         # Telegram command handlers
 │   ├── agent.py      # Main AI agent with MCP integration
-│   ├── base.py       # Callback architecture (Protocol & BaseCallback)
 │   ├── utils.py      # Shared utilities (@safe_callback, message processing)
 │   ├── format.py     # Text formatting
 │   ├── summary.py    # Content summarization
@@ -259,7 +258,6 @@ git checkout -b feature/your-feature-name
 
 When creating new callbacks:
 - **Function-based** (preferred for simplicity): Use for stateless operations
-- **Class-based** (inherit from `BaseCallback`): Use when state management is needed
 - Always use `@safe_callback` decorator for error handling
 - Use `get_processed_message_text()` helper for message text extraction
 - Use `MessageResponse` for sending replies (handles long messages automatically)

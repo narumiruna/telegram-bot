@@ -1,5 +1,3 @@
-from .base import BaseCallback
-from .base import CallbackProtocol
 from .echo import echo_callback
 from .error import ErrorCallback
 from .file_notes import file_callback
