@@ -3,10 +3,8 @@ from functools import cache
 
 from agents import Agent
 from agents import Runner
-from aiogram.types import Message
-from pydantic import BaseModel
 
-from bot.core.presentation import MessageResponse
+from bot.core.article import Article
 from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
 from bot.utils.chunk import chunk_on_delimiter
@@ -52,27 +50,6 @@ Make only minimal revisions during final review.
 ALL output MUST be written entirely in {lang}.
 """,  # noqa: E501
 )
-
-
-class Article(BaseModel):
-    title: str
-    content: str
-
-    def __str__(self) -> str:
-        return "\n\n".join(
-            [
-                f"📝 {self.title}",
-                self.content,
-            ]
-        )
-
-    async def answer(self, message: Message, with_title: bool = True) -> None:
-        response = MessageResponse(
-            content=str(self),
-            title=self.title if with_title else None,
-            parse_mode=None,  # Plain text
-        )
-        await response.send(message)
 
 
 @cache
