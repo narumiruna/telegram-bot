@@ -20,6 +20,7 @@ from bot.callbacks import search_youtube_callback
 from bot.callbacks import summarize_callback
 from bot.callbacks.agent import AgentCallback
 from bot.callbacks.help import help_callback
+from bot.callbacks.writer import writer_callback
 
 from .agents import build_chat_agent
 from .settings import settings
@@ -80,6 +81,7 @@ async def run_bot() -> None:
         router.message.register(search_youtube_callback, Command("yt"), F.func(chat_filter))
         router.message.register(format_callback, Command("f"), F.func(chat_filter))
         router.message.register(echo_callback, Command("echo"))
+        router.message.register(writer_callback, Command("w"), F.func(chat_filter))
 
         # Register reply handler (for replies to bot messages)
         router.message.register(agent_callback.handle_reply, F.reply_to_message, F.func(chat_filter))
