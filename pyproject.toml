@@ -16,7 +16,6 @@ dependencies    = [
   "markdown2>=2.5.4",
   "mortgage>=1.0.5",
   "nest-asyncio>=1.6.0",
-  "openai>=2.16.0",
   "openai-agents[litellm]>=0.7.0",
   "playwright>=1.58.0",
   "pydantic-settings>=2.12.0",
