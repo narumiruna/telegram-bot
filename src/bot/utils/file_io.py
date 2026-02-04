@@ -3,8 +3,11 @@ from pathlib import Path
 from typing import Any
 
 
-def save_text(text: str, f: str) -> None:
-    with open(f, "w") as fp:
+def save_text(text: str, f: str | Path) -> None:
+    path = Path(f)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("w") as fp:
         fp.write(text)
 
 
@@ -17,6 +20,9 @@ def load_json(f: str | Path) -> Any:
         return json.load(fp)
 
 
-def save_json(data: Any, f: str) -> None:
-    with Path(f).open("w", encoding="utf-8") as fp:
+def save_json(data: Any, f: str | Path) -> None:
+    path = Path(f)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("w", encoding="utf-8") as fp:
         json.dump(data, fp, ensure_ascii=False, indent=4)
