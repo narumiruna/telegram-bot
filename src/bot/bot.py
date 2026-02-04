@@ -14,7 +14,6 @@ from bot.callbacks import ErrorCallback
 from bot.callbacks import TranslationCallback
 from bot.callbacks import echo_callback
 from bot.callbacks import file_callback
-from bot.callbacks import format_callback
 from bot.callbacks import query_ticker_callback
 from bot.callbacks import search_youtube_callback
 from bot.callbacks import summarize_callback
@@ -79,9 +78,9 @@ async def run_bot() -> None:
         router.message.register(TranslationCallback("English"), Command("en"), F.func(chat_filter))
         router.message.register(query_ticker_callback, Command("t"), F.func(chat_filter))
         router.message.register(search_youtube_callback, Command("yt"), F.func(chat_filter))
-        router.message.register(format_callback, Command("f"), F.func(chat_filter))
-        router.message.register(echo_callback, Command("echo"))
+        router.message.register(writer_callback, Command("f"), F.func(chat_filter))
         router.message.register(writer_callback, Command("w"), F.func(chat_filter))
+        router.message.register(echo_callback, Command("echo"))
 
         # Register reply handler (for replies to bot messages)
         router.message.register(agent_callback.handle_reply, F.reply_to_message, F.func(chat_filter))

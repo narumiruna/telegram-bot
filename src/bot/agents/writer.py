@@ -1,12 +1,15 @@
+import asyncio
 from functools import cache
 
 from agents import Agent
+from agents import Runner
 from aiogram.types import Message
 from pydantic import BaseModel
 
 from bot.core.presentation import MessageResponse
 from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
+from bot.utils.chunk import chunk_on_delimiter
 
 INSTRUCTIONS = PromptTemplate(
     template="""
@@ -80,3 +83,18 @@ def build_writer_agent(lang: str = "台灣正體中文") -> Agent:
         instructions=INSTRUCTIONS.render(lang=lang),
         output_type=Article,
     )
+
+
+async def _write(text: str) -> Article:
+    agent = build_writer_agent()
+    result = await Runner.run(agent, input=text)
+    return result.final_output_as(Article)
+
+
+async def write_article(text: str) -> Article:
+    chunks = chunk_on_delimiter(text)
+    if len(chunks) == 1:
+        return await _write(text)
+
+    articles = await asyncio.gather(*[_write(chunk) for chunk in chunks])
+    return await _write("\n\n".join([article.content for article in articles]))

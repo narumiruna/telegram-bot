@@ -1,4 +1,3 @@
-from .formatter import format
 from .notes import create_notes
 from .summary import summarize
 from .translation import translate
