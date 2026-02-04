@@ -28,5 +28,4 @@ async def writer_callback(update: Message | Update) -> None:
         result = await Runner.run(agent, input=message_text)
 
         article = result.final_output_as(Article)
-        response = article.to_message_response()
-        await response.send(message)
+        await article.answer(message)

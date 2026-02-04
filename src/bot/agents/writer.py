@@ -1,4 +1,5 @@
 from agents import Agent
+from aiogram.types import Message
 from pydantic import BaseModel
 
 from bot.core.presentation import MessageResponse
@@ -60,17 +61,13 @@ class Article(BaseModel):
             ]
         )
 
-    def to_message_response(self) -> MessageResponse:
-        """Convert article to a MessageResponse for sending.
-
-        Returns:
-            MessageResponse ready to be sent to Telegram
-        """
-        return MessageResponse(
+    async def answer(self, message: Message) -> None:
+        response = MessageResponse(
             content=str(self),
             title=self.title,
             parse_mode=None,  # Plain text
         )
+        await response.send(message)
 
 
 def build_writer_agent(lang: str = "台灣正體中文") -> Agent:
