@@ -4,7 +4,7 @@ from functools import cache
 from agents import Agent
 from agents import Runner
 
-from bot.core.presentation import MessageResponse
+from bot.core.message_response import MessageResponse
 from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
 from bot.utils.chunk import chunk_on_delimiter

@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from bot.core.presentation import MessageResponse
+from bot.core.message_response import MessageResponse
 
 
 @pytest.fixture
