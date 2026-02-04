@@ -1,5 +1,3 @@
-"""Centralized configuration using Pydantic Settings."""
-
 from __future__ import annotations
 
 from pydantic import Field
@@ -8,51 +6,48 @@ from pydantic_settings import SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables and .env."""
-
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-        env_ignore_empty=True,
         extra="ignore",
     )
 
     # Bot settings
-    bot_token: str = Field(default="", validation_alias="BOT_TOKEN")
-    bot_whitelist: str | None = Field(default=None, validation_alias="BOT_WHITELIST")
-    developer_chat_id: str | None = Field(default=None, validation_alias="DEVELOPER_CHAT_ID")
+    bot_token: str
+    bot_whitelist: str | None = Field(default=None)
+    developer_chat_id: str | None = Field(default=None)
 
     # Agent settings
-    agent_max_cache_size: int = Field(default=50, validation_alias="AGENT_MAX_CACHE_SIZE")
+    agent_max_cache_size: int = Field(default=50)
 
     # OpenAI / LLM settings
-    openai_model: str = Field(default="gpt-5-mini", validation_alias="OPENAI_MODEL")
-    openai_temperature: float = Field(default=0.0, validation_alias="OPENAI_TEMPERATURE")
-    azure_openai_api_key: str | None = Field(default=None, validation_alias="AZURE_OPENAI_API_KEY")
-    litellm_api_key: str | None = Field(default=None, validation_alias="LITELLM_API_KEY")
+    openai_model: str = Field(default="gpt-5-mini")
+    openai_temperature: float = Field(default=0.0)
+    azure_openai_api_key: str | None = Field(default=None)
+    litellm_api_key: str | None = Field(default=None)
 
     # Cache settings
-    cache_url: str = Field(default="memory://", validation_alias="CACHE_URL")
-    cache_ttl_seconds: int = Field(default=604800, validation_alias="CACHE_TTL_SECONDS")
+    cache_url: str = Field(default="memory://")
+    cache_ttl_seconds: int = Field(default=604800)
 
     # Observability settings
-    logfire_token: str | None = Field(default=None, validation_alias="LOGFIRE_TOKEN")
+    logfire_token: str | None = Field(default=None)
 
     # MCP settings
-    mcp_connect_timeout: int = Field(default=30, validation_alias="MCP_CONNECT_TIMEOUT")
-    mcp_cleanup_timeout: int = Field(default=10, validation_alias="MCP_CLEANUP_TIMEOUT")
-    mcp_server_timeout: int = Field(default=300, validation_alias="MCP_SERVER_TIMEOUT")
+    mcp_connect_timeout: int = Field(default=30)
+    mcp_cleanup_timeout: int = Field(default=10)
+    mcp_server_timeout: int = Field(default=300)
 
     # Shutdown settings
-    shutdown_timeout: int = Field(default=20, validation_alias="SHUTDOWN_TIMEOUT")
+    shutdown_timeout: int = Field(default=20)
 
     # UX settings
-    max_message_length: int = Field(default=1000, validation_alias="MAX_MESSAGE_LENGTH")
+    max_message_length: int = Field(default=1000)
 
     # Other integrations
-    firecrawl_api_key: str | None = Field(default=None, validation_alias="FIRECRAWL_API_KEY")
-    serpapi_api_key: str | None = Field(default=None, validation_alias="SERPAPI_API_KEY")
+    firecrawl_api_key: str | None = Field(default=None)
+    serpapi_api_key: str | None = Field(default=None)
 
     @property
     def chat_ids(self) -> list[int] | None:
@@ -61,4 +56,4 @@ class Settings(BaseSettings):
         return [int(chat_id.strip()) for chat_id in self.bot_whitelist.replace(" ", "").split(",")]
 
 
-settings = Settings()
+settings = Settings()  # ty:ignore[missing-argument]

@@ -1,12 +1,15 @@
 import asyncio
 import logging
+from collections.abc import Callable
 
 from aiogram import Bot
 from aiogram import Dispatcher
 from aiogram import F
 from aiogram import Router
 from aiogram.filters import Command
+from aiogram.types import Message
 
+from bot.agents import build_chat_agent
 from bot.callbacks import echo_callback
 from bot.callbacks import error_callback
 from bot.callbacks import file_callback
@@ -17,15 +20,13 @@ from bot.callbacks import summarize_callback
 from bot.callbacks.agent import AgentCallback
 from bot.callbacks.help import help_callback
 from bot.callbacks.writer import writer_callback
-
-from .agents import build_chat_agent
-from .settings import settings
-from .shutdown import ShutdownManager
+from bot.settings import settings
+from bot.shutdown import ShutdownManager
 
 logger = logging.getLogger(__name__)
 
 
-def get_chat_filter():
+def get_chat_filter() -> Callable[[Message], bool]:
     """Create a filter for allowed chats based on whitelist.
 
     Returns a filter function that checks if the chat_id is in the whitelist.
@@ -35,23 +36,16 @@ def get_chat_filter():
         logger.warning("No whitelist specified, allowing all chats")
         return lambda _: True
 
-    def chat_filter(message) -> bool:
+    def chat_filter(message: Message) -> bool:
         return message.chat.id in chat_ids
 
     return chat_filter
 
 
-def get_bot_token() -> str:
-    token = settings.bot_token
-    if not token:
-        raise ValueError("BOT_TOKEN is not set")
-    return token
-
-
 async def run_bot() -> None:
     async with build_chat_agent() as agent:
         # Create bot and dispatcher
-        bot = Bot(token=get_bot_token())
+        bot = Bot(token=settings.bot_token)
         dp = Dispatcher()
 
         # Create router for handlers
