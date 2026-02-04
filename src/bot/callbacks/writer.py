@@ -1,22 +1,24 @@
+import logging
+
 import logfire
 from agents import Runner
+from aiogram.filters import CommandObject
 from aiogram.types import Message
-from aiogram.types import Update
 
 from bot.agents.writer import Article
 from bot.agents.writer import build_writer_agent
-from bot.callbacks.utils import get_message_from_update
+from bot.callbacks.utils import check_message_type
 from bot.callbacks.utils import get_processed_message_text
 from bot.callbacks.utils import safe_callback
 
+logger = logging.getLogger(__name__)
+
 
 @safe_callback
-async def writer_callback(update: Message | Update) -> None:
-    with logfire.span("writer_callback"):
-        message = get_message_from_update(update)
-        if not message:
-            return
+async def writer_callback(message: Message, command: CommandObject) -> None:
+    check_message_type(message)
 
+    with logfire.span("writer_callback"):
         message_text, error = await get_processed_message_text(message, require_url=False)
         if error:
             await message.answer(error)

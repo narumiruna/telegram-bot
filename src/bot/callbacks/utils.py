@@ -261,3 +261,8 @@ def get_message_from_update(update_or_message: Message | Update | None) -> Messa
     if isinstance(update_or_message, Message):
         return update_or_message
     return None
+
+
+def check_message_type(message: Message) -> None:
+    if not isinstance(message, Message):
+        raise TypeError("Expected aiogram.types.Message instance")
