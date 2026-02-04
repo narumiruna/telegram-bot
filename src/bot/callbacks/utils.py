@@ -1,15 +1,46 @@
 import asyncio
 import logging
+import re
 from functools import wraps
 from typing import Any
 
 from aiogram.types import Message
 from aiogram.types import Update
 
-from bot.url_parser import parse_urls
 from bot.utils import load_url
 
 logger = logging.getLogger(__name__)
+
+
+def parse_url(s: str) -> str:
+    """Parse the first URL from the given string.
+
+    Args:
+        s: String that may contain URLs
+
+    Returns:
+        The first URL found in the string, or empty string if no URL found
+    """
+    url_pattern = r"https?://[^\s]+"
+
+    match = re.search(url_pattern, s)
+    if match:
+        return match.group(0)
+
+    return ""
+
+
+def parse_urls(s: str) -> list[str]:
+    """Parse all URLs from the given string.
+
+    Args:
+        s: String that may contain URLs
+
+    Returns:
+        List of URLs found in the string
+    """
+    url_pattern = r"https?://[^\s]+"
+    return re.findall(url_pattern, s)
 
 
 def get_user_display_name(message: Message) -> str | None:

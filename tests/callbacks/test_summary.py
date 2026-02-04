@@ -59,7 +59,7 @@ class TestSummarizeCallback:
     @patch("bot.callbacks.summary.chains.summarize")
     @patch("bot.callbacks.summary.get_processed_message_text")
     async def test_summarize_callback_success(self, mock_get_processed, mock_summarize):
-        from bot.presentation import MessageResponse
+        from bot.core.presentation import MessageResponse
 
         mock_get_processed.return_value = ("Content from URL to summarize", None)
 

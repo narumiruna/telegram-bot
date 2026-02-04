@@ -4,7 +4,7 @@ from dotenv import find_dotenv
 from dotenv import load_dotenv
 
 from .bot import run_bot
-from .observability import configure_logging
+from .utils.observability import configure_logging
 
 
 def main() -> None:

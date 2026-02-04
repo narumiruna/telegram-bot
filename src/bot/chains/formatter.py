@@ -5,9 +5,9 @@ from textwrap import dedent
 from agents import trace
 from pydantic import BaseModel
 
+from bot.core.presentation import MessageResponse
 from bot.core.prompting import PromptSpec
 from bot.lazy import lazy_run
-from bot.presentation import MessageResponse
 
 from .instructions import BASE_INSTRUCTIONS
 from .notes import create_notes_from_chunk

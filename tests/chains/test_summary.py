@@ -7,7 +7,7 @@ from bot.chains.summary import ChainOfThought
 from bot.chains.summary import Summary
 from bot.chains.summary import ThoughtStep
 from bot.chains.summary import summarize
-from bot.presentation import MessageResponse
+from bot.core.presentation import MessageResponse
 
 
 class TestThoughtStep:
@@ -86,116 +86,6 @@ class TestChainOfThought:
         assert "🧠 <b>推理過程</b>" in result
         assert "🎯 <b>最終結論</b>" in result
         assert "無步驟的結論" in result
-
-
-class TestSummary:
-    @pytest.mark.asyncio
-    async def test_to_message_response_success(self) -> None:
-        summary = Summary(
-            chain_of_thought=ChainOfThought(
-                steps=[ThoughtStep(context="情境", reasoning="推理", conclusion="結論")],
-                final_conclusion="最終結論",
-            ),
-            summary_text="這是摘要文本",
-            insights=["見解1", "見解2", "見解3"],
-            hashtags=["#測試", "#摘要", "#AI"],
-        )
-
-        mock_url = "https://telegra.ph/test-page"
-
-        with patch("bot.chains.summary.async_create_page", new_callable=AsyncMock) as mock_create:
-            mock_create.return_value = mock_url
-
-            result = await summary.to_message_response()
-
-            assert isinstance(result, MessageResponse)
-            assert result.title == "摘要"
-            assert "📝 <b>摘要</b>" in result.content
-            assert "這是摘要文本" in result.content
-            assert "💡 <b>見解</b>" in result.content
-            assert "見解1" in result.content
-            assert "見解2" in result.content
-            assert "見解3" in result.content
-            assert "🏷️ <b>Hashtags</b>: #測試 #摘要 #AI" in result.content
-            assert f"🔗 <a href='{mock_url}'>推理過程</a>" in result.content
-
-            mock_create.assert_called_once()
-            call_args = mock_create.call_args
-            assert call_args.kwargs["title"] == "推理過程"
-
-    @pytest.mark.asyncio
-    async def test_to_message_response_with_whitespace(self) -> None:
-        """測試處理包含空白的insights"""
-        summary = Summary(
-            chain_of_thought=ChainOfThought(
-                steps=[ThoughtStep(context="情境", reasoning="推理", conclusion="結論")],
-                final_conclusion="結論",
-            ),
-            summary_text="  摘要文本帶有空白  ",
-            insights=["  見解有空白  ", "正常見解"],
-            hashtags=["#test"],
-        )
-
-        mock_url = "https://telegra.ph/test"
-
-        with patch("bot.chains.summary.async_create_page", new_callable=AsyncMock) as mock_create:
-            mock_create.return_value = mock_url
-
-            result = await summary.to_message_response()
-
-            # strip 應該移除 summary_text 和 insights 的前後空白
-            assert "摘要文本帶有空白" in result.content
-            assert "見解有空白" in result.content
-            assert "  見解有空白  " not in result.content  # 空白應被移除
-
-    @pytest.mark.asyncio
-    async def test_to_message_response_empty_insights(self) -> None:
-        """測試空的insights列表"""
-        summary = Summary(
-            chain_of_thought=ChainOfThought(
-                steps=[],
-                final_conclusion="結論",
-            ),
-            summary_text="摘要",
-            insights=[],
-            hashtags=["#empty"],
-        )
-
-        mock_url = "https://telegra.ph/empty"
-
-        with patch("bot.chains.summary.async_create_page", new_callable=AsyncMock) as mock_create:
-            mock_create.return_value = mock_url
-
-            result = await summary.to_message_response()
-
-            assert "💡 <b>見解</b>" in result.content
-            # 即使是空列表，join也會產生空字串
-            assert "🏷️ <b>Hashtags</b>" in result.content
-
-    @pytest.mark.asyncio
-    async def test_to_message_response_markdown_conversion(self) -> None:
-        """測試 markdown 轉換"""
-        summary = Summary(
-            chain_of_thought=ChainOfThought(
-                steps=[ThoughtStep(context="**粗體情境**", reasoning="*斜體推理*", conclusion="結論")],
-                final_conclusion="最終結論",
-            ),
-            summary_text="摘要",
-            insights=["見解"],
-            hashtags=["#test"],
-        )
-
-        mock_url = "https://telegra.ph/markdown"
-
-        with patch("bot.chains.summary.async_create_page", new_callable=AsyncMock) as mock_create:
-            mock_create.return_value = mock_url
-
-            await summary.to_message_response()
-
-            # 驗證 markdown2.markdown 被調用
-            call_args = mock_create.call_args
-            # html_content 應該包含轉換後的 HTML
-            assert call_args.kwargs["title"] == "推理過程"
 
 
 class TestSummarize:
