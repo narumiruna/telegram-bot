@@ -43,7 +43,6 @@ dev = [
   "toml>=0.10.2",
   "ty>=0.0.14",
 ]
-mlx = ["mlx-whisper>=0.4.1"]
 
 [build-system]
 requires      = ["hatchling"]
