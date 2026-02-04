@@ -8,10 +8,10 @@ from pydantic import BaseModel
 from bot.core.presentation import MessageResponse
 from bot.core.prompting import PromptSpec
 from bot.lazy import lazy_run
+from bot.utils.chunk import chunk_on_delimiter
 
 from .instructions import BASE_INSTRUCTIONS
 from .notes import create_notes_from_chunk
-from .utils import chunk_on_delimiter
 
 logger = logging.getLogger(__name__)
 

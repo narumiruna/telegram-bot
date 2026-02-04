@@ -6,9 +6,9 @@ from pydantic import BaseModel
 
 from bot.core.prompting import PromptSpec
 from bot.lazy import lazy_run
+from bot.utils.chunk import chunk_on_delimiter
 
 from .instructions import BASE_INSTRUCTIONS
-from .utils import chunk_on_delimiter
 
 logger = logging.getLogger(__name__)
 

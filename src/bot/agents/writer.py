@@ -1,3 +1,5 @@
+from functools import cache
+
 from agents import Agent
 from aiogram.types import Message
 from pydantic import BaseModel
@@ -70,6 +72,7 @@ class Article(BaseModel):
         await response.send(message)
 
 
+@cache
 def build_writer_agent(lang: str = "台灣正體中文") -> Agent:
     return Agent(
         "writer-agent",
