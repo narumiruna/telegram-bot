@@ -66,10 +66,10 @@ class Article(BaseModel):
             ]
         )
 
-    async def answer(self, message: Message) -> None:
+    async def answer(self, message: Message, with_title: bool = True) -> None:
         response = MessageResponse(
             content=str(self),
-            title=self.title,
+            title=self.title if with_title else None,
             parse_mode=None,  # Plain text
         )
         await response.send(message)
