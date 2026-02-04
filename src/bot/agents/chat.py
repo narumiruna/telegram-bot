@@ -16,7 +16,7 @@ from bot.settings import settings
 
 # from bot.tools import execute_command
 # from bot.tools import query_rate_history
-from bot.tools import web_search
+# from bot.tools import web_search
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +154,7 @@ async def build_chat_agent() -> AsyncIterator[Agent]:
             tools=[
                 # query_rate_history,
                 # execute_command,
-                web_search,
+                # web_search,
             ],
             mcp_servers=manager.active_servers,
         )
