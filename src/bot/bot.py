@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 import logging
 
@@ -8,10 +6,9 @@ from aiogram import Dispatcher
 from aiogram import F
 from aiogram import Router
 from aiogram.filters import Command
-from aiogram.types import ErrorEvent
 
-from bot.callbacks import ErrorCallback
 from bot.callbacks import echo_callback
+from bot.callbacks import error_callback
 from bot.callbacks import file_callback
 from bot.callbacks import generate_translation_callback
 from bot.callbacks import query_ticker_callback
@@ -89,11 +86,7 @@ async def run_bot() -> None:
         router.message.register(file_callback, F.document, F.func(chat_filter))
 
         # Register error handler
-        error_callback = ErrorCallback(settings.developer_chat_id)
-
-        @router.error()
-        async def error_handler(event: ErrorEvent) -> None:
-            await error_callback(event, bot)
+        router.errors.register(error_callback)
 
         # Include router in dispatcher
         dp.include_router(router)
