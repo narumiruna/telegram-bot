@@ -6,11 +6,10 @@ from aiogram.types import Message
 from aiogram.types import Update
 
 from bot import chains
+from bot.callbacks.utils import get_message_from_update
+from bot.callbacks.utils import get_processed_message_text
+from bot.callbacks.utils import safe_callback
 from bot.core.presentation import MessageResponse
-
-from .utils import get_message_from_update
-from .utils import get_processed_message_text
-from .utils import safe_callback
 
 logger = logging.getLogger(__name__)
 
