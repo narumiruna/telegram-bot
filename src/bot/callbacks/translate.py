@@ -26,6 +26,6 @@ def generate_translation_callback(lang: str) -> Callable[[Message, CommandObject
                 return
 
             translated_article = await translate(message_text, lang=lang)
-            await translated_article.answer(message, with_title=False)
+            await translated_article.answer(message)
 
     return callback

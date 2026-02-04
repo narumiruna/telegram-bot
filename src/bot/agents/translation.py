@@ -4,7 +4,7 @@ from typing import Final
 from agents import Agent
 from agents import Runner
 
-from bot.core.article import Article
+from bot.core.presentation import MessageResponse
 from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
 
@@ -60,11 +60,11 @@ def build_translation_agent(lang: str = DEFAULT_TARGET_LANG) -> Agent:
         "translation-agent",
         model=get_openai_model(),
         instructions=INSTRUCTIONS.render(lang=lang),
-        output_type=Article,
+        output_type=MessageResponse,
     )
 
 
-async def translate(text: str, lang: str = DEFAULT_TARGET_LANG) -> Article:
+async def translate(text: str, lang: str = DEFAULT_TARGET_LANG) -> MessageResponse:
     agent = build_translation_agent(lang=lang)
     result = await Runner.run(agent, input=text)
-    return result.final_output_as(Article)
+    return result.final_output_as(MessageResponse)

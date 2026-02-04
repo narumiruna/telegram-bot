@@ -134,12 +134,8 @@ class AgentCallback:
             input_items = input_items[-self.max_cache_size :]
 
         # Send response using MessageResponse for consistency and Telegraph fallback
-        response = MessageResponse(
-            content=result.final_output,
-            title="Agent Response",
-            parse_mode="HTML",  # Agent output may contain HTML formatting
-        )
-        new_message = await response.send(message)
+        response = MessageResponse(content=result.final_output)
+        new_message = await response.answer(message)
         new_key = self._make_cache_key(new_message.message_id, message.chat.id)
 
         # Save conversation history to cache with TTL

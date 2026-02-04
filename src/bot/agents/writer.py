@@ -4,7 +4,7 @@ from functools import cache
 from agents import Agent
 from agents import Runner
 
-from bot.core.article import Article
+from bot.core.presentation import MessageResponse
 from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
 from bot.utils.chunk import chunk_on_delimiter
@@ -58,17 +58,17 @@ def build_writer_agent(lang: str = "台灣正體中文") -> Agent:
         "writer-agent",
         model=get_openai_model(),
         instructions=INSTRUCTIONS.render(lang=lang),
-        output_type=Article,
+        output_type=MessageResponse,
     )
 
 
-async def _write(text: str) -> Article:
+async def _write(text: str) -> MessageResponse:
     agent = build_writer_agent()
     result = await Runner.run(agent, input=text)
-    return result.final_output_as(Article)
+    return result.final_output_as(MessageResponse)
 
 
-async def write_article(text: str) -> Article:
+async def write_article(text: str) -> MessageResponse:
     chunks = chunk_on_delimiter(text)
     if len(chunks) == 1:
         return await _write(text)
