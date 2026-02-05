@@ -27,4 +27,6 @@ async def summarize_callback(message: Message, command: CommandObject) -> None:
             return
 
         article = await summarize(text)
+        if not article.title:
+            article.title = "摘要"
         await article.answer(message)
