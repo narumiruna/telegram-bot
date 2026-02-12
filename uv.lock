@@ -1028,7 +1028,7 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.16.2"
+version = "0.16.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "charset-normalizer" },
@@ -1044,7 +1044,7 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2b/8a/839f9844cfb0f3c481b46cc3e3af8ec8d79380de039ddb47bdac5925e8d3/kabigon-0.16.2-py3-none-any.whl", hash = "sha256:6546e69954d975c96a6caa0799f5c133578eb55a30b3fe36c802be81ba2d7ddd", size = 25782, upload-time = "2026-02-12T22:55:04.343Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/2c/519da7b3e39382bf0ca45c25f004de7ed9d08545e1d96d2e9f67a5196934/kabigon-0.16.3-py3-none-any.whl", hash = "sha256:6198609d5d07b38aff6e9da61c127bc440f776ca6f148181237d2720b52b6224", size = 25782, upload-time = "2026-02-12T23:26:19.709Z" },
 ]
 
 [[package]]
