@@ -5,6 +5,7 @@ from html.parser import HTMLParser
 from typing import Any
 
 import telegraph
+from tenacity import retry
 
 
 @functools.cache
@@ -125,6 +126,7 @@ def sanitize_telegraph_html(html_content: str) -> str:
     return parser.get_html()
 
 
+@retry
 def create_page(title: str, **kwargs: Any) -> str:
     """Create a Telegraph page synchronously.
 
