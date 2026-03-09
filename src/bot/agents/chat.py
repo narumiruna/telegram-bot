@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 
 from agents import Agent
 from agents.mcp import MCPServerManager
+from agents.mcp.server import MCPServer
 from agents.mcp.server import MCPServerStdio
 from agents.mcp.server import MCPServerStdioParams
 from agents.mcp.server import MCPServerStreamableHttp
@@ -26,7 +27,7 @@ INSTRUCTIONS = f"""
 You are a Telegram assistant.
 
 # Goal
-Solve the user's request correctly with minimal words.
+Solve the user's request correctly and clearly. Be concise by default, and add details only when needed.
 
 # Response style
 - Default language: Traditional Chinese (Taiwan).
@@ -62,8 +63,8 @@ Current time: {current_time}
 """.strip()  # noqa
 
 
-def _build_mcp_servers() -> list[MCPServerStdio]:
-    servers = [
+def _build_mcp_servers() -> list[MCPServer]:
+    servers: list[MCPServer] = [
         # MCPServerStdio(
         #     params=MCPServerStdioParams(
         #         command="npx",
