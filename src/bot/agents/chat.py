@@ -81,14 +81,6 @@ def _build_mcp_servers() -> list[MCPServer]:
             name="yfmcp",
             client_session_timeout_seconds=settings.mcp_server_timeout,
         ),
-        # MCPServerStdio(
-        #     params=MCPServerStdioParams(
-        #         command="uvx",
-        #         args=["gurume@latest", "mcp"],
-        #     ),
-        #     name="gurume",
-        #     client_session_timeout_seconds=settings.mcp_server_timeout,
-        # ),
     ]
 
     if settings.firecrawl_api_key:

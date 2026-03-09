@@ -6,20 +6,20 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.0
+    rev: v0.15.5
     hooks:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.29
+    rev: 0.10.9
     hooks:
       - id: uv-lock
   - repo: https://github.com/narumiruna/ty-pre-commit
-    rev: v0.0.14
+    rev: v0.0.21
     hooks:
       - id: ty-check
   - repo: https://github.com/tombi-toml/tombi-pre-commit
-    rev: v0.7.26
+    rev: v0.9.3
     hooks:
       - id: tombi-format
