@@ -65,14 +65,14 @@ Current time: {current_time}
 
 def _build_mcp_servers() -> list[MCPServer]:
     servers: list[MCPServer] = [
-        # MCPServerStdio(
-        #     params=MCPServerStdioParams(
-        #         command="npx",
-        #         args=["-y", "@playwright/mcp@latest"],
-        #     ),
-        #     name="playwright",
-        #     client_session_timeout_seconds=settings.mcp_server_timeout,
-        # ),
+        MCPServerStdio(
+            params=MCPServerStdioParams(
+                command="npx",
+                args=["-y", "@playwright/mcp@latest"],
+            ),
+            name="playwright",
+            client_session_timeout_seconds=settings.mcp_server_timeout,
+        ),
         MCPServerStdio(
             params=MCPServerStdioParams(
                 command="uvx",
