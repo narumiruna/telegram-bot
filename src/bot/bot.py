@@ -16,6 +16,8 @@ from bot.callbacks import file_callback
 from bot.callbacks import generate_translation_callback
 from bot.callbacks import query_ticker_callback
 from bot.callbacks import search_youtube_callback
+from bot.callbacks import set_model_callback
+from bot.callbacks import show_model_callback
 from bot.callbacks import summarize_callback
 from bot.callbacks.agent import AgentCallback
 from bot.callbacks.help import help_callback
@@ -62,6 +64,8 @@ async def run_bot() -> None:
         shutdown.install_signal_handlers()
 
         # Register command handlers
+        router.message.register(show_model_callback, Command("model"), F.func(chat_filter))
+        router.message.register(set_model_callback, Command("setmodel"), F.func(chat_filter))
         router.message.register(agent_callback.handle_command, Command("a"), F.func(chat_filter))
         router.message.register(agent_callback.handle_command, Command("gpt"), F.func(chat_filter))
         router.message.register(help_callback, Command("help"), F.func(chat_filter))
