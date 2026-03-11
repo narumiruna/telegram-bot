@@ -46,7 +46,7 @@ def get_openai_model(api_type: Literal["responses", "chat_completions"] = "respo
 
 def get_openai_model_settings() -> ModelSettings:
     return ModelSettings(
-        # temperature=settings.openai_temperature,
+        temperature=settings.openai_temperature,
         tool_choice="auto",
-        prompt_cache_retention="24h",
+        # prompt_cache_retention="24h",
     )
