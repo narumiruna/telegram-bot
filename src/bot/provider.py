@@ -4,7 +4,6 @@ from functools import cache
 from typing import Literal
 
 from agents import Model
-from agents import ModelSettings
 from agents import OpenAIChatCompletionsModel
 from agents import OpenAIResponsesModel
 from agents.extensions.models.litellm_model import LitellmModel
@@ -42,11 +41,3 @@ def get_openai_model(api_type: Literal["responses", "chat_completions"] = "respo
             return OpenAIChatCompletionsModel(model_name, openai_client=client)
         case _:
             raise ValueError(f"Invalid API type: {api_type}")
-
-
-def get_openai_model_settings() -> ModelSettings:
-    return ModelSettings(
-        temperature=settings.openai_temperature,
-        tool_choice="auto",
-        # prompt_cache_retention="24h",
-    )

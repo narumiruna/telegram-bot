@@ -6,7 +6,6 @@ from agents.mcp import MCPServerManager
 from agents.mcp import MCPServerStdio
 
 from bot.provider import get_openai_model
-from bot.provider import get_openai_model_settings
 
 
 async def build_filesystem_agent() -> AsyncIterator[Agent]:
@@ -23,7 +22,6 @@ async def build_filesystem_agent() -> AsyncIterator[Agent]:
         agent = Agent(
             "example-agent",
             model=get_openai_model(),
-            model_settings=get_openai_model_settings(),
             mcp_servers=manager.active_servers,
         )
         yield agent

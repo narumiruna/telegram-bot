@@ -6,7 +6,6 @@ from agents import Runner
 from bot.core import MessageResponse
 from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
-from bot.provider import get_openai_model_settings
 from bot.utils.chunk import chunk_on_delimiter
 
 INSTRUCTIONS = PromptTemplate(
@@ -63,7 +62,6 @@ def build_summary_agent(lang: str = "台灣正體中文") -> Agent:
     return Agent(
         "summary-agent",
         model=get_openai_model(),
-        model_settings=get_openai_model_settings(),
         instructions=INSTRUCTIONS.render(lang=lang),
         output_type=MessageResponse,
     )
