@@ -7,6 +7,7 @@ from agents import Runner
 from bot.core.message_response import MessageResponse
 from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
+from bot.provider import get_openai_model_settings
 
 DEFAULT_TARGET_LANG: Final[str] = "台灣正體中文"
 INSTRUCTIONS = PromptTemplate(
@@ -59,6 +60,7 @@ def build_translation_agent(lang: str = DEFAULT_TARGET_LANG) -> Agent:
     return Agent(
         "translation-agent",
         model=get_openai_model(),
+        model_settings=get_openai_model_settings(),
         instructions=INSTRUCTIONS.render(lang=lang),
         output_type=MessageResponse,
     )

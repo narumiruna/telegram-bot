@@ -13,6 +13,7 @@ from agents.mcp.server import MCPServerStreamableHttp
 from agents.mcp.server import MCPServerStreamableHttpParams
 
 from bot.provider import get_openai_model
+from bot.provider import get_openai_model_settings
 from bot.settings import settings
 
 # from bot.tools import execute_command
@@ -125,6 +126,7 @@ async def build_chat_agent() -> AsyncIterator[Agent]:
             name="chat-agent",
             instructions=INSTRUCTIONS,
             model=get_openai_model(),
+            model_settings=get_openai_model_settings(),
             tools=[
                 # query_rate_history,
                 # execute_command,
