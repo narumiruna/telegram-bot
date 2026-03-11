@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     agent_max_cache_size: int = Field(default=50)
 
     # OpenAI / LLM settings
-    openai_model: str = Field(default="gpt-5-mini")
+    openai_model: str = Field(default="gpt-5.4")
     openai_temperature: float = Field(default=0.0)
     azure_openai_api_key: str | None = Field(default=None)
     litellm_api_key: str | None = Field(default=None)
