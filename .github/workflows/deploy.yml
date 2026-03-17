@@ -41,6 +41,7 @@ jobs:
           AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}
           AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}
           OPENAI_API_VERSION=${{ vars.OPENAI_API_VERSION }}
+          OPENAI_MODEL=${{ vars.OPENAI_MODEL }}
           LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }}
           LOGFIRE_ENVIRONMENT=prod
           FFMPEG_PATH=/opt/homebrew/bin/ffmpeg
