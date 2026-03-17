@@ -11,8 +11,8 @@ from bot.utils.chunk import chunk_on_delimiter
 INSTRUCTIONS = PromptTemplate(
     template="""
 Extract, reorganize, and translate the input text into {lang} as a readable blog post.
-Do not fabricate, infer, or add any information beyond the input.
-Preserve all important points from the input while improving clarity and flow.
+Do not add new facts, entities, events, or claims beyond the input.
+Preserve all materially important points from the input while improving clarity and flow.
 
 Generate a clear, specific blog post title in {lang} that reflects the reorganized key points and important content.
 Do not use generic titles such as “Article” or “Summary”.
@@ -32,7 +32,7 @@ The output must follow this order:
 1) Title line in {lang}
 2) Lead paragraph in {lang}
 3) Body paragraphs in {lang}, arranged in logical order
-4) Closing paragraph in {lang}
+4) Closing paragraph in {lang} that only restates points already present in the body
 Do not use emojis, bullet markers, numbered list markers, or section labels.
 Maintain smooth transitions between paragraphs and keep the full post cohesive.
 
@@ -49,7 +49,7 @@ Ensure all content is translated into {lang} and written in a professional, neut
 Ensure every requirement above is satisfied.
 Make only minimal revisions during final review.
 
-ALL output MUST be written entirely in {lang}.
+ALL output MUST be written entirely in {lang}, except the exact special-case literal "[No content provided]".
 """,  # noqa: E501
 )
 
