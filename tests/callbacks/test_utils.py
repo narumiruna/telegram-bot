@@ -283,6 +283,60 @@ class TestGetProcessedMessageText:
         assert error is None
         assert mock_load_url.call_count == 3
 
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_include_reply_to_message_true_includes_reply_text(self, mock_parse_urls):
+        mock_parse_urls.return_value = []
+
+        reply_message = Mock(spec=Message)
+        reply_message.text = "Original message"
+        reply_message.caption = None
+        reply_message.from_user = self.user
+        reply_message.reply_to_message = None
+
+        message = Mock(spec=Message)
+        message.text = "Reply message"
+        message.caption = None
+        message.from_user = self.user
+        message.reply_to_message = reply_message
+
+        text, error = await get_processed_message_text(
+            message,
+            require_url=False,
+            include_reply_to_message=True,
+        )
+
+        assert text == "Original message\n\nReply message"
+        assert error is None
+        mock_parse_urls.assert_called_once_with("Original message\n\nReply message")
+
+    @pytest.mark.asyncio
+    @patch("bot.callbacks.utils.parse_urls")
+    async def test_include_reply_to_message_false_excludes_reply_text(self, mock_parse_urls):
+        mock_parse_urls.return_value = []
+
+        reply_message = Mock(spec=Message)
+        reply_message.text = "Original message"
+        reply_message.caption = None
+        reply_message.from_user = self.user
+        reply_message.reply_to_message = None
+
+        message = Mock(spec=Message)
+        message.text = "Reply message"
+        message.caption = None
+        message.from_user = self.user
+        message.reply_to_message = reply_message
+
+        text, error = await get_processed_message_text(
+            message,
+            require_url=False,
+            include_reply_to_message=False,
+        )
+
+        assert text == "Reply message"
+        assert error is None
+        mock_parse_urls.assert_called_once_with("Reply message")
+
 
 class TestSafeCallback:
     def setup_method(self):
