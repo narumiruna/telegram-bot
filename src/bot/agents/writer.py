@@ -30,10 +30,15 @@ Structure rules:
 
 The output must follow this order:
 1) Title line in {lang}
-2) Lead paragraph in {lang}
-3) Body paragraphs in {lang}, arranged in logical order
-4) Closing paragraph in {lang} that only restates points already present in the body
-Do not use emojis, bullet markers, numbered list markers, or section labels.
+2) One or more content sections in {lang}
+Each content section must follow all rules below:
+- The first line must be a standalone section heading in this exact pattern: <emoji> <section title>
+- The section title must be specific and written in {lang}
+- The section body must start on the next line and may contain one or more paragraphs
+- Use section heading lines only for section boundaries; do not add extra heading lines inside the same section
+- Do not use Markdown, HTML, bullet markers, or numbered list markers as section labels
+The final content section must act as the closing section and only restate points already present in earlier sections.
+The title line itself must not include an emoji.
 Maintain smooth transitions between paragraphs and keep the full post cohesive.
 
 Special cases:
@@ -43,7 +48,7 @@ If the input text is empty, output exactly:
 
 Final checks:
 
-Ensure the output is a complete, readable blog post with title, lead, body, and closing.
+Ensure the output is a complete, readable blog post with a title and coherent sections, including opening, body, and closing coverage.
 Ensure all important points from the input are preserved without adding new facts.
 Ensure all content is translated into {lang} and written in a professional, neutral tone.
 Ensure every requirement above is satisfied.
