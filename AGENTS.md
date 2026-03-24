@@ -43,6 +43,3 @@
 - Local configuration lives in `.env` (see `README.md` for required keys).
 - MCP servers are configured in `config/*.json`.
 - Keep secrets out of git history; use environment variables for tokens.
-
-## Agent-Specific Notes
-- Review `CONSTITUTION.md` for non-negotiable constraints that apply to all changes.
