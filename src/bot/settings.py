@@ -33,9 +33,6 @@ class Settings(BaseSettings):
 
     # Observability settings
     logfire_token: str | None = Field(default=None)
-    log_level: str = Field(default="INFO")
-    log_json: bool = Field(default=False)
-    log_include_message_text: bool = Field(default=False)
 
     # MCP settings
     mcp_connect_timeout: int = Field(default=30)

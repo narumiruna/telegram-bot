@@ -13,8 +13,6 @@ from bot.callbacks.utils import get_processed_message_text
 from bot.callbacks.utils import get_user_display_name
 from bot.callbacks.utils import safe_callback
 from bot.callbacks.utils import strip_command
-from bot.settings import settings
-from bot.utils.observability import get_log_context
 
 
 @pytest.mark.parametrize(
@@ -119,20 +117,6 @@ class TestGetMessageText:
 
         result = get_message_text(message)
         assert result == ""
-
-    def test_get_message_text_does_not_log_full_text_by_default(self, caplog, monkeypatch):
-        monkeypatch.setattr(settings, "log_include_message_text", False)
-        message = Mock(spec=Message)
-        message.text = "Sensitive content"
-        message.caption = None
-        message.from_user = self.user
-        message.reply_to_message = None
-
-        with caplog.at_level("INFO"):
-            result = get_message_text(message)
-
-        assert result == "Sensitive content"
-        assert "Sensitive content" not in caplog.text
 
 
 class TestGetMessageKey:
@@ -406,24 +390,3 @@ class TestSafeCallback:
 
         # Verify answer was attempted
         mock_message.answer.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_context_is_cleared_after_callback(self):
-        mock_message = Mock(spec=Message)
-        mock_message.message_id = 99
-        mock_message.chat = Mock()
-        mock_message.chat.id = 456
-        mock_message.from_user = Mock()
-        mock_message.from_user.id = 123
-        mock_message.answer = AsyncMock()
-
-        @safe_callback
-        async def test_callback(message):
-            assert get_log_context()["chat_id"] == "456"
-            assert get_log_context()["user_id"] == "123"
-            assert get_log_context()["handler"] == "test_callback"
-            return "success"
-
-        result = await test_callback(mock_message)
-        assert result == "success"
-        assert get_log_context() == {}
