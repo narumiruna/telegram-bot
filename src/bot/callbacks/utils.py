@@ -7,7 +7,11 @@ from typing import Any
 from aiogram.types import Message
 from aiogram.types import Update
 
+from bot.settings import settings
 from bot.utils import load_url
+from bot.utils.observability import bind_log_context
+from bot.utils.observability import clear_log_context
+from bot.utils.observability import extract_message_log_context
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +94,14 @@ def get_message_text(
             if reply_to_message_text:
                 message_text = f"{reply_to_message_text}\n\n{message_text}"
 
-    logger.info("Message text: %s", message_text)
+    if settings.log_include_message_text:
+        logger.info("Message text: %s", message_text)
+    else:
+        logger.info(
+            "Message text parsed (length=%s, has_reply=%s)",
+            len(message_text),
+            bool(getattr(message, "reply_to_message", None)),
+        )
     return message_text
 
 
@@ -220,6 +231,9 @@ def safe_callback(callback_func):
     @wraps(callback_func)
     async def wrapper(*args, **kwargs):
         message = _extract_message(args)
+        context = {"handler": callback_func.__name__}
+        context.update(extract_message_log_context(message))
+        token = bind_log_context(**context)
 
         try:
             return await callback_func(*args, **kwargs)
@@ -246,6 +260,8 @@ def safe_callback(callback_func):
 
             # 重新拋出例外讓全域錯誤處理器處理
             raise
+        finally:
+            clear_log_context(token)
 
     return wrapper
 
