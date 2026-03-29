@@ -57,11 +57,6 @@
 - Apply relevant entries explicitly in recommendations, implementation choices, and tradeoff decisions.
 - If the user expresses a stable preference, add or update an entry in the same session; each entry MUST capture only a **concrete, reusable preference signal** that should affect future decisions.
 
-## TDD
-
-- Read `docs/TDD_POLICY.md` at session start; it MUST NOT be assumed to be auto-loaded.
-- Apply rules strictly during implementation and code changes.
-
 ## Changelog
 
 - Append ONE line to the end of `docs/CHANGELOG.md`.
