@@ -276,17 +276,19 @@ async def test_handle_command_no_message(mock_redis_session):
 
 
 @patch("bot.callbacks.agent.trace")
-async def test_handle_reply_valid_bot_reply(mock_trace, mock_redis_session):
+async def test_handle_reply_valid_reply_to_this_bot(mock_trace, mock_redis_session):
     mock_agent = Mock()
 
     mock_bot_user = Mock()
     mock_bot_user.is_bot = True
+    mock_bot_user.id = 42
 
     mock_reply_message = Mock()
     mock_reply_message.from_user = mock_bot_user
 
     mock_message = Mock()
     mock_message.reply_to_message = mock_reply_message
+    mock_message.bot.id = 42
 
     mock_update = Mock()
     mock_update.message = mock_message
@@ -300,17 +302,44 @@ async def test_handle_reply_valid_bot_reply(mock_trace, mock_redis_session):
     mock_trace.assert_called_once_with("handle_reply")
 
 
+async def test_handle_reply_to_other_bot_is_ignored(mock_redis_session):
+    mock_agent = Mock()
+
+    mock_other_bot_user = Mock()
+    mock_other_bot_user.is_bot = True
+    mock_other_bot_user.id = 999
+
+    mock_reply_message = Mock()
+    mock_reply_message.from_user = mock_other_bot_user
+
+    mock_message = Mock()
+    mock_message.reply_to_message = mock_reply_message
+    mock_message.bot.id = 42
+
+    mock_update = Mock()
+    mock_update.message = mock_message
+
+    callback = AgentCallback(mock_agent)
+    callback.handle_message = AsyncMock()  # type: ignore[assignment]
+
+    await callback.handle_reply(mock_update, None)
+
+    callback.handle_message.assert_not_called()  # type: ignore
+
+
 async def test_handle_reply_not_bot_reply(mock_redis_session):
     mock_agent = Mock()
 
     mock_human_user = Mock()
     mock_human_user.is_bot = False
+    mock_human_user.id = 123
 
     mock_reply_message = Mock()
     mock_reply_message.from_user = mock_human_user
 
     mock_message = Mock()
     mock_message.reply_to_message = mock_reply_message
+    mock_message.bot.id = 42
 
     mock_update = Mock()
     mock_update.message = mock_message
