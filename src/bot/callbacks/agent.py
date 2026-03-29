@@ -167,11 +167,12 @@ class AgentCallback:
         if not message:
             return
 
-        # Check if this is a reply to a bot message
+        # Check if this is a reply to this bot's own message
         if (
             message.reply_to_message is None
             or message.reply_to_message.from_user is None
-            or not message.reply_to_message.from_user.is_bot
+            or message.bot is None
+            or message.reply_to_message.from_user.id != message.bot.id
         ):
             return
 
