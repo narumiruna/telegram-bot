@@ -29,7 +29,6 @@ BOT_TOKEN=your_telegram_bot_token
 # Optional
 BOT_WHITELIST=comma,separated,chat_ids
 OPENAI_MODEL=gpt-5-mini
-CACHE_URL=memory://  # use redis://... for Redis-backed memory
 FIRECRAWL_API_KEY=...
 SERPAPI_API_KEY=...
 AZURE_OPENAI_API_KEY=...
@@ -59,7 +58,6 @@ src/bot/
   bot.py         # Dispatcher + routing
   cli.py         # CLI entrypoint (loads .env)
   settings.py    # Pydantic settings
-  memory.py      # aiocache-backed session store
 
 tests/           # pytest suite
 ```

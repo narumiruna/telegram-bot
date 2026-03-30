@@ -14,62 +14,21 @@ from bot.callbacks.utils import get_message_from_update
 from bot.callbacks.utils import get_processed_message_text
 from bot.callbacks.utils import safe_callback
 from bot.core.message_response import MessageResponse
-from bot.memory import RedisSession
-from bot.settings import settings
 
 logger = logging.getLogger(__name__)
 
 
-def remove_tool_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
-    """Remove tool-related messages from the message list.
-
-    Args:
-        messages: List of response input items
-
-    Returns:
-        Filtered list without tool messages
-    """
-    tool_types = {
-        "function_call",
-        "function_call_output",
-        "computer_call",
-        "computer_call_output",
-        "file_search_call",
-        "web_search_call",
-    }
-    return [msg for msg in messages if msg.get("type") not in tool_types]
-
-
-def remove_fake_id_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
-    """Remove messages with fake IDs from the message list.
-
-    Args:
-        messages: List of response input items
-
-    Returns:
-        Filtered list without fake ID messages
-    """
-    return [msg for msg in messages if msg.get("id") != "__fake_id__"]
-
-
-def filter_memory_messages(messages: list[TResponseInputItem]) -> list[TResponseInputItem]:
-    """Apply all memory filters to a message list."""
-    messages = remove_tool_messages(messages)
-    return remove_fake_id_messages(messages)
-
-
 class AgentCallback:
-    def _make_cache_key(self, message_id: int, chat_id: int) -> str:
-        """Generate a cache key for storing conversation history.
+    def _make_chat_memory_key(self, chat_id: int) -> str:
+        """Generate a memory key for chat-scoped conversation history.
 
         Args:
-            message_id: The Telegram message ID
             chat_id: The Telegram chat ID
 
         Returns:
-            A cache key string
+            A memory key string
         """
-        return f"bot:{message_id}:{chat_id}"
+        return str(chat_id)
 
     def __init__(self, agent: Agent, max_cache_size: int = 50) -> None:
         """Initialize AgentCallback.
@@ -82,6 +41,7 @@ class AgentCallback:
 
         # max_cache_size is the maximum number of messages to keep in the cache
         self.max_cache_size = max_cache_size
+        self.memory: dict[str, list[TResponseInputItem]] = {}
 
     async def handle_message(self, message: Message) -> None:
         """Handle incoming message and generate response.
@@ -103,21 +63,9 @@ class AgentCallback:
 
         logger.info("Handling message from chat %s", message.chat.id)
 
-        # if the message is a reply to another message, get the previous messages
-        messages = []
-        if message.reply_to_message is not None:
-            key = self._make_cache_key(message.reply_to_message.message_id, message.chat.id)
-            logger.debug("Loading conversation history from cache: %s", key)
-            session = RedisSession(
-                key,
-                max_cache_size=self.max_cache_size,
-                ttl_seconds=settings.cache_ttl_seconds,
-            )
-            messages = await session.get_items()
-            logger.debug("Loaded %s messages from cache", len(messages))
-
-        # remove all tool messages from the memory
-        messages = filter_memory_messages(messages)
+        key = self._make_chat_memory_key(message.chat.id)
+        messages = self.memory.get(key, []).copy()
+        logger.debug("Loaded %s messages from memory for chat key: %s", len(messages), key)
 
         # add the user message to the list of messages
         messages.append(cast(TResponseInputItem, {"role": "user", "content": message_text}))
@@ -128,29 +76,18 @@ class AgentCallback:
         logger.info("Agent completed. New items: %s", result.new_items)
 
         # update the memory
-        input_items = filter_memory_messages(result.to_input_list())
+        input_items = result.to_input_list()
         if len(input_items) > self.max_cache_size:
             logger.debug("Trimming conversation history to %s items", self.max_cache_size)
             input_items = input_items[-self.max_cache_size :]
 
         # Send response using MessageResponse for consistency and Telegraph fallback
         response = MessageResponse(content=result.final_output)
-        new_message = await response.answer(message)
-        new_key = self._make_cache_key(new_message.message_id, message.chat.id)
+        await response.answer(message)
 
-        # Save conversation history to cache with TTL
-        logger.debug(
-            "Saving conversation history to cache: %s with TTL %ss",
-            new_key,
-            settings.cache_ttl_seconds,
-        )
-        new_session = RedisSession(
-            new_key,
-            max_cache_size=self.max_cache_size,
-            ttl_seconds=settings.cache_ttl_seconds,
-        )
-        await new_session.set_items(input_items)
-        logger.debug("Finished saving conversation history")
+        # Save conversation history in local process memory.
+        self.memory[key] = input_items
+        logger.debug("Saved %s messages to memory for chat key: %s", len(input_items), key)
 
     @safe_callback
     async def handle_command(self, update: Message | Update, context: object | None = None) -> None:
