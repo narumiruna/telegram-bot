@@ -179,7 +179,7 @@ wheels = [
 
 [[package]]
 name = "bot"
-version = "0.4.11"
+version = "0.4.12"
 source = { editable = "." }
 dependencies = [
     { name = "aiogram" },
@@ -990,7 +990,7 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.17.5"
+version = "0.17.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "charset-normalizer" },
@@ -1006,7 +1006,7 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/03/bbece7ed334d7fc8a2742fdb9a1508b79f9e4b743e7c29844d88589722c0/kabigon-0.17.5-py3-none-any.whl", hash = "sha256:dc16261cb34dbf8bac6887b2650c7b23bdae14b29ce6cd46211ffa6a27a9c6eb", size = 30292, upload-time = "2026-03-30T09:21:49.18Z" },
+    { url = "https://files.pythonhosted.org/packages/12/39/467899e7c2f19603d72221da19acd8018a481c6e8907e139e096ba20f4ef/kabigon-0.17.6-py3-none-any.whl", hash = "sha256:eba9620e1baa0f0f8ac2af0b3822377ff52f0c9cc56fa897bfbf76cda74beea2", size = 30001, upload-time = "2026-03-30T11:32:54.143Z" },
 ]
 
 [[package]]
@@ -2871,8 +2871,8 @@ name = "uvicorn"
 version = "0.42.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "click", marker = "sys_platform != 'emscripten'" },
-    { name = "h11", marker = "sys_platform != 'emscripten'" },
+    { name = "click" },
+    { name = "h11" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e3/ad/4a96c425be6fb67e0621e62d86c402b4a17ab2be7f7c055d9bd2f638b9e2/uvicorn-0.42.0.tar.gz", hash = "sha256:9b1f190ce15a2dd22e7758651d9b6d12df09a13d51ba5bf4fc33c383a48e1775", size = 85393, upload-time = "2026-03-16T06:19:50.077Z" }
 wheels = [
