@@ -39,7 +39,6 @@ jobs:
           BOT_TOKEN=${{ secrets.BOT_TOKEN }}
           BOT_WHITELIST=${{ vars.BOT_WHITELIST }}
           OPENAI_BASE_URL=${{ secrets.OPENAI_BASE_URL }}
-          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL=${{ vars.OPENAI_MODEL }}
           LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }}
           LOGFIRE_ENVIRONMENT=prod
