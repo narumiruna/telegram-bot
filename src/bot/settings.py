@@ -24,8 +24,6 @@ class Settings(BaseSettings):
     # OpenAI / LLM settings
     openai_model: str = Field(default="gpt-5-mini")
     openai_temperature: float = Field(default=0.0)
-    azure_openai_api_key: str | None = Field(default=None)
-    litellm_api_key: str | None = Field(default=None)
 
     # Cache settings
     cache_url: str = Field(default="memory://")
