@@ -8,3 +8,4 @@
 2026-03-30 | docs(readme): align setup, env, and commands with current bot behavior (#internal)
 2026-03-30 | docs(env): add .env.example for required and optional settings (#internal)
 2026-03-30 | test(agent): remove stale private-method assertion in callback tests (#internal)
+2026-03-30 | ci(deploy): harden dotenv permissions and stabilize launchctl flow (#internal)
