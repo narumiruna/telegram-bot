@@ -9,3 +9,4 @@
 2026-03-30 | docs(env): add .env.example for required and optional settings (#internal)
 2026-03-30 | test(agent): remove stale private-method assertion in callback tests (#internal)
 2026-03-30 | ci(deploy,docs): harden dotenv permissions, stabilize launchctl flow, remove OPENAI_API_KEY from proxy-based dotenv generation, and update Bifrost OPENAI_BASE_URL example to /openai/v1 on port 8080 (#internal)
+2026-03-30 | docs(readme): clarify model access section as required for LLM features (#internal)
