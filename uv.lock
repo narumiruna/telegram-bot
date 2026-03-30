@@ -237,7 +237,7 @@ requires-dist = [
     { name = "aiogram", specifier = ">=3.26.0" },
     { name = "duckduckgo-search", specifier = ">=8.1.1" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "kabigon", specifier = ">=0.17.1" },
+    { name = "kabigon", specifier = ">=0.17.5" },
     { name = "logfire", extras = ["httpx", "redis", "requests"], specifier = ">=4.27.0" },
     { name = "markdown2", specifier = ">=2.5.5" },
     { name = "mortgage", specifier = ">=1.0.5" },
@@ -1088,7 +1088,7 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.17.4"
+version = "0.17.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "charset-normalizer" },
@@ -1104,7 +1104,7 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/77/69/3d5529e3d20be04504e8d99a8a83ba00324aee080adf25ad16a3dde35edb/kabigon-0.17.4-py3-none-any.whl", hash = "sha256:dd39ba9eb135c59d44328a8b3f8a1350b7b682ba286d63758b88c67900cd49d9", size = 30001, upload-time = "2026-03-23T07:13:47.208Z" },
+    { url = "https://files.pythonhosted.org/packages/08/03/bbece7ed334d7fc8a2742fdb9a1508b79f9e4b743e7c29844d88589722c0/kabigon-0.17.5-py3-none-any.whl", hash = "sha256:dc16261cb34dbf8bac6887b2650c7b23bdae14b29ce6cd46211ffa6a27a9c6eb", size = 30292, upload-time = "2026-03-30T09:21:49.18Z" },
 ]
 
 [[package]]
