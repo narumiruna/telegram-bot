@@ -36,10 +36,6 @@ def configure_logfire() -> None:
 
     logfire.configure(token=settings.logfire_token)
     logfire.instrument_openai_agents()
-    # Note: httpx and requests instrumentation disabled to reduce noise
-    # logfire.instrument_httpx()
-    # logfire.instrument_requests()
-    logfire.instrument_redis()
     logging.basicConfig(
         format=FORMAT_STR,
         level=logging.INFO,
