@@ -8,6 +8,7 @@ on:
 
 env:
   UNIT: bot
+  PLIST_FILE: bot.plist
   WORKDIR: /Users/narumi/apps/bot
   PLIST_DIR: /Users/narumi/Library/LaunchAgents
 
@@ -27,14 +28,20 @@ jobs:
             --exclude='.venv/' \
             ${{ github.workspace }}/ ${{ env.WORKDIR }}/
       - name: Stop and disable service
-        continue-on-error: true
-        working-directory: ${{ env.PLIST_DIR }}
+        shell: bash
         run: |
-          launchctl stop ${{ env.UNIT }}
-          launchctl unload bot.plist
+          set -euo pipefail
+          if launchctl list "${{ env.UNIT }}" >/dev/null 2>&1; then
+            launchctl stop "${{ env.UNIT }}"
+            launchctl unload "${{ env.PLIST_DIR }}/${{ env.PLIST_FILE }}"
+          else
+            echo "Service ${{ env.UNIT }} is not loaded; skip stop/unload."
+          fi
       - name: Create dotenv
         working-directory: ${{ env.WORKDIR }}
+        shell: bash
         run: |
+          umask 077
           cat <<'EOF' > .env
           BOT_TOKEN=${{ secrets.BOT_TOKEN }}
           BOT_WHITELIST=${{ vars.BOT_WHITELIST }}
@@ -47,16 +54,18 @@ jobs:
           SERPAPI_API_KEY=${{ secrets.SERPAPI_API_KEY }}
           CACHE_URL=${{ secrets.CACHE_URL }}
           EOF
+          chmod 600 .env
       - name: Preparing environment
         working-directory: ${{ env.WORKDIR }}
         run: |
-          cp bot.plist ${{ env.PLIST_DIR }}
+          cp ${{ env.PLIST_FILE }} ${{ env.PLIST_DIR }}
           # uv venv --clear --managed-python --python ${{ matrix.python-version }}
           rm -rf .venv
           uv sync
           uv run playwright install chromium
       - name: Start service
-        working-directory: ${{ env.PLIST_DIR }}
+        shell: bash
         run: |
-          launchctl load -w bot.plist
-          launchctl start ${{ env.UNIT }}
+          set -euo pipefail
+          launchctl load -w "${{ env.PLIST_DIR }}/${{ env.PLIST_FILE }}"
+          launchctl start "${{ env.UNIT }}"
