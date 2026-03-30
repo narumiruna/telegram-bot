@@ -5,3 +5,5 @@
 2026-03-30 | feat(chat): enforce anti-loop clarification rules in chat instructions (#internal)
 2026-03-30 | fix(callback): restrict agent reply handling to this bot id (#internal)
 2026-03-30 | refactor(agent): replace RedisSession with in-memory chat_id conversation memory (#internal)
+2026-03-30 | docs(readme): align setup, env, and commands with current bot behavior (#internal)
+2026-03-30 | docs(env): add .env.example for required and optional settings (#internal)
