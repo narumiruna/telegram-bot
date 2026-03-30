@@ -19,17 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 class AgentCallback:
-    def _make_chat_memory_key(self, chat_id: int) -> str:
-        """Generate a memory key for chat-scoped conversation history.
-
-        Args:
-            chat_id: The Telegram chat ID
-
-        Returns:
-            A memory key string
-        """
-        return str(chat_id)
-
     def __init__(self, agent: Agent, max_cache_size: int = 50) -> None:
         """Initialize AgentCallback.
 
@@ -63,9 +52,9 @@ class AgentCallback:
 
         logger.info("Handling message from chat %s", message.chat.id)
 
-        key = self._make_chat_memory_key(message.chat.id)
-        messages = self.memory.get(key, []).copy()
-        logger.debug("Loaded %s messages from memory for chat key: %s", len(messages), key)
+        memory_key = str(message.chat.id)
+        messages = self.memory.get(memory_key, []).copy()
+        logger.debug("Loaded %s messages from memory for chat key: %s", len(messages), memory_key)
 
         # add the user message to the list of messages
         messages.append(cast(TResponseInputItem, {"role": "user", "content": message_text}))
@@ -86,8 +75,8 @@ class AgentCallback:
         await response.answer(message)
 
         # Save conversation history in local process memory.
-        self.memory[key] = input_items
-        logger.debug("Saved %s messages to memory for chat key: %s", len(input_items), key)
+        self.memory[memory_key] = input_items
+        logger.debug("Saved %s messages to memory for chat key: %s", len(input_items), memory_key)
 
     @safe_callback
     async def handle_command(self, update: Message | Update, context: object | None = None) -> None:
