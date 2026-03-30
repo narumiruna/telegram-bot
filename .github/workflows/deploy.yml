@@ -38,9 +38,8 @@ jobs:
           cat <<'EOF' > .env
           BOT_TOKEN=${{ secrets.BOT_TOKEN }}
           BOT_WHITELIST=${{ vars.BOT_WHITELIST }}
-          AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}
-          AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          OPENAI_API_VERSION=${{ vars.OPENAI_API_VERSION }}
+          OPENAI_BASE_URL=${{ secrets.OPENAI_BASE_URL }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL=${{ vars.OPENAI_MODEL }}
           LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }}
           LOGFIRE_ENVIRONMENT=prod
