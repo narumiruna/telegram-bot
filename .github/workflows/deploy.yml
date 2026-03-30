@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if launchctl list | grep -q "${{ env.UNIT }}"; then
+          if launchctl list "${{ env.UNIT }}" >/dev/null 2>&1; then
             launchctl stop "${{ env.UNIT }}"
             launchctl unload "${{ env.PLIST_DIR }}/${{ env.PLIST_FILE }}"
           else
