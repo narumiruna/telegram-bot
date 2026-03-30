@@ -25,10 +25,6 @@ class Settings(BaseSettings):
     openai_model: str = Field(default="gpt-5-mini")
     openai_temperature: float = Field(default=0.0)
 
-    # Cache settings
-    cache_url: str = Field(default="memory://")
-    cache_ttl_seconds: int = Field(default=604800)
-
     # Observability settings
     logfire_token: str | None = Field(default=None)
 

@@ -4,3 +4,4 @@
 2026-03-24 | refactor(tests): flatten remaining class-based tests to function-style pytest tests (#internal)
 2026-03-30 | feat(chat): enforce anti-loop clarification rules in chat instructions (#internal)
 2026-03-30 | fix(callback): restrict agent reply handling to this bot id (#internal)
+2026-03-30 | refactor(agent): replace RedisSession with in-memory chat_id conversation memory (#internal)
