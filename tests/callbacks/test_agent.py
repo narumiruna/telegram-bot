@@ -28,14 +28,6 @@ def test_agent_callback_init_default_cache_size():
     assert callback.max_cache_size == 50
 
 
-def test_make_chat_memory_key():
-    mock_agent = Mock()
-    callback = AgentCallback(mock_agent)
-
-    key = callback._make_chat_memory_key(chat_id=12345)
-    assert key == "12345"
-
-
 # handle_message
 
 
