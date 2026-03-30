@@ -33,7 +33,7 @@ Model access:
 OPENAI_API_KEY=your_openai_api_key
 
 # Option B: OpenAI-compatible proxy (for example local Bifrost)
-OPENAI_BASE_URL=http://127.0.0.1:4000/v1
+OPENAI_BASE_URL=http://127.0.0.1:8080/openai/v1
 # OPENAI_API_KEY can be empty when your proxy does not require it
 ```
 
