@@ -15,10 +15,6 @@ from agents.mcp.server import MCPServerStreamableHttpParams
 from bot.provider import get_openai_model
 from bot.settings import settings
 
-# from bot.tools import execute_command
-# from bot.tools import query_rate_history
-# from bot.tools import web_search
-
 logger = logging.getLogger(__name__)
 
 current_time = datetime.now(ZoneInfo("Asia/Taipei"))
@@ -85,11 +81,7 @@ async def build_chat_agent() -> AsyncIterator[Agent]:
             name="chat-agent",
             instructions=INSTRUCTIONS,
             model=get_openai_model(),
-            tools=[
-                # query_rate_history,
-                # execute_command,
-                # web_search,
-            ],
+            tools=[],
             mcp_servers=manager.active_servers,
         )
         yield agent

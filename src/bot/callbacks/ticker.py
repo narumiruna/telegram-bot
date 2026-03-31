@@ -10,9 +10,8 @@ from twse.stock_info import get_stock_info
 
 from bot.callbacks.utils import get_message_from_update
 from bot.callbacks.utils import safe_callback
+from bot.callbacks.utils import strip_command
 from bot.yahoo_finance import query_tickers
-
-from .utils import strip_command
 
 logger = logging.getLogger(__name__)
 
