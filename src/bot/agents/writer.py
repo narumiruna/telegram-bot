@@ -53,6 +53,7 @@ Ensure all important points from the input are preserved without adding new fact
 Ensure all content is translated into {lang} and written in a professional, neutral tone.
 Ensure every requirement above is satisfied.
 Make only minimal revisions during final review.
+All content must be less than 5000 characters in total.
 
 ALL output MUST be written entirely in {lang}, except the exact special-case literal "[No content provided]".
 """,  # noqa: E501
