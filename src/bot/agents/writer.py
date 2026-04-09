@@ -1,63 +1,84 @@
 import asyncio
+import html
+import logging
 
 from agents import Agent
 from agents import Runner
+from aiogram.types import Message
+from pydantic import BaseModel
+from pydantic import Field
 
-from bot.core.message_response import MessageResponse
 from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
 from bot.utils.chunk import recursive_chunk
+from bot.utils.page import async_create_page
+
+logger = logging.getLogger(__name__)
+
 
 INSTRUCTIONS = PromptTemplate(
     template="""
-Extract, reorganize, and translate the input text into {lang} as a readable blog post.
-Do not add new facts, entities, events, or claims beyond the input.
-Preserve all materially important points from the input while improving clarity and flow.
+Task:
+Convert the input into a coherent blog post written entirely in {lang}. Return output strictly as the given schema.
 
-Generate a clear, specific blog post title in {lang} that reflects the reorganized key points and important content.
-Do not use generic titles such as “Article” or “Summary”.
+Hard constraints:
+- Preserve all materially important information from the input.
+- Do not add new facts, entities, events, numbers, or claims.
+- Use a professional, neutral, easy-to-read tone.
+- Simplify complex wording when needed, but keep original meaning.
+- Summary must be <= 500 characters.
+- Each section.content must be <= 1000 characters.
+- All content must be less than 5000 characters in total.
 
-Rewrite the content as a professional, neutral blog post in plain and accessible language.
-Prioritize readability and coherent narrative flow for general readers.
-If the input is legal, technical, or otherwise complex, simplify wording while preserving essential facts and meaning.
-
-Output rules:
-
-Respond in plain text only.
-Do not use Markdown, HTML, or any markup syntax.
-
-Structure rules:
-
-The output must follow this order:
-1) Title line in {lang}
-2) One or more content sections in {lang}
-Each content section must follow all rules below:
-- The first line must be a standalone section heading in this exact pattern: <emoji> <section title>
-- The section title must be specific and written in {lang}
-- The section body must start on the next line and may contain one or more paragraphs
-- Use section heading lines only for section boundaries; do not add extra heading lines inside the same section
-- Do not use Markdown, HTML, bullet markers, or numbered list markers as section labels
-The final content section must act as the closing section and only restate points already present in earlier sections.
-The title line itself must not include an emoji.
-Maintain smooth transitions between paragraphs and keep the full post cohesive.
-
-Special cases:
-
-If the input text is empty, output exactly:
-  [No content provided]
+Section rules:
+- Every section title must be specific and in {lang}.
+- Every section emoji must be exactly one emoji.
+- Every section body can have one or more paragraphs.
+- Keep transitions smooth and the whole post cohesive
+- The final section should be a closing section that only restates earlier points.
 
 Final checks:
-
-Ensure the output is a complete, readable blog post with a title and coherent sections, including opening, body, and closing coverage.
-Ensure all important points from the input are preserved without adding new facts.
-Ensure all content is translated into {lang} and written in a professional, neutral tone.
-Ensure every requirement above is satisfied.
-Make only minimal revisions during final review.
-All content must be less than 5000 characters in total.
-
-ALL output MUST be written entirely in {lang}, except the exact special-case literal "[No content provided]".
-""",  # noqa: E501
+- Include opening, body, and closing coverage.
+- Ensure all content is in {lang}.
+- Ensure every constraint is satisfied.
+"""  # noqa: E501
 )
+
+
+class Section(BaseModel):
+    title: str = Field(..., description="The title of the section.")
+    emoji: str = Field(..., description="An emoji to represent the section.")
+    content: str = Field(
+        ...,
+        description=(
+            "The content of the section, which may include multiple paragraphs and formatting. "
+            "The content should be less than 1000 characters."
+        ),
+    )
+
+
+class Article(BaseModel):
+    title: str = Field(..., description="The title of the article.")
+    summary: str = Field(..., description="A brief summary of the article.")
+    sections: list[Section] = Field(..., description="A list of sections in the article.")
+
+    def render_content_text(self) -> str:
+        rendered_sections = [f"{section.emoji} {section.title}\n\n{section.content}" for section in self.sections]
+        return "\n\n".join(rendered_sections)
+
+    async def create_page(self) -> str:
+        text_content = self.render_content_text()
+        page_url = await async_create_page(
+            self.title,
+            html_content=html.escape(text_content).replace("\n", "<br>"),
+        )
+
+        logger.info("Telegraph page created: %s", page_url)
+        return page_url
+
+    async def answer(self, message: Message, parse_mode: str | None = "HTML") -> Message:
+        page_url = await self.create_page()
+        return await message.answer(page_url, parse_mode=parse_mode)
 
 
 def build_writer_agent(lang: str = "台灣正體中文") -> Agent:
@@ -65,20 +86,20 @@ def build_writer_agent(lang: str = "台灣正體中文") -> Agent:
         "writer-agent",
         model=get_openai_model(),
         instructions=INSTRUCTIONS.render(lang=lang),
-        output_type=MessageResponse,
+        output_type=Article,
     )
 
 
-async def _write(text: str) -> MessageResponse:
+async def _write(text: str) -> Article:
     agent = build_writer_agent()
     result = await Runner.run(agent, input=text)
-    return result.final_output_as(MessageResponse)
+    return result.final_output_as(Article)
 
 
-async def write_article(text: str) -> MessageResponse:
+async def write_article(text: str) -> Article:
     chunks = recursive_chunk(text)
     if len(chunks) == 1:
         return await _write(text)
 
     articles = await asyncio.gather(*[_write(chunk) for chunk in chunks])
-    return await _write("\n\n".join([article.content for article in articles]))
+    return await _write("\n\n".join([article.render_content_text() for article in articles]))
