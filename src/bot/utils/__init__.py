@@ -1,4 +1,4 @@
-from .chunk import chunk_on_delimiter
+from .chunk import recursive_chunk
 from .file_io import load_json
 from .file_io import save_json
 from .file_io import save_text
