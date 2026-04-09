@@ -11,3 +11,4 @@
 2026-03-30 | ci(deploy,docs): harden dotenv permissions, stabilize launchctl flow, remove OPENAI_API_KEY from proxy-based dotenv generation, and update Bifrost OPENAI_BASE_URL example to /openai/v1 on port 8080 (#internal)
 2026-03-30 | docs(readme): clarify model access section as required for LLM features (#internal)
 2026-03-31 | refactor(clean): remove dead code, redundant checks, fix imports and __all__ exports (#internal)
+2026-04-09 | refactor(utils): switch text chunking to RecursiveChunker (#internal)

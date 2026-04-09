@@ -6,7 +6,7 @@ from agents import Runner
 from bot.core.message_response import MessageResponse
 from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
-from bot.utils.chunk import chunk_on_delimiter
+from bot.utils.chunk import recursive_chunk
 
 INSTRUCTIONS = PromptTemplate(
     template="""
@@ -76,7 +76,7 @@ async def _write(text: str) -> MessageResponse:
 
 
 async def write_article(text: str) -> MessageResponse:
-    chunks = chunk_on_delimiter(text)
+    chunks = recursive_chunk(text)
     if len(chunks) == 1:
         return await _write(text)
 
