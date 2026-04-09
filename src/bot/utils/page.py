@@ -1,14 +1,10 @@
 import asyncio
-import functools
 from html import escape as html_escape
 from html.parser import HTMLParser
-from typing import Any
 
 import telegraph
-from tenacity import retry
 
 
-@functools.cache
 def get_telegraph_client() -> telegraph.Telegraph:
     client = telegraph.Telegraph()
     client.create_account(short_name="Narumi's Bot")
@@ -118,7 +114,7 @@ class _TelegraphHTMLSanitizer(HTMLParser):
         self._parts.append(f"</{mapped}>")
 
 
-def sanitize_telegraph_html(html_content: str) -> str:
+def _sanitize_telegraph_html(html_content: str) -> str:
     """Convert arbitrary HTML into Telegraph-compatible HTML (best-effort)."""
     parser = _TelegraphHTMLSanitizer()
     parser.feed(html_content)
@@ -126,34 +122,23 @@ def sanitize_telegraph_html(html_content: str) -> str:
     return parser.get_html()
 
 
-@retry
-def create_page(title: str, **kwargs: Any) -> str:
+def create_page(title: str, html_content: str) -> str:
     """Create a Telegraph page synchronously.
 
     Note: This blocks the event loop. Use async_create_page() in async contexts.
 
     Args:
         title: Page title
-        **kwargs: Additional arguments passed to Telegraph API
+        html_content: HTML content of the page
 
     Returns:
         URL of the created page
     """
     client = get_telegraph_client()
-    if isinstance(kwargs.get("html_content"), str):
-        kwargs["html_content"] = sanitize_telegraph_html(kwargs["html_content"])
-    resp = client.create_page(title=title, **kwargs)
+    html_content = _sanitize_telegraph_html(html_content)
+    resp = client.create_page(title=title, html_content=html_content)
     return resp["url"]
 
 
-async def async_create_page(title: str, **kwargs: Any) -> str:
-    """Create a Telegraph page asynchronously without blocking the event loop.
-
-    Args:
-        title: Page title
-        **kwargs: Additional arguments passed to Telegraph API
-
-    Returns:
-        URL of the created page
-    """
-    return await asyncio.to_thread(create_page, title, **kwargs)
+async def async_create_page(title: str, html_content: str) -> str:
+    return await asyncio.to_thread(create_page, title, html_content)
