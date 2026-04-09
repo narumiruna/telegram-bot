@@ -2,6 +2,7 @@ import asyncio
 import html
 import logging
 
+import logfire
 from agents import Agent
 from agents import Runner
 from aiogram.types import Message
@@ -81,25 +82,28 @@ class Article(BaseModel):
         return await message.answer(page_url, parse_mode=parse_mode)
 
 
-def build_writer_agent(lang: str = "台灣正體中文") -> Agent:
-    return Agent(
-        "writer-agent",
-        model=get_openai_model(),
-        instructions=INSTRUCTIONS.render(lang=lang),
-        output_type=Article,
-    )
+async def _write_article(text: str) -> Article:
+    with logfire.span(
+        "writer._write_article",
+        text_length=len(text),
+    ):
+        agent = Agent(
+            "writer-agent",
+            model=get_openai_model(),
+            instructions=INSTRUCTIONS.render(lang="台灣正體中文"),
+            output_type=Article,
+        )
 
-
-async def _write(text: str) -> Article:
-    agent = build_writer_agent()
-    result = await Runner.run(agent, input=text)
-    return result.final_output_as(Article)
+        result = await Runner.run(agent, input=text)
+        return result.final_output_as(Article)
 
 
 async def write_article(text: str) -> Article:
     chunks = recursive_chunk(text)
     if len(chunks) == 1:
-        return await _write(text)
+        return await _write_article(text)
 
-    articles = await asyncio.gather(*[_write(chunk) for chunk in chunks])
-    return await _write("\n\n".join([article.render_content_text() for article in articles]))
+    articles = await asyncio.gather(
+        *[_write_article(chunk) for chunk in chunks],
+    )
+    return await _write_article("\n\n".join([article.render_content_text() for article in articles]))
