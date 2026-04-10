@@ -106,4 +106,4 @@ async def write_article(text: str) -> Article:
     articles = await asyncio.gather(
         *[_write_article(chunk) for chunk in chunks],
     )
-    return await _write_article("\n\n".join([article.render_content_text() for article in articles]))
+    return await write_article("\n\n".join([article.render_content_text() for article in articles]))
