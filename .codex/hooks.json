@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codhc prek run -a",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
