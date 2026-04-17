@@ -12,14 +12,13 @@ on:
 jobs:
   ci:
     runs-on: self-hosted
-    strategy:
-      matrix:
-        python-version: ["3.13"]
+    env:
+      PYTHON_VERSION: 3.13
     steps:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
         run: uv sync
       - name: Lint
