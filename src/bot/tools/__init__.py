@@ -1,6 +1,5 @@
 from .award import search_award
 from .command import execute_command
-from .datetime import get_current_time
 from .duckduckgo import web_search
 from .monster_hunter_weapon import draw_monster_hunter_weapon
 from .mortgage import compute_loan_details
@@ -15,7 +14,6 @@ __all__ = [
     "draw_monster_hunter_weapon",
     "draw_tarot_card",
     "execute_command",
-    "get_current_time",
     "query_rate",
     "query_rate_history",
     "query_ticker_from_yahoo_finance",
