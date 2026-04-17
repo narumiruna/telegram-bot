@@ -81,7 +81,6 @@ async def build_chat_agent() -> AsyncIterator[Agent]:
             name="chat-agent",
             instructions=INSTRUCTIONS,
             model=get_openai_model(),
-            tools=[],
             mcp_servers=manager.active_servers,
         )
         yield agent
