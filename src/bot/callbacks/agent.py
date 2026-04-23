@@ -58,6 +58,9 @@ class AgentCallback:
 
         # add the user message to the list of messages
         messages.append(cast(TResponseInputItem, {"role": "user", "content": message_text}))
+        last_user_item = messages[-1]
+        logger.debug("Final processed message_text for chat %s: %s", message.chat.id, message_text)
+        logger.debug("Last user input item for chat %s: %s", message.chat.id, last_user_item)
 
         # send the messages to the agent
         logger.info("Running agent with %s messages", len(messages))

@@ -192,7 +192,7 @@ async def test_url_loading_success(mock_parse_urls, mock_load_url, test_user: Us
     message.reply_to_message = None
 
     text, error = await get_processed_message_text(message, require_url=False)
-    assert text == "Content from URL"
+    assert text == "https://example.com\n\nURL content from https://example.com:\nContent from URL"
     assert error is None
     mock_load_url.assert_called_once_with("https://example.com")
 
@@ -229,7 +229,7 @@ async def test_require_url_with_url_success(mock_parse_urls, mock_load_url, test
     message.reply_to_message = None
 
     text, error = await get_processed_message_text(message, require_url=True)
-    assert text == "Content from URL"
+    assert text == "https://example.com\n\nURL content from https://example.com:\nContent from URL"
     assert error is None
     mock_load_url.assert_called_once_with("https://example.com")
 
@@ -248,7 +248,11 @@ async def test_multiple_urls_loading_success(mock_parse_urls, mock_load_url, tes
     message.reply_to_message = None
 
     text, error = await get_processed_message_text(message, require_url=False)
-    assert text == "Content from URL 1\n\n---\n\nContent from URL 2"
+    assert text == (
+        "Check https://example1.com and https://example2.com\n\n"
+        "URL content from https://example1.com:\nContent from URL 1\n\n"
+        "URL content from https://example2.com:\nContent from URL 2"
+    )
     assert error is None
     assert mock_load_url.call_count == 2
 
@@ -285,7 +289,12 @@ async def test_multiple_urls_require_url(mock_parse_urls, mock_load_url, test_us
     message.reply_to_message = None
 
     text, error = await get_processed_message_text(message, require_url=True)
-    assert text == "Content 1\n\n---\n\nContent 2\n\n---\n\nContent 3"
+    assert text == (
+        "Three URLs: https://example1.com https://example2.com https://example3.com\n\n"
+        "URL content from https://example1.com:\nContent 1\n\n"
+        "URL content from https://example2.com:\nContent 2\n\n"
+        "URL content from https://example3.com:\nContent 3"
+    )
     assert error is None
     assert mock_load_url.call_count == 3
 
@@ -313,9 +322,71 @@ async def test_include_reply_to_message_true_includes_reply_text(mock_parse_urls
         include_reply_to_message=True,
     )
 
-    assert text == "Original message\n\nReply message"
+    assert text == "Replied message:\nOriginal message\n\nCurrent message:\nReply message"
     assert error is None
-    mock_parse_urls.assert_called_once_with("Original message\n\nReply message")
+    mock_parse_urls.assert_called_once_with("Replied message:\nOriginal message\n\nCurrent message:\nReply message")
+
+
+@pytest.mark.asyncio
+@patch("bot.callbacks.utils.load_url")
+@patch("bot.callbacks.utils.parse_urls")
+async def test_reply_message_with_current_url_keeps_sections(
+    mock_parse_urls,
+    mock_load_url,
+    test_user: User,
+):
+    mock_parse_urls.return_value = ["https://example.com"]
+    mock_load_url.return_value = "Loaded page"
+
+    reply_message = Mock(spec=Message)
+    reply_message.text = "Bot said hello"
+    reply_message.caption = None
+    reply_message.from_user = test_user
+    reply_message.reply_to_message = None
+
+    message = Mock(spec=Message)
+    message.text = "Please summarize https://example.com"
+    message.caption = None
+    message.from_user = test_user
+    message.reply_to_message = reply_message
+
+    text, error = await get_processed_message_text(message, require_url=False, include_reply_to_message=True)
+
+    assert text == (
+        "Replied message:\nBot said hello\n\n"
+        "Current message:\nPlease summarize https://example.com\n\n"
+        "URL content from https://example.com:\nLoaded page"
+    )
+    assert error is None
+
+
+@pytest.mark.asyncio
+@patch("bot.callbacks.utils.load_url")
+@patch("bot.callbacks.utils.parse_urls")
+async def test_reply_message_with_reply_url_keeps_original_sections(mock_parse_urls, mock_load_url, test_user: User):
+    mock_parse_urls.return_value = ["https://example.com"]
+    mock_load_url.return_value = "Loaded page"
+
+    reply_message = Mock(spec=Message)
+    reply_message.text = "Context https://example.com"
+    reply_message.caption = None
+    reply_message.from_user = test_user
+    reply_message.reply_to_message = None
+
+    message = Mock(spec=Message)
+    message.text = "What does this mean?"
+    message.caption = None
+    message.from_user = test_user
+    message.reply_to_message = reply_message
+
+    text, error = await get_processed_message_text(message, require_url=False, include_reply_to_message=True)
+
+    assert text == (
+        "Replied message:\nContext https://example.com\n\n"
+        "Current message:\nWhat does this mean?\n\n"
+        "URL content from https://example.com:\nLoaded page"
+    )
+    assert error is None
 
 
 @pytest.mark.asyncio

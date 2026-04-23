@@ -12,3 +12,4 @@
 2026-03-30 | docs(readme): clarify model access section as required for LLM features (#internal)
 2026-03-31 | refactor(clean): remove dead code, redundant checks, fix imports and __all__ exports (#internal)
 2026-04-09 | refactor(utils): switch text chunking to RecursiveChunker (#internal)
+2026-04-23 | fix(agent): preserve reply and current message text when appending URL content (#internal)

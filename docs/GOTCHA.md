@@ -11,3 +11,7 @@
 - Symptom: `ty` reports `invalid-assignment` when tests assign `AsyncMock` directly to `callback.handle_message`.
   Root cause: Bound async methods have a concrete callable type, and direct `AsyncMock` attribute assignment violates the checker's attribute type constraints.
   Prevention: In tests, patch methods with `patch.object(..., new_callable=AsyncMock)` instead of direct reassignment.
+
+- Symptom: Replying to a bot message with a URL causes the model input to lose the user's actual question or the replied context, so the agent answers only from fetched page content.
+  Root cause: URL preprocessing replaced the whole composed message with `load_url()` output instead of appending fetched content after the original reply/current text.
+  Prevention: Keep reply/current message blocks intact in the final user payload and append URL content as extra sections rather than substituting the prompt.
