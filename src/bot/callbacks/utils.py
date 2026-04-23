@@ -94,6 +94,28 @@ def get_message_text(
     return message_text
 
 
+def get_message_text_without_reply(message: Message, include_user_name: bool = False) -> str:
+    """Return the current message text without reply context."""
+    return get_message_text(
+        message,
+        include_reply_to_message=False,
+        include_user_name=include_user_name,
+    )
+
+
+def format_reply_context(reply_text: str, current_text: str) -> str:
+    """Format reply context with explicit labels for the model."""
+    return f"Replied message:\n{reply_text}\n\nCurrent message:\n{current_text}"
+
+
+def append_url_contents(message_text: str, url_contents: list[tuple[str, str]]) -> str:
+    """Append loaded URL content after the original message text."""
+    sections = [message_text]
+    for url, content in url_contents:
+        sections.append(f"URL content from {url}:\n{content}")
+    return "\n\n".join(sections)
+
+
 def _is_message_like(obj: Any) -> bool:
     if obj is None:
         return False
@@ -151,13 +173,22 @@ async def get_processed_message_text(
         如果成功: (text, None)
         如果失敗: (None, error_message)
     """
-    message_text = get_message_text(
-        message,
-        include_reply_to_message=include_reply_to_message,
-        include_user_name=include_user_name,
-    )
-    if not message_text:
+    current_message_text = get_message_text_without_reply(message, include_user_name=include_user_name)
+    if not current_message_text:
         return None, None
+
+    reply_message_text = ""
+    if include_reply_to_message:
+        reply_to_message = getattr(message, "reply_to_message", None)
+        if reply_to_message:
+            reply_message_text = get_message_text_without_reply(
+                reply_to_message,
+                include_user_name=include_user_name,
+            )
+
+    message_text = (
+        format_reply_context(reply_message_text, current_message_text) if reply_message_text else current_message_text
+    )
 
     urls = parse_urls(message_text)
 
@@ -182,11 +213,7 @@ async def get_processed_message_text(
         logger.warning("%s, got error: %s", error_msg, e)
         return None, error_msg
     else:
-        # 組合所有內容
-        if len(contents) == 1:
-            return contents[0], None
-        # 多個 URL 時，用分隔符組合內容
-        combined_content = "\n\n---\n\n".join(contents)
+        combined_content = append_url_contents(message_text, list(zip(urls, contents, strict=True)))
         return combined_content, None
 
 

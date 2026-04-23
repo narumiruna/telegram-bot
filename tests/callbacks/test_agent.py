@@ -4,6 +4,7 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 from agents import TResponseInputItem
+from aiogram.types import User
 
 from bot.callbacks.agent import AgentCallback
 
@@ -194,6 +195,93 @@ async def test_memory_trimmed_to_max_cache_size(mock_runner, mock_get_processed_
         {"role": "assistant", "content": "m2"},
         {"role": "user", "content": "m3"},
     ]
+
+
+def _build_message(
+    text: str,
+    *,
+    chat_id: int = 12345,
+    user: User | None = None,
+    reply_to_message=None,
+):
+    message = Mock()
+    message.text = text
+    message.caption = None
+    message.from_user = user or User(id=123, is_bot=False, first_name="TestUser", username="testuser")
+    message.reply_to_message = reply_to_message
+    message.chat.id = chat_id
+    message.answer = AsyncMock()
+    return message
+
+
+def _build_runner_result() -> Mock:
+    result = Mock()
+    result.new_items = []
+    result.final_output = "ok"
+    result.to_input_list.return_value = [
+        {"role": "user", "content": "stored"},
+        {"role": "assistant", "content": "ok"},
+    ]
+    return result
+
+
+@patch("bot.callbacks.utils.load_url")
+@patch("bot.callbacks.agent.Runner")
+async def test_handle_message_reply_keeps_reply_and_current_text(mock_runner, mock_load_url):
+    mock_runner.run = AsyncMock(return_value=_build_runner_result())
+    mock_load_url.return_value = "unused"
+
+    reply_message = _build_message("Previous bot answer")
+    message = _build_message("Please expand this", reply_to_message=reply_message)
+
+    callback = AgentCallback(Mock())
+    await callback.handle_message(message)
+
+    input_messages = mock_runner.run.call_args.kwargs["input"]
+    assert input_messages[-1]["content"] == (
+        "Replied message:\nTestUser(testuser): Previous bot answer\n\n"
+        "Current message:\nTestUser(testuser): Please expand this"
+    )
+
+
+@patch("bot.callbacks.utils.load_url")
+@patch("bot.callbacks.agent.Runner")
+async def test_handle_message_reply_with_current_url_keeps_current_text_in_runner_input(mock_runner, mock_load_url):
+    mock_runner.run = AsyncMock(return_value=_build_runner_result())
+    mock_load_url.return_value = "Loaded URL content"
+
+    reply_message = _build_message("Previous bot answer")
+    message = _build_message("Please summarize https://example.com", reply_to_message=reply_message)
+
+    callback = AgentCallback(Mock())
+    await callback.handle_message(message)
+
+    input_messages = mock_runner.run.call_args.kwargs["input"]
+    assert input_messages[-1]["content"] == (
+        "Replied message:\nTestUser(testuser): Previous bot answer\n\n"
+        "Current message:\nTestUser(testuser): Please summarize https://example.com\n\n"
+        "URL content from https://example.com:\nLoaded URL content"
+    )
+
+
+@patch("bot.callbacks.utils.load_url")
+@patch("bot.callbacks.agent.Runner")
+async def test_handle_message_reply_with_reply_url_does_not_drop_current_text(mock_runner, mock_load_url):
+    mock_runner.run = AsyncMock(return_value=_build_runner_result())
+    mock_load_url.return_value = "Loaded URL content"
+
+    reply_message = _build_message("See https://example.com")
+    message = _build_message("What changed?", reply_to_message=reply_message)
+
+    callback = AgentCallback(Mock())
+    await callback.handle_message(message)
+
+    input_messages = mock_runner.run.call_args.kwargs["input"]
+    assert input_messages[-1]["content"] == (
+        "Replied message:\nTestUser(testuser): See https://example.com\n\n"
+        "Current message:\nTestUser(testuser): What changed?\n\n"
+        "URL content from https://example.com:\nLoaded URL content"
+    )
 
 
 # handle_command
