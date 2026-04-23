@@ -71,26 +71,46 @@ def get_message_text(
     include_reply_to_message: bool = True,
     include_user_name: bool = False,
 ) -> str:
-    message_text = getattr(message, "text", None) or getattr(message, "caption", None) or ""
-    message_text = strip_command(message_text)
+    raw_message_text = getattr(message, "text", None) or getattr(message, "caption", None) or ""
+    message_text = strip_command(raw_message_text)
+    current_message_found = bool(message_text)
 
     if include_user_name:
         name = get_user_display_name(message)
         if name:
             message_text = f"{name}: {message_text}"
 
-    if include_reply_to_message:
-        reply_to_message = getattr(message, "reply_to_message", None)
-        if reply_to_message:
-            reply_to_message_text = get_message_text(
-                reply_to_message,
-                include_reply_to_message=False,
-                include_user_name=include_user_name,
-            )
-            if reply_to_message_text:
-                message_text = f"{reply_to_message_text}\n\n{message_text}"
+    reply_to_message = getattr(message, "reply_to_message", None)
+    reply_message_found = False
 
-    logger.info("Message text: %s", message_text)
+    if include_reply_to_message and reply_to_message:
+        reply_to_message_text = get_message_text(
+            reply_to_message,
+            include_reply_to_message=False,
+            include_user_name=include_user_name,
+        )
+        if reply_to_message_text:
+            reply_message_found = True
+            message_text = f"{reply_to_message_text}\n\n{message_text}"
+
+    chat = getattr(message, "chat", None)
+    chat_id = getattr(chat, "id", None)
+    message_id = getattr(message, "message_id", None)
+    logger.info(
+        (
+            "Resolved message text for chat_id=%s message_id=%s: "
+            "current_message_found=%s include_reply_to_message=%s reply_target_found=%s "
+            "reply_message_found=%s final_text_length=%s"
+        ),
+        chat_id,
+        message_id,
+        current_message_found,
+        include_reply_to_message,
+        reply_to_message is not None,
+        reply_message_found,
+        len(message_text),
+    )
+    logger.debug("Resolved message text content: %s", message_text)
     return message_text
 
 
