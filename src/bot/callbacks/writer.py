@@ -22,4 +22,4 @@ async def writer_callback(message: Message, command: CommandObject) -> None:
             return
 
         article = await write_article(message_text)
-        await article.answer(message)
+        await article.reply(message)

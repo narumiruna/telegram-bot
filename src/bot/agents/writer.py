@@ -77,9 +77,9 @@ class Article(BaseModel):
         logger.info("Telegraph page created: %s", page_url)
         return page_url
 
-    async def answer(self, message: Message, parse_mode: str | None = "HTML") -> Message:
+    async def reply(self, message: Message, parse_mode: str | None = "HTML") -> Message:
         page_url = await self.create_page()
-        return await message.answer(page_url, parse_mode=parse_mode)
+        return await message.reply(page_url, parse_mode=parse_mode, allow_sending_without_reply=True)
 
 
 async def _write_article(text: str) -> Article:

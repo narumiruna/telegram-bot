@@ -13,3 +13,6 @@
 2026-03-31 | refactor(clean): remove dead code, redundant checks, fix imports and __all__ exports (#internal)
 2026-04-09 | refactor(utils): switch text chunking to RecursiveChunker (#internal)
 2026-04-23 | fix(agent): preserve reply and current message text when appending URL content (#internal)
+2026-04-27 | fix(writer): reply /f output to the triggering message (#internal)
+2026-04-27 | fix(reply): align shared response callers and tests with reply() delivery (#internal)
+2026-04-27 | fix(tests): suppress logfire no-config warnings in pytest bootstrap (#internal)

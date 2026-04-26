@@ -75,4 +75,4 @@ async def file_callback(update: Message | Update, context: object | None = None)
         return
 
     article = await write_article(text)
-    await article.answer(message)
+    await article.reply(message)

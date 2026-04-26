@@ -75,7 +75,7 @@ class AgentCallback:
 
         # Send response using MessageResponse for consistency and Telegraph fallback
         response = MessageResponse(content=result.final_output)
-        await response.answer(message)
+        await response.reply(message)
 
         # Save conversation history in local process memory.
         self.memory[memory_key] = input_items
