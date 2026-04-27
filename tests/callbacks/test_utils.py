@@ -147,6 +147,33 @@ async def test_no_message_text(test_user: User):
 
 
 @pytest.mark.asyncio
+@patch("bot.callbacks.utils.load_url")
+@patch("bot.callbacks.utils.parse_urls")
+async def test_command_only_reply_to_url_message(mock_parse_urls, mock_load_url, test_user: User):
+    """Replying to a URL-only message with a bare command (e.g. /f) should process the reply URL."""
+    mock_parse_urls.return_value = ["https://example.com"]
+    mock_load_url.return_value = "Loaded content"
+
+    reply_message = Mock(spec=Message)
+    reply_message.text = "https://example.com"
+    reply_message.caption = None
+    reply_message.from_user = test_user
+    reply_message.reply_to_message = None
+
+    message = Mock(spec=Message)
+    message.text = "/f"
+    message.caption = None
+    message.from_user = test_user
+    message.reply_to_message = reply_message
+
+    text, error = await get_processed_message_text(message, require_url=False, include_reply_to_message=True)
+
+    assert error is None
+    assert text == "https://example.com\n\nURL content from https://example.com:\nLoaded content"
+    mock_load_url.assert_called_once_with("https://example.com")
+
+
+@pytest.mark.asyncio
 @patch("bot.callbacks.utils.parse_urls")
 async def test_require_url_but_no_url(mock_parse_urls, test_user: User):
     mock_parse_urls.return_value = []

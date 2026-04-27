@@ -174,8 +174,6 @@ async def get_processed_message_text(
         如果失敗: (None, error_message)
     """
     current_message_text = get_message_text_without_reply(message, include_user_name=include_user_name)
-    if not current_message_text:
-        return None, None
 
     reply_message_text = ""
     if include_reply_to_message:
@@ -186,9 +184,15 @@ async def get_processed_message_text(
                 include_user_name=include_user_name,
             )
 
-    message_text = (
-        format_reply_context(reply_message_text, current_message_text) if reply_message_text else current_message_text
-    )
+    if not current_message_text and not reply_message_text:
+        return None, None
+
+    if reply_message_text and current_message_text:
+        message_text = format_reply_context(reply_message_text, current_message_text)
+    elif reply_message_text:
+        message_text = reply_message_text
+    else:
+        message_text = current_message_text
 
     urls = parse_urls(message_text)
 

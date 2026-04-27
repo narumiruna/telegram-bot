@@ -15,3 +15,7 @@
 - Symptom: Replying to a bot message with a URL causes the model input to lose the user's actual question or the replied context, so the agent answers only from fetched page content.
   Root cause: URL preprocessing replaced the whole composed message with `load_url()` output instead of appending fetched content after the original reply/current text.
   Prevention: Keep reply/current message blocks intact in the final user payload and append URL content as extra sections rather than substituting the prompt.
+
+- Symptom: Sending a bare command (e.g. `/f`) as a reply to a URL-only message silently does nothing.
+  Root cause: `get_processed_message_text` early-exited with `(None, None)` when `current_message_text` was empty (command stripped), before ever reading `reply_to_message`.
+  Prevention: Gather both current and reply texts before the empty-guard; only return early when both are empty.
