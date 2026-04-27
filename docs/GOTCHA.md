@@ -16,6 +16,14 @@
   Root cause: URL preprocessing replaced the whole composed message with `load_url()` output instead of appending fetched content after the original reply/current text.
   Prevention: Keep reply/current message blocks intact in the final user payload and append URL content as extra sections rather than substituting the prompt.
 
+- Symptom: After renaming shared Telegram response delivery from `answer()` to `reply()`, tests fail with `'Mock' object can't be awaited` or callbacks still call missing methods.
+  Root cause: Callers and test doubles were only partially migrated, so some code still invoked `answer(message)` or mocked `message.answer` while the implementation awaited `message.reply`.
+  Prevention: When changing a shared response method name, sweep all callbacks and tests together, including every awaited `Message` mock.
+
+- Symptom: Pytest shows `LogfireNotConfiguredWarning` when callback tests hit `logfire.span(...)`.
+  Root cause: Tests call instrumented code paths without the app's normal `configure_logging()` startup, so Logfire stays unconfigured.
+  Prevention: In test bootstrap, set `LOGFIRE_IGNORE_NO_CONFIG=1` so callback tests can run spans without warning noise.
+
 - Symptom: Sending a bare command (e.g. `/f`) as a reply to a URL-only message silently does nothing.
   Root cause: `get_processed_message_text` early-exited with `(None, None)` when `current_message_text` was empty (command stripped), before ever reading `reply_to_message`.
   Prevention: Gather both current and reply texts before the empty-guard; only return early when both are empty.
