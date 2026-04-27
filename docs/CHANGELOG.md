@@ -16,3 +16,4 @@
 2026-04-27 | fix(writer): reply /f output to the triggering message (#internal)
 2026-04-27 | fix(reply): align shared response callers and tests with reply() delivery (#internal)
 2026-04-27 | fix(tests): suppress logfire no-config warnings in pytest bootstrap (#internal)
+2026-04-27 | fix(callbacks): process reply-message URL when command is sent without text (e.g. /f reply to URL) (#internal)

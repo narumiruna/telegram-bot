@@ -23,3 +23,7 @@
 - Symptom: Pytest shows `LogfireNotConfiguredWarning` when callback tests hit `logfire.span(...)`.
   Root cause: Tests call instrumented code paths without the app's normal `configure_logging()` startup, so Logfire stays unconfigured.
   Prevention: In test bootstrap, set `LOGFIRE_IGNORE_NO_CONFIG=1` so callback tests can run spans without warning noise.
+
+- Symptom: Sending a bare command (e.g. `/f`) as a reply to a URL-only message silently does nothing.
+  Root cause: `get_processed_message_text` early-exited with `(None, None)` when `current_message_text` was empty (command stripped), before ever reading `reply_to_message`.
+  Prevention: Gather both current and reply texts before the empty-guard; only return early when both are empty.

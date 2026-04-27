@@ -108,6 +108,23 @@ def format_reply_context(reply_text: str, current_text: str) -> str:
     return f"Replied message:\n{reply_text}\n\nCurrent message:\n{current_text}"
 
 
+def _get_reply_message_text(message: Message, include_reply: bool, include_user_name: bool) -> str:
+    """Return the reply-to message text, or empty string if absent / excluded."""
+    if not include_reply:
+        return ""
+    reply_to_message = getattr(message, "reply_to_message", None)
+    if reply_to_message:
+        return get_message_text_without_reply(reply_to_message, include_user_name=include_user_name)
+    return ""
+
+
+def _build_combined_text(current: str, reply: str) -> str:
+    """Combine current and reply texts into the model input string."""
+    if current and reply:
+        return format_reply_context(reply, current)
+    return reply or current
+
+
 def append_url_contents(message_text: str, url_contents: list[tuple[str, str]]) -> str:
     """Append loaded URL content after the original message text."""
     sections = [message_text]
@@ -174,21 +191,12 @@ async def get_processed_message_text(
         如果失敗: (None, error_message)
     """
     current_message_text = get_message_text_without_reply(message, include_user_name=include_user_name)
-    if not current_message_text:
+    reply_message_text = _get_reply_message_text(message, include_reply_to_message, include_user_name)
+
+    if not current_message_text and not reply_message_text:
         return None, None
 
-    reply_message_text = ""
-    if include_reply_to_message:
-        reply_to_message = getattr(message, "reply_to_message", None)
-        if reply_to_message:
-            reply_message_text = get_message_text_without_reply(
-                reply_to_message,
-                include_user_name=include_user_name,
-            )
-
-    message_text = (
-        format_reply_context(reply_message_text, current_message_text) if reply_message_text else current_message_text
-    )
+    message_text = _build_combined_text(current_message_text, reply_message_text)
 
     urls = parse_urls(message_text)
 
