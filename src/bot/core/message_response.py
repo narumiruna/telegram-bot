@@ -21,9 +21,13 @@ class MessageResponse(BaseModel):
             return f"📝 {self.title}\n\n{self.content}"
         return self.content
 
-    async def answer(self, message: Message, parse_mode: str | None = "HTML") -> Message:
+    async def reply(self, message: Message, parse_mode: str | None = "HTML") -> Message:
         if len(self.content) <= settings.max_message_length:
-            return await message.answer(self.build_text(), parse_mode=parse_mode)
+            return await message.reply(
+                self.build_text(),
+                parse_mode=parse_mode,
+                allow_sending_without_reply=True,
+            )
 
         logger.info("Content too long, uploading to Telegraph")
         telegraph_html = (
@@ -35,4 +39,4 @@ class MessageResponse(BaseModel):
             title=self.title or "Response",
             html_content=telegraph_html,
         )
-        return await message.answer(url)
+        return await message.reply(url, allow_sending_without_reply=True)
