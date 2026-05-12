@@ -36,8 +36,8 @@ def _build_mcp_servers() -> list[MCPServer]:
         ),
         MCPServerStdio(
             params=MCPServerStdioParams(
-                command="uvx",
-                args=["yfmcp@latest"],
+                command="uv",
+                args=["run", "yfmcp"],
             ),
             name="yfmcp",
             client_session_timeout_seconds=settings.mcp_server_timeout,
