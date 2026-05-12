@@ -67,7 +67,6 @@ jobs:
         shell: bash
         run: |
           npx -y @playwright/mcp@latest --help >/dev/null
-          npx -y yfmcp@latest --help >/dev/null
           npx -y firecrawl-mcp --help >/dev/null
       - name: Start service
         shell: bash
