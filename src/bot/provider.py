@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import Literal
 
 from agents import Model
@@ -14,8 +13,7 @@ from .settings import settings
 def get_openai_model(api_type: Literal["responses", "chat_completions"] = "responses") -> Model:
     model_name = settings.openai_model
 
-    api_key = os.getenv("OPENAI_API_KEY")
-    client = AsyncOpenAI(api_key="sk-dummy") if not api_key else AsyncOpenAI()
+    client = AsyncOpenAI()
 
     match api_type:
         case "responses":
