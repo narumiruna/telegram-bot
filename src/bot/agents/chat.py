@@ -76,7 +76,10 @@ def _build_mcp_servers() -> list[MCPServer]:
 @asynccontextmanager
 async def build_chat_agent() -> AsyncIterator[Agent]:
     mcp_servers = _build_mcp_servers()
-    async with MCPServerManager(mcp_servers) as manager:
+    async with MCPServerManager(
+        mcp_servers,
+        connect_timeout_seconds=settings.mcp_connect_timeout,
+    ) as manager:
         agent = Agent(
             name="chat-agent",
             instructions=INSTRUCTIONS,
