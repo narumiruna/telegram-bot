@@ -15,7 +15,7 @@ def get_openai_model(api_type: Literal["responses", "chat_completions"] = "respo
     model_name = settings.openai_model
 
     api_key = os.getenv("OPENAI_API_KEY")
-    client = AsyncOpenAI(api_key="") if not api_key else AsyncOpenAI()
+    client = AsyncOpenAI(api_key="sk-dummy") if not api_key else AsyncOpenAI()
 
     match api_type:
         case "responses":
