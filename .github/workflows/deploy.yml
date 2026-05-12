@@ -63,6 +63,12 @@ jobs:
           rm -rf .venv
           uv sync
           uv run playwright install chromium
+      - name: Warm up MCP servers
+        shell: bash
+        run: |
+          npx -y @playwright/mcp@latest --help >/dev/null
+          npx -y yfmcp@latest --help >/dev/null
+          npx -y firecrawl-mcp --help >/dev/null
       - name: Start service
         shell: bash
         run: |

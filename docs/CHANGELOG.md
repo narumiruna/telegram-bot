@@ -19,3 +19,4 @@
 2026-04-27 | fix(callbacks): process reply-message URL when command is sent without text (e.g. /f reply to URL) (#internal)
 2026-05-03 | docs(readme): rewrite README with MCP config, --config flag, and improved structure (#internal)
 2026-05-11 | chore(deps): upgrade kabigon to 0.19.3 (#internal)
+2026-05-12 | chore(deploy): warm up MCP npx packages before start
