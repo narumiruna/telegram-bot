@@ -1,6 +1,6 @@
 # Narumi's Telegram Bot
 
-A Telegram bot built with [aiogram](https://github.com/aiogram/aiogram) and [OpenAI Agents](https://github.com/openai/openai-agents-python).  
+A Telegram bot built with [aiogram](https://github.com/aiogram/aiogram) and [OpenAI Agents](https://github.com/openai/openai-agents-python).
 Provides chat assistance, URL summarization, translation, article rewriting, finance lookups, and YouTube search via a set of slash commands.
 
 ## Requirements
@@ -52,6 +52,7 @@ DEVELOPER_CHAT_ID=123456789              # receives error notifications
 OPENAI_MODEL=gpt-5-mini
 OPENAI_TEMPERATURE=0.0
 AGENT_MAX_CACHE_SIZE=50
+AGENT_REPLY_ENABLED=false      # set true to route replies to bot messages into /a
 MAX_MESSAGE_LENGTH=1000
 
 MCP_CONNECT_TIMEOUT=30
@@ -82,7 +83,7 @@ See `.env.example` for a complete template.
 | `/echo` | Echo the message |
 
 **Additional interactions:**
-- Replying to a bot message routes the reply to the chat agent.
+- Set `AGENT_REPLY_ENABLED=true` to route replies to bot messages into the chat agent.
 - Sending a `.pdf` or `.html` file triggers rewrite processing.
 
 ## MCP Configuration
@@ -94,7 +95,7 @@ uv run bot                              # uses config/default.json
 uv run bot --config config/custom.json  # uses a custom config
 ```
 
-**Always-enabled MCP servers:** `playwright`, `yfmcp`  
+**Always-enabled MCP servers:** `playwright`, `yfmcp`
 **Optional MCP servers** (activated when the corresponding API key is set): Firecrawl (`FIRECRAWL_API_KEY`), SerpAPI (`SERPAPI_API_KEY`)
 
 ## Project Layout

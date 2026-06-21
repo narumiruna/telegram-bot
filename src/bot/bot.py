@@ -59,7 +59,11 @@ async def run_bot() -> None:
         chat_filter = get_chat_filter()
 
         # Initialize agent callback
-        agent_callback = AgentCallback(agent, max_cache_size=settings.agent_max_cache_size)
+        agent_callback = AgentCallback(
+            agent,
+            max_cache_size=settings.agent_max_cache_size,
+            reply_enabled=settings.agent_reply_enabled,
+        )
         shutdown = ShutdownManager(settings.shutdown_timeout)
         shutdown.install_signal_handlers()
 
@@ -80,7 +84,8 @@ async def run_bot() -> None:
         router.message.register(echo_callback, Command("echo"))
 
         # Register reply handler (for replies to bot messages)
-        router.message.register(agent_callback.handle_reply, F.reply_to_message, F.func(chat_filter))
+        if settings.agent_reply_enabled:
+            router.message.register(agent_callback.handle_reply, F.reply_to_message, F.func(chat_filter))
 
         # Register file handler (should be last among message handlers)
         router.message.register(file_callback, F.document, F.func(chat_filter))

@@ -20,3 +20,4 @@
 2026-05-03 | docs(readme): rewrite README with MCP config, --config flag, and improved structure (#internal)
 2026-05-11 | chore(deps): upgrade kabigon to 0.19.3 (#internal)
 2026-05-12 | chore(deploy): warm up MCP npx packages before start
+2026-06-21 | feat(agent): disable reply handling by default (#internal)

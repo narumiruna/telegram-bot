@@ -18,6 +18,7 @@ def test_agent_callback_init():
 
     assert callback.agent == mock_agent
     assert callback.max_cache_size == 100
+    assert callback.reply_enabled is False
     assert callback.memory == {}
 
 
@@ -320,6 +321,28 @@ async def test_handle_command_no_message():
 # handle_reply
 
 
+async def test_handle_reply_disabled_by_default():
+    mock_agent = Mock()
+
+    mock_bot_user = Mock()
+    mock_bot_user.id = 42
+
+    mock_reply_message = Mock()
+    mock_reply_message.from_user = mock_bot_user
+
+    mock_message = Mock()
+    mock_message.reply_to_message = mock_reply_message
+    mock_message.bot.id = 42
+
+    mock_update = Mock()
+    mock_update.message = mock_message
+
+    callback = AgentCallback(mock_agent)
+    with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
+        await callback.handle_reply(mock_update, None)
+    mock_handle_message.assert_not_called()
+
+
 @patch("bot.callbacks.agent.trace")
 async def test_handle_reply_valid_reply_to_this_bot(mock_trace):
     mock_agent = Mock()
@@ -338,7 +361,7 @@ async def test_handle_reply_valid_reply_to_this_bot(mock_trace):
     mock_update = Mock()
     mock_update.message = mock_message
 
-    callback = AgentCallback(mock_agent)
+    callback = AgentCallback(mock_agent, reply_enabled=True)
     with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
         await callback.handle_reply(mock_update, None)
     mock_handle_message.assert_called_once_with(mock_message)
@@ -362,7 +385,7 @@ async def test_handle_reply_to_other_bot_is_ignored():
     mock_update = Mock()
     mock_update.message = mock_message
 
-    callback = AgentCallback(mock_agent)
+    callback = AgentCallback(mock_agent, reply_enabled=True)
     with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
         await callback.handle_reply(mock_update, None)
     mock_handle_message.assert_not_called()
@@ -385,7 +408,7 @@ async def test_handle_reply_not_bot_reply():
     mock_update = Mock()
     mock_update.message = mock_message
 
-    callback = AgentCallback(mock_agent)
+    callback = AgentCallback(mock_agent, reply_enabled=True)
     with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
         await callback.handle_reply(mock_update, None)
     mock_handle_message.assert_not_called()
@@ -400,7 +423,7 @@ async def test_handle_reply_no_reply_message():
     mock_update = Mock()
     mock_update.message = mock_message
 
-    callback = AgentCallback(mock_agent)
+    callback = AgentCallback(mock_agent, reply_enabled=True)
     with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
         await callback.handle_reply(mock_update, None)
     mock_handle_message.assert_not_called()

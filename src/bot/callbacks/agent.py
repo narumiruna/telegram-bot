@@ -19,17 +19,19 @@ logger = logging.getLogger(__name__)
 
 
 class AgentCallback:
-    def __init__(self, agent: Agent, max_cache_size: int = 50) -> None:
+    def __init__(self, agent: Agent, max_cache_size: int = 50, reply_enabled: bool = False) -> None:
         """Initialize AgentCallback.
 
         Args:
             agent: The Agent instance to use
             max_cache_size: Maximum number of messages to keep in cache (default: 50)
+            reply_enabled: Whether replies to bot messages should trigger the agent (default: False)
         """
         self.agent = agent
 
         # max_cache_size is the maximum number of messages to keep in the cache
         self.max_cache_size = max_cache_size
+        self.reply_enabled = reply_enabled
         self.memory: dict[str, list[TResponseInputItem]] = {}
 
     async def handle_message(self, message: Message) -> None:
@@ -92,6 +94,9 @@ class AgentCallback:
 
     @safe_callback
     async def handle_reply(self, update: Message | Update, context: object | None = None) -> None:
+        if not self.reply_enabled:
+            return
+
         message = get_message_from_update(update)
         if not message:
             return
