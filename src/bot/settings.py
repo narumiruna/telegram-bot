@@ -20,6 +20,7 @@ class Settings(BaseSettings):
 
     # Agent settings
     agent_max_cache_size: int = Field(default=50)
+    agent_reply_enabled: bool = Field(default=False)
 
     # OpenAI / LLM settings
     openai_model: str = Field(default="gpt-5-mini")
