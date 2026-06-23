@@ -5,10 +5,8 @@ import logging
 
 from aiogram.enums import ParseMode
 from aiogram.types import Message
-from aiogram.types import Update
 from twse.stock_info import get_stock_info
 
-from bot.callbacks.utils import get_message_from_update
 from bot.callbacks.utils import safe_callback
 from bot.callbacks.utils import strip_command
 from bot.yahoo_finance import query_tickers
@@ -16,11 +14,7 @@ from bot.yahoo_finance import query_tickers
 logger = logging.getLogger(__name__)
 
 
-def _get_symbols(message: Message, context: object | None) -> list[str]:
-    context_args = getattr(context, "args", None)
-    if context_args:
-        return list(context_args)
-
+def _get_symbols(message: Message) -> list[str]:
     text = strip_command(message.text or "")
     if not text:
         return []
@@ -58,12 +52,8 @@ def _combine_results(yf_result: str, twse_results: list[str]) -> str:
 
 
 @safe_callback
-async def query_ticker_callback(update: Message | Update, context: object | None = None) -> None:
-    message = get_message_from_update(update)
-    if not message:
-        return
-
-    symbols = _get_symbols(message, context)
+async def query_ticker_callback(message: Message) -> None:
+    symbols = _get_symbols(message)
     if not symbols:
         return
 

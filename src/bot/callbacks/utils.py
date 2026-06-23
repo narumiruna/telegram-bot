@@ -2,10 +2,8 @@ import asyncio
 import logging
 import re
 from functools import wraps
-from typing import Any
 
 from aiogram.types import Message
-from aiogram.types import Update
 
 from bot.utils import load_url
 
@@ -103,9 +101,9 @@ def get_message_text_without_reply(message: Message, include_user_name: bool = F
     )
 
 
-def format_reply_context(reply_text: str, current_text: str) -> str:
+def format_reply_context(reply_content: str, current_text: str) -> str:
     """Format reply context with explicit labels for the model."""
-    return f"Replied message:\n{reply_text}\n\nCurrent message:\n{current_text}"
+    return f"Replied message:\n{reply_content}\n\nCurrent message:\n{current_text}"
 
 
 def _get_reply_message_text(message: Message, include_reply: bool, include_user_name: bool) -> str:
@@ -133,22 +131,14 @@ def append_url_contents(message_text: str, url_contents: list[tuple[str, str]]) 
     return "\n\n".join(sections)
 
 
-def _is_message_like(obj: Any) -> bool:
-    if obj is None:
-        return False
-    if hasattr(obj, "message") and not isinstance(obj, Message):
-        return False
-    return isinstance(obj, Message) or hasattr(obj, "answer") or hasattr(obj, "reply_text")
+def _extract_message(args: tuple[object, ...], kwargs: dict[str, object]) -> Message | None:
+    message = kwargs.get("message")
+    if isinstance(message, Message):
+        return message
 
-
-def _extract_message(args: tuple[Any, ...]) -> Message | None:
     for arg in args:
-        if _is_message_like(arg):
+        if isinstance(arg, Message):
             return arg
-    for arg in args:
-        message = getattr(arg, "message", None)
-        if _is_message_like(message):
-            return message
     return None
 
 
@@ -254,7 +244,7 @@ def safe_callback(callback_func):
 
     @wraps(callback_func)
     async def wrapper(*args, **kwargs):
-        message = _extract_message(args)
+        message = _extract_message(args, kwargs)
 
         try:
             return await callback_func(*args, **kwargs)
@@ -283,16 +273,3 @@ def safe_callback(callback_func):
             raise
 
     return wrapper
-
-
-def get_message_from_update(update_or_message: Message | Update | None) -> Message | None:
-    if update_or_message is None:
-        return None
-    message = getattr(update_or_message, "message", None)
-    if message is not None and (
-        isinstance(message, Message) or hasattr(message, "answer") or hasattr(message, "reply_text")
-    ):
-        return message
-    if isinstance(update_or_message, Message):
-        return update_or_message
-    return None

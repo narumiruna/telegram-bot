@@ -27,3 +27,7 @@
 - Symptom: Sending a bare command (e.g. `/f`) as a reply to a URL-only message silently does nothing.
   Root cause: `get_processed_message_text` early-exited with `(None, None)` when `current_message_text` was empty (command stripped), before ever reading `reply_to_message`.
   Prevention: Gather both current and reply texts before the empty-guard; only return early when both are empty.
+
+- Symptom: A `@safe_callback` aiogram handler logs and re-raises errors but does not send the user-facing error reply.
+  Root cause: aiogram dependency injection may call handlers with `message=...` as a keyword argument, so scanning only positional args misses the `Message`.
+  Prevention: Error wrappers around aiogram handlers must check both positional args and the `message` keyword for `aiogram.types.Message`.

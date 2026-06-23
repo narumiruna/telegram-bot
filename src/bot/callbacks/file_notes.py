@@ -10,21 +10,11 @@ from typing import cast
 from aiogram import Bot
 from aiogram.types import Document
 from aiogram.types import Message
-from aiogram.types import Update
 from kabigon.loaders.pdf import read_pdf_content
 from kabigon.loaders.utils import read_html_content
 
 from bot.agents.writer import write_article
-from bot.callbacks.utils import get_message_from_update
 from bot.callbacks.utils import safe_callback
-
-
-def _get_bot(context: object | None) -> Bot | None:
-    if isinstance(context, Bot):
-        return context
-    if context is None:
-        return None
-    return getattr(context, "bot", None)
 
 
 async def _download_document(bot: Bot, document: Document) -> Path | None:
@@ -49,15 +39,7 @@ def _read_document(file_path: Path) -> str | None:
 
 
 @safe_callback
-async def file_callback(update: Message | Update, context: object | None = None) -> None:
-    message = get_message_from_update(update)
-    if not message:
-        return
-
-    bot = _get_bot(context)
-    if bot is None:
-        return
-
+async def file_callback(message: Message, bot: Bot) -> None:
     document = message.document
     if not document:
         return

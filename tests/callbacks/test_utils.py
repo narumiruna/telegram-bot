@@ -328,7 +328,7 @@ async def test_multiple_urls_require_url(mock_parse_urls, mock_load_url, test_us
 
 @pytest.mark.asyncio
 @patch("bot.callbacks.utils.parse_urls")
-async def test_include_reply_to_message_true_includes_reply_text(mock_parse_urls, test_user: User):
+async def test_include_reply_to_message_true_includes_reply_content(mock_parse_urls, test_user: User):
     mock_parse_urls.return_value = []
 
     reply_message = Mock(spec=Message)
@@ -418,7 +418,7 @@ async def test_reply_message_with_reply_url_keeps_original_sections(mock_parse_u
 
 @pytest.mark.asyncio
 @patch("bot.callbacks.utils.parse_urls")
-async def test_include_reply_to_message_false_excludes_reply_text(mock_parse_urls, test_user: User):
+async def test_include_reply_to_message_false_excludes_reply_content(mock_parse_urls, test_user: User):
     mock_parse_urls.return_value = []
 
     reply_message = Mock(spec=Message)
@@ -472,6 +472,21 @@ async def test_safe_callback_exception_handling():
     call_args = mock_message.answer.call_args[0][0]
     assert "抱歉" in call_args
     assert "錯誤" in call_args
+
+
+@pytest.mark.asyncio
+async def test_safe_callback_exception_handling_with_keyword_message():
+    mock_message = Mock(spec=Message)
+    mock_message.answer = AsyncMock()
+
+    @safe_callback
+    async def test_callback(message):
+        raise ValueError("Test error")
+
+    with pytest.raises(ValueError):
+        await test_callback(message=mock_message)
+
+    mock_message.answer.assert_called_once()
 
 
 @pytest.mark.asyncio

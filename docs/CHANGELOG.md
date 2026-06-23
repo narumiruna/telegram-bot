@@ -21,3 +21,6 @@
 2026-05-11 | chore(deps): upgrade kabigon to 0.19.3 (#internal)
 2026-05-12 | chore(deploy): warm up MCP npx packages before start
 2026-06-21 | feat(agent): disable reply handling by default (#internal)
+2026-06-23 | docs(plan): add aiogram message callback cleanup plan (#internal)
+2026-06-23 | refactor(callbacks): remove non-aiogram callback plumbing (#internal)
+2026-06-23 | fix(callbacks): preserve safe callback errors with keyword messages (#454)
