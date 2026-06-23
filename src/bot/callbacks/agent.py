@@ -8,9 +8,7 @@ from agents import Runner
 from agents import TResponseInputItem
 from agents import trace
 from aiogram.types import Message
-from aiogram.types import Update
 
-from bot.callbacks.utils import get_message_from_update
 from bot.callbacks.utils import get_processed_message_text
 from bot.callbacks.utils import safe_callback
 from bot.core.message_response import MessageResponse
@@ -84,21 +82,13 @@ class AgentCallback:
         logger.debug("Saved %s messages to memory for chat key: %s", len(input_items), memory_key)
 
     @safe_callback
-    async def handle_command(self, update: Message | Update, context: object | None = None) -> None:
-        message = get_message_from_update(update)
-        if not message:
-            return
-
+    async def handle_command(self, message: Message) -> None:
         with trace("handle_command"):
             await self.handle_message(message)
 
     @safe_callback
-    async def handle_reply(self, update: Message | Update, context: object | None = None) -> None:
+    async def handle_reply(self, message: Message) -> None:
         if not self.reply_enabled:
-            return
-
-        message = get_message_from_update(update)
-        if not message:
             return
 
         # Check if this is a reply to this bot's own message

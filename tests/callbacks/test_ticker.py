@@ -1,4 +1,5 @@
 import json
+from typing import cast
 from unittest.mock import AsyncMock
 from unittest.mock import Mock
 from unittest.mock import patch
@@ -6,7 +7,6 @@ from unittest.mock import patch
 import pytest
 from aiogram.enums import ParseMode
 from aiogram.types import Message
-from aiogram.types import Update
 from aiogram.types import User
 
 from bot.callbacks.ticker import query_ticker_callback
@@ -17,29 +17,20 @@ def test_user() -> User:
     return User(id=123, is_bot=False, first_name="TestUser", username="testuser")
 
 
-@pytest.mark.asyncio
-async def test_query_ticker_callback_no_message():
-    update = Mock(spec=Update)
-    update.message = None
-    context = Mock()
-
-    result = await query_ticker_callback(update, context)
-    assert result is None
+def _message(text: str, test_user: User) -> tuple[Message, AsyncMock]:
+    message = Mock(spec=Message)
+    message.text = text
+    message.from_user = test_user
+    answer = AsyncMock()
+    message.answer = answer
+    return cast(Message, message), answer
 
 
 @pytest.mark.asyncio
 async def test_query_ticker_callback_no_args(test_user: User):
-    message = Mock(spec=Message)
-    message.text = "/ticker"
-    message.from_user = test_user
+    message, _answer = _message("/ticker", test_user)
 
-    update = Mock(spec=Update)
-    update.message = message
-
-    context = Mock()
-    context.args = []
-
-    result = await query_ticker_callback(update, context)
+    result = await query_ticker_callback(message)
     assert result is None
 
 
@@ -53,24 +44,15 @@ async def test_query_ticker_callback_success(mock_get_stock_info, mock_query_tic
     mock_stock_info.pretty_repr.return_value = "TWSE result for AAPL"
     mock_get_stock_info.return_value = mock_stock_info
 
-    message = Mock(spec=Message)
-    message.text = "/ticker AAPL"
-    message.from_user = test_user
-    message.answer = AsyncMock()
+    message, answer = _message("/ticker AAPL", test_user)
 
-    update = Mock(spec=Update)
-    update.message = message
-
-    context = Mock()
-    context.args = ["AAPL"]
-
-    await query_ticker_callback(update, context)
+    await query_ticker_callback(message)
 
     mock_query_tickers.assert_called_once_with(["AAPL"])
     mock_get_stock_info.assert_called_once_with("AAPL")
 
     expected_result = "Yahoo Finance result for AAPL\n\nTWSE result for AAPL"
-    message.answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
+    answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
 
 @pytest.mark.asyncio
@@ -83,24 +65,15 @@ async def test_query_ticker_callback_yahoo_finance_error(mock_get_stock_info, mo
     mock_stock_info.pretty_repr.return_value = "TWSE result for AAPL"
     mock_get_stock_info.return_value = mock_stock_info
 
-    message = Mock(spec=Message)
-    message.text = "/ticker AAPL"
-    message.from_user = test_user
-    message.answer = AsyncMock()
+    message, answer = _message("/ticker AAPL", test_user)
 
-    update = Mock(spec=Update)
-    update.message = message
-
-    context = Mock()
-    context.args = ["AAPL"]
-
-    await query_ticker_callback(update, context)
+    await query_ticker_callback(message)
 
     mock_query_tickers.assert_called_once_with(["AAPL"])
     mock_get_stock_info.assert_called_once_with("AAPL")
 
     expected_result = "TWSE result for AAPL"
-    message.answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
+    answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
 
 @pytest.mark.asyncio
@@ -110,24 +83,15 @@ async def test_query_ticker_callback_twse_error(mock_get_stock_info, mock_query_
     mock_query_tickers.return_value = "Yahoo Finance result for AAPL"
     mock_get_stock_info.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
 
-    message = Mock(spec=Message)
-    message.text = "/ticker AAPL"
-    message.from_user = test_user
-    message.answer = AsyncMock()
+    message, answer = _message("/ticker AAPL", test_user)
 
-    update = Mock(spec=Update)
-    update.message = message
-
-    context = Mock()
-    context.args = ["AAPL"]
-
-    await query_ticker_callback(update, context)
+    await query_ticker_callback(message)
 
     mock_query_tickers.assert_called_once_with(["AAPL"])
     mock_get_stock_info.assert_called_once_with("AAPL")
 
     expected_result = "Yahoo Finance result for AAPL"
-    message.answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
+    answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
 
 @pytest.mark.asyncio
@@ -143,24 +107,15 @@ async def test_query_ticker_callback_multiple_symbols(mock_get_stock_info, mock_
 
     mock_get_stock_info.side_effect = [mock_stock_info1, mock_stock_info2]
 
-    message = Mock(spec=Message)
-    message.text = "/ticker AAPL GOOGL"
-    message.from_user = test_user
-    message.answer = AsyncMock()
+    message, answer = _message("/ticker AAPL GOOGL", test_user)
 
-    update = Mock(spec=Update)
-    update.message = message
-
-    context = Mock()
-    context.args = ["AAPL", "GOOGL"]
-
-    await query_ticker_callback(update, context)
+    await query_ticker_callback(message)
 
     mock_query_tickers.assert_called_once_with(["AAPL", "GOOGL"])
     assert mock_get_stock_info.call_count == 2
 
     expected_result = "Yahoo Finance results\n\nTWSE result for AAPL\n\nTWSE result for GOOGL"
-    message.answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
+    answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
 
 @pytest.mark.asyncio
@@ -170,21 +125,12 @@ async def test_query_ticker_callback_no_results(mock_get_stock_info, mock_query_
     mock_query_tickers.side_effect = Exception("No data")
     mock_get_stock_info.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
 
-    message = Mock(spec=Message)
-    message.text = "/ticker INVALID"
-    message.from_user = test_user
-    message.answer = AsyncMock()
+    message, answer = _message("/ticker INVALID", test_user)
 
-    update = Mock(spec=Update)
-    update.message = message
-
-    context = Mock()
-    context.args = ["INVALID"]
-
-    result = await query_ticker_callback(update, context)
+    result = await query_ticker_callback(message)
 
     assert result is None
-    message.answer.assert_called_once()
-    call_args = message.answer.call_args[0][0]
+    answer.assert_called_once()
+    call_args = answer.call_args[0][0]
     assert "無法查詢到股票代碼" in call_args
     assert "INVALID" in call_args
