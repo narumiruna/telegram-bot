@@ -8,7 +8,9 @@ import pytest
 from aiogram.enums import ParseMode
 from aiogram.types import Message
 from aiogram.types import User
+from twse.stock_info import StockInfo
 
+from bot.callbacks.ticker import _query_twse
 from bot.callbacks.ticker import query_ticker_callback
 
 
@@ -26,6 +28,13 @@ def _message(text: str, test_user: User) -> tuple[Message, AsyncMock]:
     return cast(Message, message), answer
 
 
+def _stock_response(symbol: str, name: str) -> tuple[Mock, str]:
+    stock = StockInfo.model_validate(
+        {"c": symbol, "n": name, "o": 100, "h": 110, "l": 90, "z": 105, "y": 100, "v": 1000, "ex": "tse"}
+    )
+    return Mock(msg_array=[stock]), stock.pretty_repr()
+
+
 @pytest.mark.asyncio
 async def test_query_ticker_callback_no_args(test_user: User):
     message, _answer = _message("/ticker", test_user)
@@ -35,13 +44,26 @@ async def test_query_ticker_callback_no_args(test_user: User):
 
 
 @pytest.mark.asyncio
+@patch("bot.callbacks.ticker.get_stock_info")
+async def test_query_twse_escapes_markdown_in_stock_name(mock_get_stock_info):
+    stock = StockInfo.model_validate(
+        {"c": "2327", "n": "國巨*", "o": 663, "h": 666, "l": 630, "z": 630, "y": 699, "v": 30727, "ex": "tse"}
+    )
+    response = Mock(msg_array=[stock])
+    mock_get_stock_info.return_value = response
+
+    result = await _query_twse(["2327"])
+
+    assert result[0].startswith("📊 *國巨\\* \\(2327\\)*")
+
+
+@pytest.mark.asyncio
 @patch("bot.callbacks.ticker.query_tickers")
 @patch("bot.callbacks.ticker.get_stock_info")
 async def test_query_ticker_callback_success(mock_get_stock_info, mock_query_tickers, test_user: User):
     mock_query_tickers.return_value = "Yahoo Finance result for AAPL"
 
-    mock_stock_info = Mock()
-    mock_stock_info.pretty_repr.return_value = "TWSE result for AAPL"
+    mock_stock_info, twse_result = _stock_response("AAPL", "AAPL Taiwan")
     mock_get_stock_info.return_value = mock_stock_info
 
     message, answer = _message("/ticker AAPL", test_user)
@@ -51,7 +73,7 @@ async def test_query_ticker_callback_success(mock_get_stock_info, mock_query_tic
     mock_query_tickers.assert_called_once_with(["AAPL"])
     mock_get_stock_info.assert_called_once_with("AAPL")
 
-    expected_result = "Yahoo Finance result for AAPL\n\nTWSE result for AAPL"
+    expected_result = f"Yahoo Finance result for AAPL\n\n{twse_result}"
     answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
 
@@ -61,8 +83,7 @@ async def test_query_ticker_callback_success(mock_get_stock_info, mock_query_tic
 async def test_query_ticker_callback_yahoo_finance_error(mock_get_stock_info, mock_query_tickers, test_user: User):
     mock_query_tickers.side_effect = Exception("Yahoo Finance API error")
 
-    mock_stock_info = Mock()
-    mock_stock_info.pretty_repr.return_value = "TWSE result for AAPL"
+    mock_stock_info, twse_result = _stock_response("AAPL", "AAPL Taiwan")
     mock_get_stock_info.return_value = mock_stock_info
 
     message, answer = _message("/ticker AAPL", test_user)
@@ -72,7 +93,7 @@ async def test_query_ticker_callback_yahoo_finance_error(mock_get_stock_info, mo
     mock_query_tickers.assert_called_once_with(["AAPL"])
     mock_get_stock_info.assert_called_once_with("AAPL")
 
-    expected_result = "TWSE result for AAPL"
+    expected_result = twse_result
     answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
 
@@ -100,10 +121,8 @@ async def test_query_ticker_callback_twse_error(mock_get_stock_info, mock_query_
 async def test_query_ticker_callback_multiple_symbols(mock_get_stock_info, mock_query_tickers, test_user: User):
     mock_query_tickers.return_value = "Yahoo Finance results"
 
-    mock_stock_info1 = Mock()
-    mock_stock_info1.pretty_repr.return_value = "TWSE result for AAPL"
-    mock_stock_info2 = Mock()
-    mock_stock_info2.pretty_repr.return_value = "TWSE result for GOOGL"
+    mock_stock_info1, twse_result1 = _stock_response("AAPL", "AAPL Taiwan")
+    mock_stock_info2, twse_result2 = _stock_response("GOOGL", "GOOGL Taiwan")
 
     mock_get_stock_info.side_effect = [mock_stock_info1, mock_stock_info2]
 
@@ -114,7 +133,7 @@ async def test_query_ticker_callback_multiple_symbols(mock_get_stock_info, mock_
     mock_query_tickers.assert_called_once_with(["AAPL", "GOOGL"])
     assert mock_get_stock_info.call_count == 2
 
-    expected_result = "Yahoo Finance results\n\nTWSE result for AAPL\n\nTWSE result for GOOGL"
+    expected_result = f"Yahoo Finance results\n\n{twse_result1}\n\n{twse_result2}"
     answer.assert_called_once_with(expected_result, parse_mode=ParseMode.MARKDOWN_V2)
 
 

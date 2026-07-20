@@ -5,6 +5,7 @@
 - `Message.answer(...)` 只會送到同一個 chat；要明確回覆到觸發訊息時，改用 `Message.reply(...)` 或帶 `reply_parameters` 的送法。
 - 共享 response model 從 `answer()` 改成 `reply()` 時，要同步更新所有 callbacks 與測試的 awaited mocks，不然很容易出現 `'Mock' object can't be awaited`。
 - callback 測試若會走到 `logfire.span(...)`，要在 `tests/conftest.py` 先設 `LOGFIRE_IGNORE_NO_CONFIG=1`，不然 pytest 會噴未設定 warning。
+- TWSE 的 `pretty_repr()` 不會跳脫股票名稱內的 MarkdownV2 字元（例如 `國巨*`）；送 Telegram 前要先跳脫外部文字欄位，否則會出現 `can't parse entities`。
 
 ## TASTE
 

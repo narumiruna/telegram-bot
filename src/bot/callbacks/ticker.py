@@ -5,10 +5,12 @@ import logging
 
 from aiogram.enums import ParseMode
 from aiogram.types import Message
+from twse.stock_info import StockInfoResponse
 from twse.stock_info import get_stock_info
 
 from bot.callbacks.utils import safe_callback
 from bot.callbacks.utils import strip_command
+from bot.yahoo_finance import escape_markdown
 from bot.yahoo_finance import query_tickers
 
 logger = logging.getLogger(__name__)
@@ -30,6 +32,21 @@ def _query_yahoo(symbols: list[str]) -> str:
         return ""
 
 
+def _format_twse_result(result: StockInfoResponse) -> str:
+    formatted_stocks = []
+    for stock in result.msg_array:
+        if not stock.exists():
+            continue
+        escaped_stock = stock.model_copy(
+            update={
+                "name": escape_markdown(stock.name or ""),
+                "symbol": escape_markdown(stock.symbol or ""),
+            }
+        )
+        formatted_stocks.append(escaped_stock.pretty_repr())
+    return "\n\n".join(formatted_stocks)
+
+
 async def _query_twse(symbols: list[str]) -> list[str]:
     results = []
     for symbol in symbols:
@@ -38,8 +55,9 @@ async def _query_twse(symbols: list[str]) -> list[str]:
         except json.JSONDecodeError as e:
             logger.warning("Failed to query TWSE for %s: %s", symbol, e)
             continue
-        if result.msg_array:
-            results.append(result.pretty_repr())
+        formatted_result = _format_twse_result(result)
+        if formatted_result:
+            results.append(formatted_result)
     return results
 
 

@@ -1,8 +1,8 @@
 import logging
-import re
 from typing import Any
 
 import yfinance as yf
+from aiogram.utils.text_decorations import markdown_decoration
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +56,7 @@ def escape_markdown(text: str) -> str:
     Returns:
         Escaped text string, or empty string if input is None
     """
-    # Convert to string first
-    pattern = r"([_*\[\]()~`>#+=|{}.!-])"
-    return re.sub(pattern, r"\\\1", text)
+    return markdown_decoration.quote(text)
 
 
 def format_value(value: float) -> str:
