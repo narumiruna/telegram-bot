@@ -31,7 +31,7 @@ def to_float(value: Any) -> float:
 
     try:
         return float(value)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return 0.0
 
 

@@ -31,3 +31,7 @@
 - Symptom: A `@safe_callback` aiogram handler logs and re-raises errors but does not send the user-facing error reply.
   Root cause: aiogram dependency injection may call handlers with `message=...` as a keyword argument, so scanning only positional args misses the `Message`.
   Prevention: Error wrappers around aiogram handlers must check both positional args and the `message` keyword for `aiogram.types.Message`.
+
+- Symptom: Deployment selects an ancient `numba` release that fails to build on the configured Python version.
+  Root cause: `uv lock --upgrade` can backtrack to `numba` 0.53.1 when a newer NumPy exceeds current `numba` constraints, while that old release's metadata does not expose its runtime Python upper bound.
+  Prevention: Keep a supported `numba` lower-bound constraint and make deployment pass the intended Python version explicitly to `uv sync`.

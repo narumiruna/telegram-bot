@@ -22,7 +22,7 @@ class ShutdownManager:
         for sig in (signal.SIGINT, signal.SIGTERM):
             try:
                 loop.add_signal_handler(sig, self.trigger, sig)
-            except (NotImplementedError, RuntimeError):
+            except NotImplementedError, RuntimeError:
                 logger.warning("Signal handlers are not supported in this runtime.")
                 break
 

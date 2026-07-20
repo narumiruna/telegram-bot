@@ -5,7 +5,7 @@ Provides chat assistance, URL summarization, translation, article rewriting, fin
 
 ## Requirements
 
-- Python `>=3.13`
+- Python `>=3.14`
 - [`uv`](https://github.com/astral-sh/uv)
 
 ## Quick Start

@@ -17,7 +17,7 @@ jobs:
     runs-on: self-hosted
     strategy:
       matrix:
-        python-version: ["3.13"]
+        python-version: ["3.14"]
     steps:
       - uses: actions/checkout@v7
       - name: Sync code to runtime
@@ -60,9 +60,8 @@ jobs:
         working-directory: ${{ env.WORKDIR }}
         run: |
           cp ${{ env.PLIST_FILE }} ${{ env.PLIST_DIR }}
-          # uv venv --clear --managed-python --python ${{ matrix.python-version }}
           rm -rf .venv
-          uv sync
+          uv sync --python "${{ matrix.python-version }}"
           uv run playwright install chromium
       - name: Start service
         shell: bash

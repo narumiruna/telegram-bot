@@ -26,3 +26,4 @@
 2026-06-23 | fix(callbacks): preserve safe callback errors with keyword messages (#454)
 2026-07-20 | fix(ticker): escape TWSE stock names for Telegram MarkdownV2 (#internal)
 2026-07-20 | fix(ci): upgrade bump-my-version action for Click compatibility (#internal)
+2026-07-20 | fix(python): require Python 3.14 and prevent incompatible numba resolution (#internal)

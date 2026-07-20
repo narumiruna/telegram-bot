@@ -3,7 +3,7 @@ name            = "bot"
 version         = "0.5.3"
 description     = ""
 readme          = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 authors         = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 dependencies    = [
   "aiogram>=3.29.0",
@@ -106,3 +106,6 @@ exclude = ["uv.lock"]
 [tool.tombi.format.rules]
 key-value-equals-sign-alignment = true
 trailing-comment-alignment      = true
+
+[tool.uv]
+constraint-dependencies = ["numba>=0.65.1"]

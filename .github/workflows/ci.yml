@@ -13,7 +13,7 @@ jobs:
   ci:
     runs-on: self-hosted
     env:
-      PYTHON_VERSION: 3.13
+      PYTHON_VERSION: 3.14
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
