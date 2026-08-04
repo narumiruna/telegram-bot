@@ -49,7 +49,7 @@ OPENAI_BASE_URL=http://127.0.0.1:8080/openai/v1
 BOT_WHITELIST=comma,separated,chat_ids   # restrict access to specific chat IDs
 DEVELOPER_CHAT_ID=123456789              # receives error notifications
 
-OPENAI_MODEL=gpt-5-mini
+OPENAI_MODEL=gpt-5.6-luna
 OPENAI_TEMPERATURE=0.0
 AGENT_MAX_CACHE_SIZE=50
 AGENT_REPLY_ENABLED=false      # set true to route replies to bot messages into /a
@@ -74,7 +74,7 @@ See `.env.example` for a complete template.
 | `/help` | Show built-in help |
 | `/a`, `/gpt` | Chat with the agent |
 | `/model` | Show the current model |
-| `/setmodel <name>` | Set model at runtime (`gpt-4.1`, `gpt-5-mini`, `gpt-5-nano`, `gpt-5.1-codex-mini`, `gpt-5.3-codex`, `gpt-5.4`) |
+| `/setmodel <name>` | Set model at runtime (`gpt-5.6-luna`) |
 | `/s` | Summarize a URL |
 | `/jp`, `/tc`, `/en` | Translate message text to Japanese, Traditional Chinese, or English |
 | `/t` | Query ticker data (Yahoo Finance + TWSE) |

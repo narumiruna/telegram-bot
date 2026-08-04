@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     agent_reply_enabled: bool = Field(default=False)
 
     # OpenAI / LLM settings
-    openai_model: str = Field(default="gpt-5-mini")
+    openai_model: str = Field(default="gpt-5.6-luna")
     openai_temperature: float = Field(default=0.0)
 
     # Observability settings

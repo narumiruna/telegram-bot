@@ -9,6 +9,7 @@ _AVAILABLE_MODELS: list[str] = [
     "gpt-5.1-codex-mini",
     "gpt-5.3-codex",
     "gpt-5.4",
+    "gpt-5.6-luna",
 ]
 
 
