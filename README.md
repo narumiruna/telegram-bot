@@ -73,8 +73,6 @@ See `.env.example` for a complete template.
 |---|---|
 | `/help` | Show built-in help |
 | `/a`, `/gpt` | Chat with the agent |
-| `/model` | Show the current model |
-| `/setmodel <name>` | Set model at runtime (`gpt-5.6-luna`) |
 | `/s` | Summarize a URL |
 | `/jp`, `/tc`, `/en` | Translate message text to Japanese, Traditional Chinese, or English |
 | `/t` | Query ticker data (Yahoo Finance + TWSE) |
