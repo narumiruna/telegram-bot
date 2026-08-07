@@ -7,7 +7,7 @@ requires-python = ">=3.14"
 authors         = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 dependencies    = [
   "aiogram>=3.29.0",
-  "chonkie==1.6.8",
+  "chonkie==1.7.0",
   "duckduckgo-search>=8.1.1",
   "httpx>=0.28.1",
   "kabigon>=0.19.5",
