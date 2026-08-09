@@ -20,7 +20,7 @@
 - `prek run -a`: run repository pre-commit hooks.
 
 ## Coding Style & Naming Conventions
-- Python 3.13+, async-first design, and type hints everywhere.
+- Python 3.14+, async-first design, and type hints everywhere.
 - Follow PEP 8 with a 120-character line length (Ruff).
 - Use `snake_case` for functions/variables, `PascalCase` for classes, and `UPPER_SNAKE_CASE` for constants.
 - Prefer single-responsibility modules and small, focused callbacks.
@@ -43,6 +43,63 @@
 - Local configuration lives in `.env` (see `README.md` for required keys).
 - MCP servers are configured in `config/*.json`.
 - Keep secrets out of git history; use environment variables for tokens.
+
+## Gotchas
+
+- Symptom: When writing Markdown content via shell heredoc, inline code markers around class names can appear to be malformed after complex quote escaping.
+  Root cause: Mixing shell quote boundaries and Markdown backticks in one command makes it easy to misread the rendered command and assume data corruption.
+  Prevention: After any heredoc write containing backticks/quotes, always validate persisted file content with `sed -n` before proceeding.
+
+- Symptom: `gh pr create --body "..."` unexpectedly runs shell commands and fails with `command not found`.
+  Root cause: Backticks in a double-quoted shell argument trigger command substitution before `gh` receives the body text.
+  Prevention: For PR text containing Markdown-like tokens, write content to a temp file and use `gh pr create --body-file`.
+
+- Symptom: `ty` reports `invalid-assignment` when tests assign `AsyncMock` directly to `callback.handle_message`.
+  Root cause: Bound async methods have a concrete callable type, and direct `AsyncMock` attribute assignment violates the checker's attribute type constraints.
+  Prevention: In tests, patch methods with `patch.object(..., new_callable=AsyncMock)` instead of direct reassignment.
+
+- Symptom: Replying to a bot message with a URL causes the model input to lose the user's actual question or the replied context, so the agent answers only from fetched page content.
+  Root cause: URL preprocessing replaced the whole composed message with `load_url()` output instead of appending fetched content after the original reply/current text.
+  Prevention: Keep reply/current message blocks intact in the final user payload and append URL content as extra sections rather than substituting the prompt.
+
+- Symptom: A Telegram response appears in the same chat but is not linked to the message that triggered it.
+  Root cause: `Message.answer(...)` sends a regular chat message and does not establish a reply relationship unless reply parameters are supplied.
+  Prevention: Use `Message.reply(...)` when responding directly to the triggering message, or pass `reply_parameters` explicitly.
+
+- Symptom: After renaming shared Telegram response delivery from `answer()` to `reply()`, tests fail with `'Mock' object can't be awaited` or callbacks still call missing methods.
+  Root cause: Callers and test doubles were only partially migrated, so some code still invoked `answer(message)` or mocked `message.answer` while the implementation awaited `message.reply`.
+  Prevention: When changing a shared response method name, sweep all callbacks and tests together, including every awaited `Message` mock.
+
+- Symptom: Pytest shows `LogfireNotConfiguredWarning` when callback tests hit `logfire.span(...)`.
+  Root cause: Tests call instrumented code paths without the app's normal `configure_logging()` startup, so Logfire stays unconfigured.
+  Prevention: In test bootstrap, set `LOGFIRE_IGNORE_NO_CONFIG=1` so callback tests can run spans without warning noise.
+
+- Symptom: Sending a bare command (e.g. `/f`) as a reply to a URL-only message silently does nothing.
+  Root cause: `get_processed_message_text` early-exited with `(None, None)` when `current_message_text` was empty (command stripped), before ever reading `reply_to_message`.
+  Prevention: Gather both current and reply texts before the empty-guard; only return early when both are empty.
+
+- Symptom: A `@safe_callback` aiogram handler logs and re-raises errors but does not send the user-facing error reply.
+  Root cause: aiogram dependency injection may call handlers with `message=...` as a keyword argument, so scanning only positional args misses the `Message`.
+  Prevention: Error wrappers around aiogram handlers must check both positional args and the `message` keyword for `aiogram.types.Message`.
+
+- Symptom: Deployment selects an ancient `numba` release that fails to build on the configured Python version.
+  Root cause: `uv lock --upgrade` can backtrack to `numba` 0.53.1 when a newer NumPy exceeds current `numba` constraints, while that old release's metadata does not expose its runtime Python upper bound.
+  Prevention: Keep a supported `numba` lower-bound constraint and make deployment pass the intended Python version explicitly to `uv sync`.
+
+- Symptom: Sending a TWSE ticker whose name contains MarkdownV2 characters, such as `國巨*`, fails with `can't parse entities`.
+  Root cause: `StockInfo.pretty_repr()` interpolates externally sourced names and symbols without escaping Telegram MarkdownV2 syntax.
+  Prevention: Escape each external text field before passing a copied stock model to `pretty_repr()`.
+
+- Symptom: An HTML conversion test expects ATX headings such as `# Notes` but receives Setext headings such as `Notes` followed by `=====`.
+  Root cause: `markdownify` defaults can select Setext heading style, so asserting a guessed markdown representation couples the test to third-party formatting details.
+  Prevention: When testing adapter wiring, mock `html_to_markdown` and assert the exact bytes passed; test formatting separately only against documented output guarantees.
+
+## Taste
+
+- Testing style preference: Prefer module-level pytest test functions; avoid class-based test containers such as `class TestQueryTickerCallback` unless explicitly requested.
+- Agent memory preference: For single-agent chat flows, persist full `result.to_input_list()` items in memory (including tool-related items) and rely on process restart to reset state after tool changes.
+- Telegram response preference: Use one interface for shared response models, currently `reply()`, and migrate callers and awaited test mocks together instead of mixing `answer()` and `reply()`.
+- Python baseline preference: Target Python 3.14 or newer across project metadata, local development, CI, and deployment.
 
 ## Changelog
 

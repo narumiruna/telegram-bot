@@ -30,3 +30,4 @@
 2026-08-08 | refactor(commands): remove /model and /setmodel commands (#internal)
 2026-08-09 | fix(callbacks): restore HTML document conversion after kabigon upgrade (#internal)
 2026-08-09 | docs(memory): migrate durable guidance from MEMORY.md (#internal)
+2026-08-09 | docs(agents): consolidate gotchas and preferences in AGENTS.md (#internal)
