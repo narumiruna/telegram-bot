@@ -7,7 +7,19 @@ from aiogram import Bot
 from aiogram.types import Document
 from aiogram.types import Message
 
+from bot.callbacks.file_notes import _read_document
 from bot.callbacks.file_notes import file_callback
+
+
+@patch("bot.callbacks.file_notes.html_to_markdown")
+def test_read_document_converts_html_bytes(mock_html_to_markdown, tmp_path):
+    file_path = tmp_path / "note.html"
+    html = b"<h1>Notes</h1><p>Body</p>"
+    file_path.write_bytes(html)
+    mock_html_to_markdown.return_value = "html text"
+
+    assert _read_document(file_path) == "html text"
+    mock_html_to_markdown.assert_called_once_with(html)
 
 
 @pytest.mark.asyncio

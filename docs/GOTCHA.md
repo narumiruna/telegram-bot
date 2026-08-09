@@ -35,3 +35,7 @@
 - Symptom: Deployment selects an ancient `numba` release that fails to build on the configured Python version.
   Root cause: `uv lock --upgrade` can backtrack to `numba` 0.53.1 when a newer NumPy exceeds current `numba` constraints, while that old release's metadata does not expose its runtime Python upper bound.
   Prevention: Keep a supported `numba` lower-bound constraint and make deployment pass the intended Python version explicitly to `uv sync`.
+
+- Symptom: An HTML conversion test expects ATX headings such as `# Notes` but receives Setext headings such as `Notes` followed by `=====`.
+  Root cause: `markdownify` defaults can select Setext heading style, so asserting a guessed markdown representation couples the test to third-party formatting details.
+  Prevention: When testing adapter wiring, mock `html_to_markdown` and assert the exact bytes passed; test formatting separately only against documented output guarantees.

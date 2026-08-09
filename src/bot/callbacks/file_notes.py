@@ -11,7 +11,7 @@ from aiogram import Bot
 from aiogram.types import Document
 from aiogram.types import Message
 from kabigon.loaders.pdf import read_pdf_content
-from kabigon.loaders.utils import read_html_content
+from kabigon.loaders.utils import html_to_markdown
 
 from bot.agents.writer import write_article
 from bot.callbacks.utils import safe_callback
@@ -33,7 +33,7 @@ def _read_document(file_path: Path) -> str | None:
         case ".pdf":
             return read_pdf_content(file_path)
         case ".html":
-            return read_html_content(file_path)
+            return html_to_markdown(file_path.read_bytes())
         case _:
             return None
 
