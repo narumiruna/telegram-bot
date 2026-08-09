@@ -16,6 +16,10 @@
   Root cause: URL preprocessing replaced the whole composed message with `load_url()` output instead of appending fetched content after the original reply/current text.
   Prevention: Keep reply/current message blocks intact in the final user payload and append URL content as extra sections rather than substituting the prompt.
 
+- Symptom: A Telegram response appears in the same chat but is not linked to the message that triggered it.
+  Root cause: `Message.answer(...)` sends a regular chat message and does not establish a reply relationship unless reply parameters are supplied.
+  Prevention: Use `Message.reply(...)` when responding directly to the triggering message, or pass `reply_parameters` explicitly.
+
 - Symptom: After renaming shared Telegram response delivery from `answer()` to `reply()`, tests fail with `'Mock' object can't be awaited` or callbacks still call missing methods.
   Root cause: Callers and test doubles were only partially migrated, so some code still invoked `answer(message)` or mocked `message.answer` while the implementation awaited `message.reply`.
   Prevention: When changing a shared response method name, sweep all callbacks and tests together, including every awaited `Message` mock.
@@ -35,6 +39,10 @@
 - Symptom: Deployment selects an ancient `numba` release that fails to build on the configured Python version.
   Root cause: `uv lock --upgrade` can backtrack to `numba` 0.53.1 when a newer NumPy exceeds current `numba` constraints, while that old release's metadata does not expose its runtime Python upper bound.
   Prevention: Keep a supported `numba` lower-bound constraint and make deployment pass the intended Python version explicitly to `uv sync`.
+
+- Symptom: Sending a TWSE ticker whose name contains MarkdownV2 characters, such as `國巨*`, fails with `can't parse entities`.
+  Root cause: `StockInfo.pretty_repr()` interpolates externally sourced names and symbols without escaping Telegram MarkdownV2 syntax.
+  Prevention: Escape each external text field before passing a copied stock model to `pretty_repr()`.
 
 - Symptom: An HTML conversion test expects ATX headings such as `# Notes` but receives Setext headings such as `Notes` followed by `=====`.
   Root cause: `markdownify` defaults can select Setext heading style, so asserting a guessed markdown representation couples the test to third-party formatting details.
