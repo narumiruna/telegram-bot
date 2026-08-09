@@ -2,21 +2,21 @@
 
 ## Project Structure & Module Organization
 - `src/bot/` contains the Telegram bot implementation.
+- `src/bot/agents/` contains LLM agents and conversation memory.
 - `src/bot/callbacks/` holds Telegram command handlers (e.g., `summary.py`, `translate.py`).
-- `src/bot/chains/` includes LLM processing chains (formatting, summaries, notes).
-- `src/bot/tools/` provides data-source integrations (Yahoo Finance, Wise, DuckDuckGo).
+- `src/bot/core/` contains prompt and response shaping.
+- `src/bot/tools/` contains domain tools for awards, mortgages, tarot, Weblio, and Wise.
+- `src/bot/utils/` contains shared utilities.
 - `tests/` mirrors source structure with pytest-based coverage.
-- `config/` stores MCP server configs such as `config/default.json`.
-- `docs/` contains supplemental documentation.
+- `docs/CHANGELOG.md` records repository changes.
 
 ## Build, Test, and Development Commands
 - `uv sync`: install dependencies into the uv-managed environment.
-- `uv run bot`: start the bot using `config/default.json`.
-- `uv run bot --config config/custom.json`: start with a custom MCP config.
+- `uv run bot`: start the bot using settings loaded from `.env`.
 - `uv run pytest -v -s tests`: run the full test suite with verbose output.
 - `uv run pytest -v -s --cov=src tests`: run tests with coverage reporting.
-- `uv run ruff check src`: lint the codebase.
-- `uv run ty check src`: run static type checks.
+- `uv run ruff check src tests`: lint the codebase.
+- `uv run ty check src tests`: run static type checks.
 - `prek run -a`: run repository pre-commit hooks.
 
 ## Coding Style & Naming Conventions
@@ -41,18 +41,10 @@
 
 ## Configuration & Secrets
 - Local configuration lives in `.env` (see `README.md` for required keys).
-- MCP servers are configured in `config/*.json`.
+- MCP servers are assembled in `src/bot/agents/chat.py` and controlled through environment settings.
 - Keep secrets out of git history; use environment variables for tokens.
 
 ## Gotchas
-
-- Symptom: When writing Markdown content via shell heredoc, inline code markers around class names can appear to be malformed after complex quote escaping.
-  Root cause: Mixing shell quote boundaries and Markdown backticks in one command makes it easy to misread the rendered command and assume data corruption.
-  Prevention: After any heredoc write containing backticks/quotes, always validate persisted file content with `sed -n` before proceeding.
-
-- Symptom: `gh pr create --body "..."` unexpectedly runs shell commands and fails with `command not found`.
-  Root cause: Backticks in a double-quoted shell argument trigger command substitution before `gh` receives the body text.
-  Prevention: For PR text containing Markdown-like tokens, write content to a temp file and use `gh pr create --body-file`.
 
 - Symptom: `ty` reports `invalid-assignment` when tests assign `AsyncMock` directly to `callback.handle_message`.
   Root cause: Bound async methods have a concrete callable type, and direct `AsyncMock` attribute assignment violates the checker's attribute type constraints.
@@ -65,10 +57,6 @@
 - Symptom: A Telegram response appears in the same chat but is not linked to the message that triggered it.
   Root cause: `Message.answer(...)` sends a regular chat message and does not establish a reply relationship unless reply parameters are supplied.
   Prevention: Use `Message.reply(...)` when responding directly to the triggering message, or pass `reply_parameters` explicitly.
-
-- Symptom: After renaming shared Telegram response delivery from `answer()` to `reply()`, tests fail with `'Mock' object can't be awaited` or callbacks still call missing methods.
-  Root cause: Callers and test doubles were only partially migrated, so some code still invoked `answer(message)` or mocked `message.answer` while the implementation awaited `message.reply`.
-  Prevention: When changing a shared response method name, sweep all callbacks and tests together, including every awaited `Message` mock.
 
 - Symptom: Pytest shows `LogfireNotConfiguredWarning` when callback tests hit `logfire.span(...)`.
   Root cause: Tests call instrumented code paths without the app's normal `configure_logging()` startup, so Logfire stays unconfigured.
@@ -99,7 +87,6 @@
 - Testing style preference: Prefer module-level pytest test functions; avoid class-based test containers such as `class TestQueryTickerCallback` unless explicitly requested.
 - Agent memory preference: For single-agent chat flows, persist full `result.to_input_list()` items in memory (including tool-related items) and rely on process restart to reset state after tool changes.
 - Telegram response preference: Use one interface for shared response models, currently `reply()`, and migrate callers and awaited test mocks together instead of mixing `answer()` and `reply()`.
-- Python baseline preference: Target Python 3.14 or newer across project metadata, local development, CI, and deployment.
 
 ## Changelog
 
