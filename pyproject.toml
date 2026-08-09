@@ -6,17 +6,17 @@ readme          = "README.md"
 requires-python = ">=3.14"
 authors         = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 dependencies    = [
-  "aiogram>=3.29.0",
+  "aiogram>=3.30.0",
   "chonkie==1.7.0",
   "duckduckgo-search>=8.1.1",
   "httpx>=0.28.1",
-  "kabigon>=0.19.5",
-  "logfire[httpx,requests]>=4.37.0",
+  "kabigon>=0.19.6",
+  "logfire[httpx,requests]>=4.40.0",
   "markdown2>=2.5.5",
   "mortgage>=1.0.5",
   "nest-asyncio>=1.6.0",
-  "openai-agents>=0.17.7",
-  "pydantic-settings>=2.14.1",
+  "openai-agents>=0.19.4",
+  "pydantic-settings>=2.15.0",
   "python-dotenv>=1.2.2",
   "rich>=15.0.0",
   "telegraph>=2.2.0",
@@ -24,8 +24,8 @@ dependencies    = [
   "tripplus>=0.1.1",
   "twse>=0.5.1",
   "typer-slim>=0.24.0",
-  "yfinance>=1.4.1",
-  "yfmcp>=0.12.2",
+  "yfinance>=1.5.2",
+  "yfmcp>=0.14.0",
   "youtube-search>=2.2.0",
   "youtube-transcript-api>=1.2.4",
 ]
@@ -35,14 +35,14 @@ bot = "bot.cli:main"
 
 [dependency-groups]
 dev = [
-  "prek>=0.4.11",
-  "pytest>=9.1.0",
+  "prek>=0.4.12",
+  "pytest>=9.1.1",
   "pytest-asyncio>=1.4.0",
   "pytest-cov>=7.1.0",
-  "ruff>=0.15.21",
-  "tombi>=1.1.3",
+  "ruff>=0.16.2",
+  "tombi>=1.2.7",
   "toml>=0.10.2",
-  "ty>=0.0.51",
+  "ty>=0.0.69",
 ]
 
 [build-system]
