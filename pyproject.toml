@@ -1,6 +1,6 @@
 [project]
 name            = "bot"
-version         = "0.5.4"
+version         = "0.5.5"
 description     = ""
 readme          = "README.md"
 requires-python = ">=3.14"
@@ -50,7 +50,7 @@ requires      = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
 
 [tool.bumpversion]
-current_version  = "0.5.4"
+current_version  = "0.5.5"
 tag              = true
 commit           = true
 pre_commit_hooks = ["uv lock --upgrade", "git add uv.lock"]
