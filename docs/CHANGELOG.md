@@ -33,3 +33,4 @@
 2026-08-09 | docs(agents): consolidate gotchas and preferences in AGENTS.md (#internal)
 2026-08-09 | docs(agents): remove stale paths, commands, and configuration terms (#internal)
 2026-08-09 | docs(agents): rewrite repository guidance for current workflows (#internal)
+2026-09-02 | fix(reply): retry transient Telegram network failures (#internal)

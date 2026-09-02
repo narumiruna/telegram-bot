@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from bot.settings import settings
 from bot.utils.page import async_create_page
+from bot.utils.reply import reply
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,8 @@ class MessageResponse(BaseModel):
 
     async def reply(self, message: Message, parse_mode: str | None = "HTML") -> Message:
         if len(self.content) <= settings.max_message_length:
-            return await message.reply(
+            return await reply(
+                message,
                 self.build_text(),
                 parse_mode=parse_mode,
                 allow_sending_without_reply=True,
@@ -39,4 +41,4 @@ class MessageResponse(BaseModel):
             title=self.title or "Response",
             html_content=telegraph_html,
         )
-        return await message.reply(url, allow_sending_without_reply=True)
+        return await reply(message, url, allow_sending_without_reply=True)

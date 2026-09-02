@@ -13,6 +13,7 @@ from bot.core.prompt_template import PromptTemplate
 from bot.provider import get_openai_model
 from bot.utils.chunk import recursive_chunk
 from bot.utils.page import async_create_page
+from bot.utils.reply import reply
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ class Article(BaseModel):
 
     async def reply(self, message: Message, parse_mode: str | None = "HTML") -> Message:
         page_url = await self.create_page()
-        return await message.reply(page_url, parse_mode=parse_mode, allow_sending_without_reply=True)
+        return await reply(message, page_url, parse_mode=parse_mode, allow_sending_without_reply=True)
 
 
 async def _write_article(text: str) -> Article:
