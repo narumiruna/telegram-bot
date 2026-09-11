@@ -131,17 +131,6 @@ def append_url_contents(message_text: str, url_contents: list[tuple[str, str]]) 
     return "\n\n".join(sections)
 
 
-def _extract_message(args: tuple[object, ...], kwargs: dict[str, object]) -> Message | None:
-    message = kwargs.get("message")
-    if isinstance(message, Message):
-        return message
-
-    for arg in args:
-        if isinstance(arg, Message):
-            return arg
-    return None
-
-
 def strip_command(text: str) -> str:
     """Remove the command from the text.
     For example:
@@ -219,9 +208,8 @@ def safe_callback(callback_func):
     """統一錯誤處理裝飾器
 
     包裝 callback 函數，捕捉並處理執行期間的例外：
-    1. 通知用戶發生錯誤
-    2. 記錄完整錯誤訊息供除錯
-    3. 重新拋出例外讓全域錯誤處理器可以處理
+    1. 記錄完整錯誤訊息供除錯
+    2. 重新拋出例外，交由全域錯誤處理器產生並傳送錯誤說明
 
     Args:
         callback_func: 要包裝的 async callback 函數或方法
@@ -244,32 +232,17 @@ def safe_callback(callback_func):
 
     @wraps(callback_func)
     async def wrapper(*args, **kwargs):
-        message = _extract_message(args, kwargs)
-
         try:
             return await callback_func(*args, **kwargs)
         except asyncio.CancelledError:
             logger.info("Callback %s cancelled.", callback_func.__name__)
             raise
         except Exception as e:
-            # 記錄錯誤
             logger.exception(
                 "Error in callback %s: %s",
                 callback_func.__name__,
                 str(e),
             )
-
-            # 通知用戶
-            if message:
-                try:
-                    await message.answer("抱歉，處理您的請求時發生錯誤，請稍後再試。\n如果問題持續發生，請聯絡管理員。")
-                except Exception as reply_error:
-                    logger.error(
-                        "Failed to send error message to user: %s",
-                        str(reply_error),
-                    )
-
-            # 重新拋出例外讓全域錯誤處理器處理
             raise
 
     return wrapper

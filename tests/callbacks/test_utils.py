@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import AsyncMock
 from unittest.mock import Mock
 from unittest.mock import patch
@@ -457,7 +458,7 @@ async def test_safe_callback_normal_execution():
 
 
 @pytest.mark.asyncio
-async def test_safe_callback_exception_handling():
+async def test_safe_callback_reraises_without_sending_a_fixed_response():
     mock_message = Mock(spec=Message)
     mock_message.answer = AsyncMock()
 
@@ -468,14 +469,11 @@ async def test_safe_callback_exception_handling():
     with pytest.raises(ValueError):
         await test_callback(mock_message)
 
-    mock_message.answer.assert_called_once()
-    call_args = mock_message.answer.call_args[0][0]
-    assert "抱歉" in call_args
-    assert "錯誤" in call_args
+    mock_message.answer.assert_not_awaited()
 
 
 @pytest.mark.asyncio
-async def test_safe_callback_exception_handling_with_keyword_message():
+async def test_safe_callback_reraises_with_keyword_message():
     mock_message = Mock(spec=Message)
     mock_message.answer = AsyncMock()
 
@@ -486,19 +484,19 @@ async def test_safe_callback_exception_handling_with_keyword_message():
     with pytest.raises(ValueError):
         await test_callback(message=mock_message)
 
-    mock_message.answer.assert_called_once()
+    mock_message.answer.assert_not_awaited()
 
 
 @pytest.mark.asyncio
-async def test_safe_callback_answer_fails():
+async def test_safe_callback_reraises_cancellation_without_sending_response():
     mock_message = Mock(spec=Message)
-    mock_message.answer = AsyncMock(side_effect=Exception("Reply failed"))
+    mock_message.answer = AsyncMock()
 
     @safe_callback
     async def test_callback(message):
-        raise ValueError("Test error")
+        raise asyncio.CancelledError
 
-    with pytest.raises(ValueError):
+    with pytest.raises(asyncio.CancelledError):
         await test_callback(mock_message)
 
-    mock_message.answer.assert_called_once()
+    mock_message.answer.assert_not_awaited()
