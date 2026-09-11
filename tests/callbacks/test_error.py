@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncIterator
 from datetime import UTC
 from datetime import datetime
 from unittest.mock import AsyncMock
@@ -38,8 +39,10 @@ def _make_message() -> Message:
     )
 
 
-def _make_bot() -> Bot:
-    return Bot(token=BOT_TOKEN)
+@pytest.fixture
+async def bot() -> AsyncIterator[Bot]:
+    async with Bot(token=BOT_TOKEN) as test_bot:
+        yield test_bot
 
 
 def _make_error_with_traceback(message: str) -> RuntimeError:
@@ -59,6 +62,7 @@ async def test_error_callback_explains_error_to_user_and_administrator(
     mock_reply,
     mock_send_message,
     monkeypatch,
+    bot,
 ):
     monkeypatch.setattr(settings, "developer_chat_id", "456")
     explanation = ErrorExplanation(
@@ -70,7 +74,6 @@ async def test_error_callback_explains_error_to_user_and_administrator(
     error = TimeoutError("upstream timeout")
     message = _make_message()
     event = _make_event(error, message)
-    bot = _make_bot()
 
     await error_callback(event, bot)
 
@@ -97,13 +100,13 @@ async def test_error_callback_notifies_user_without_configured_administrator(
     mock_reply,
     mock_send_message,
     monkeypatch,
+    bot,
 ):
     monkeypatch.setattr(settings, "developer_chat_id", None)
     explanation = ErrorExplanation(user_message="請先停止重試。", administrator_message="ValueError")
     mock_explain_error.return_value = explanation
     message = _make_message()
     event = _make_event(ValueError("bad input"), message)
-    bot = _make_bot()
 
     await error_callback(event, bot)
 
@@ -120,13 +123,13 @@ async def test_error_callback_notifies_administrator_without_originating_message
     mock_create_page,
     mock_send_message,
     monkeypatch,
+    bot,
 ):
     monkeypatch.setattr(settings, "developer_chat_id", "456")
     explanation = ErrorExplanation(user_message="請稍後重試。", administrator_message="背景工作失敗。")
     mock_explain_error.return_value = explanation
     mock_create_page.return_value = "https://example.com/error"
     event = _make_event(RuntimeError("background failure"), object())
-    bot = _make_bot()
 
     await error_callback(event, bot)
 
@@ -141,13 +144,14 @@ async def test_error_callback_uses_error_derived_fallback_when_agent_fails(
     mock_reply,
     mock_send_message,
     monkeypatch,
+    bot,
 ):
     monkeypatch.setattr(settings, "developer_chat_id", None)
     mock_explain_error.side_effect = RuntimeError("model unavailable")
     message = _make_message()
     event = _make_event(ValueError("invalid input"), message)
 
-    await error_callback(event, _make_bot())
+    await error_callback(event, bot)
 
     response = mock_reply.await_args.args[0]
     assert "處理資料時中止" in response
@@ -172,11 +176,12 @@ async def test_error_callback_skips_agent_for_model_provider_failure(
     mock_send_message,
     monkeypatch,
     error,
+    bot,
 ):
     monkeypatch.setattr(settings, "developer_chat_id", None)
     event = _make_event(error, _make_message())
 
-    await error_callback(event, _make_bot())
+    await error_callback(event, bot)
 
     mock_explain_error.assert_not_awaited()
     mock_reply.assert_awaited_once()
@@ -192,6 +197,7 @@ async def test_error_callback_preserves_original_traceback_when_diagnostics_page
     mock_send_message,
     monkeypatch,
     caplog,
+    bot,
 ):
     monkeypatch.setattr(settings, "developer_chat_id", "456")
     mock_explain_error.return_value = ErrorExplanation(
@@ -201,7 +207,6 @@ async def test_error_callback_preserves_original_traceback_when_diagnostics_page
     mock_create_page.side_effect = RuntimeError("Telegraph unavailable")
     secret = "credential=sensitive"
     event = _make_event(_make_error_with_traceback(secret), object())
-    bot = _make_bot()
 
     with caplog.at_level(logging.ERROR, logger="bot.callbacks.error"):
         await error_callback(event, bot)

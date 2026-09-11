@@ -1,5 +1,5 @@
 import httpx
-from openai import RateLimitError
+from openai import APIStatusError
 
 
 def is_retryable_error(error: BaseException) -> bool:
@@ -24,9 +24,9 @@ def is_retryable_error(error: BaseException) -> bool:
         status_code = error.response.status_code
         return status_code >= 500 or status_code == 429
 
-    # OpenAI specific errors
-    if isinstance(error, RateLimitError):
-        return True
+    # OpenAI status errors use httpx2 responses, so classify their status codes separately.
+    if isinstance(error, APIStatusError):
+        return error.status_code >= 500 or error.status_code == 429
 
     # Connection errors from other libraries (string matching)
     return "connection" in str(error).lower() or "timeout" in str(error).lower()

@@ -36,3 +36,4 @@
 2026-09-02 | fix(reply): retry transient Telegram network failures (#internal)
 2026-09-11 | feat(errors): explain failures to users and administrators with an agent (#internal)
 2026-09-11 | fix(errors): address error-handling review feedback (#472)
+2026-09-11 | fix(errors): preserve retry guidance and close test bot sessions (#473)
