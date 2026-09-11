@@ -35,3 +35,4 @@
 2026-08-09 | docs(agents): rewrite repository guidance for current workflows (#internal)
 2026-09-02 | fix(reply): retry transient Telegram network failures (#internal)
 2026-09-11 | feat(errors): explain failures to users and administrators with an agent (#internal)
+2026-09-11 | fix(errors): address error-handling review feedback (#472)

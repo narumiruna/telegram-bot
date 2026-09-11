@@ -3,10 +3,12 @@ import json
 import logging
 import traceback
 
+from agents.exceptions import ModelTimeoutError
 from aiogram import Bot
 from aiogram.types import CallbackQuery
 from aiogram.types import ErrorEvent
 from aiogram.types import Message
+from openai import APIError
 
 from bot.agents.error import ErrorExplanation
 from bot.agents.error import explain_error
@@ -16,6 +18,16 @@ from bot.settings import settings
 from bot.utils.page import async_create_page
 
 logger = logging.getLogger(__name__)
+
+
+def _log_exception_context(message: str, error: Exception) -> None:
+    traceback_text = "".join(traceback.format_tb(error.__traceback__))
+    logger.error(
+        "%s Error type: %s.\n%s",
+        message,
+        type(error).__name__,
+        traceback_text or "Traceback unavailable.",
+    )
 
 
 def _get_originating_message(event: ErrorEvent) -> Message | None:
@@ -32,10 +44,14 @@ def _get_originating_message(event: ErrorEvent) -> Message | None:
 
 
 async def _get_explanation(error: Exception) -> ErrorExplanation:
+    if isinstance(error, APIError | ModelTimeoutError):
+        logger.info("Skipping error explanation agent for model provider failure: %s", type(error).__name__)
+        return fallback_error_explanation(error)
+
     try:
         return await explain_error(error)
-    except Exception:
-        logger.exception("Error explanation agent failed.")
+    except Exception as explanation_error:
+        _log_exception_context("Error explanation agent failed.", explanation_error)
         return fallback_error_explanation(error)
 
 
@@ -45,8 +61,8 @@ async def _notify_user(message: Message | None, explanation: ErrorExplanation) -
 
     try:
         await MessageResponse(content=explanation.user_message).reply(message, parse_mode=None)
-    except Exception:
-        logger.exception("Failed to send error explanation to user.")
+    except Exception as notification_error:
+        _log_exception_context("Failed to send error explanation to user.", notification_error)
 
 
 def _build_diagnostics_html(event: ErrorEvent) -> str:
@@ -69,8 +85,8 @@ async def _notify_administrator(event: ErrorEvent, bot: Bot, explanation: ErrorE
 
     try:
         page_url = await async_create_page(title="Error", html_content=_build_diagnostics_html(event))
-    except Exception:
-        logger.exception("Failed to create error diagnostics page.")
+    except Exception as diagnostics_error:
+        _log_exception_context("Failed to create error diagnostics page.", diagnostics_error)
         page_url = None
 
     notification = f"錯誤摘要：{explanation.administrator_message}"
@@ -81,12 +97,12 @@ async def _notify_administrator(event: ErrorEvent, bot: Bot, explanation: ErrorE
 
     try:
         await bot.send_message(chat_id=settings.developer_chat_id, text=notification)
-    except Exception:
-        logger.exception("Failed to send error explanation to administrator.")
+    except Exception as notification_error:
+        _log_exception_context("Failed to send error explanation to administrator.", notification_error)
 
 
 async def error_callback(event: ErrorEvent, bot: Bot) -> None:
-    logger.error("Exception while handling an update: %s", event.exception)
+    _log_exception_context("Exception while handling an update.", event.exception)
 
     explanation = await _get_explanation(event.exception)
     await _notify_user(_get_originating_message(event), explanation)
