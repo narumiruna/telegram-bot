@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import re
+from collections.abc import Awaitable
+from collections.abc import Callable
 from functools import wraps
 
 from aiogram.types import Message
@@ -69,16 +71,15 @@ def get_message_text(
     include_reply_to_message: bool = True,
     include_user_name: bool = False,
 ) -> str:
-    message_text = getattr(message, "text", None) or getattr(message, "caption", None) or ""
-    message_text = strip_command(message_text)
+    message_text = strip_command(message.text or message.caption or "")
 
-    if include_user_name:
+    if message_text and include_user_name:
         name = get_user_display_name(message)
         if name:
             message_text = f"{name}: {message_text}"
 
     if include_reply_to_message:
-        reply_to_message = getattr(message, "reply_to_message", None)
+        reply_to_message = message.reply_to_message
         if reply_to_message:
             reply_to_message_text = get_message_text(
                 reply_to_message,
@@ -110,7 +111,7 @@ def _get_reply_message_text(message: Message, include_reply: bool, include_user_
     """Return the reply-to message text, or empty string if absent / excluded."""
     if not include_reply:
         return ""
-    reply_to_message = getattr(message, "reply_to_message", None)
+    reply_to_message = message.reply_to_message
     if reply_to_message:
         return get_message_text_without_reply(reply_to_message, include_user_name=include_user_name)
     return ""
@@ -204,45 +205,21 @@ async def get_processed_message_text(
         return combined_content, None
 
 
-def safe_callback(callback_func):
-    """統一錯誤處理裝飾器
+def safe_callback[**P, R](callback_func: Callable[P, Awaitable[R]]) -> Callable[P, Awaitable[R]]:
+    """Log callback failures and re-raise them for the global error handler.
 
-    包裝 callback 函數，捕捉並處理執行期間的例外：
-    1. 記錄完整錯誤訊息供除錯
-    2. 重新拋出例外，交由全域錯誤處理器產生並傳送錯誤說明
-
-    Args:
-        callback_func: 要包裝的 async callback 函數或方法
-
-    Returns:
-        包裝後的函數
-
-    Example:
-        @safe_callback
-        async def my_callback(message: Message) -> None:
-            # callback implementation
-            pass
-
-        class MyCallback:
-            @safe_callback
-            async def __call__(self, message: Message) -> None:
-                # callback implementation
-                pass
+    Preserve the callback's signature, return value, and cancellation behavior.
     """
 
     @wraps(callback_func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             return await callback_func(*args, **kwargs)
         except asyncio.CancelledError:
-            logger.info("Callback %s cancelled.", callback_func.__name__)
+            logger.info("Callback %s cancelled.", wrapper.__name__)
             raise
         except Exception as e:
-            logger.exception(
-                "Error in callback %s: %s",
-                callback_func.__name__,
-                str(e),
-            )
+            logger.exception("Error in callback %s: %s", wrapper.__name__, e)
             raise
 
     return wrapper

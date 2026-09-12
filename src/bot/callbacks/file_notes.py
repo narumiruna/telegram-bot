@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-import contextlib
-import os
-from collections.abc import Awaitable
-from collections.abc import Callable
+import asyncio
 from pathlib import Path
-from typing import cast
+from tempfile import TemporaryDirectory
 
 from aiogram import Bot
 from aiogram.types import Document
@@ -17,15 +14,15 @@ from bot.agents.writer import write_article
 from bot.callbacks.utils import safe_callback
 
 
-async def _download_document(bot: Bot, document: Document) -> Path | None:
-    file = await bot.get_file(document.file_id)
-    download_to_drive = getattr(file, "download_to_drive", None)
-    if download_to_drive is None:
+async def _get_document_text(bot: Bot, document: Document) -> str | None:
+    suffix = Path(document.file_name or "").suffix.lower()
+    if suffix not in {".pdf", ".html"}:
         return None
-    file_path = await cast(Callable[[], Awaitable[Path | str | None]], download_to_drive)()
-    if not file_path:
-        return None
-    return Path(file_path)
+
+    with TemporaryDirectory(prefix="telegram-bot-") as temp_dir:
+        file_path = Path(temp_dir) / f"document{suffix}"
+        await bot.download(document, destination=file_path)
+        return await asyncio.to_thread(_read_document, file_path)
 
 
 def _read_document(file_path: Path) -> str | None:
@@ -44,15 +41,7 @@ async def file_callback(message: Message, bot: Bot) -> None:
     if not document:
         return
 
-    file_path = await _download_document(bot, document)
-    if not file_path:
-        return
-    try:
-        text = _read_document(file_path)
-    finally:
-        with contextlib.suppress(FileNotFoundError):
-            os.remove(file_path)
-
+    text = await _get_document_text(bot, document)
     if not text:
         return
 

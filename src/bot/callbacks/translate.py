@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Awaitable
 from collections.abc import Callable
 
 import logfire
@@ -14,7 +15,7 @@ from bot.callbacks.utils import safe_callback
 logger = logging.getLogger(__name__)
 
 
-def generate_translation_callback(lang: str) -> Callable[[Message, CommandObject], None]:
+def generate_translation_callback(lang: str) -> Callable[[Message, CommandObject], Awaitable[None]]:
     @safe_callback
     async def callback(message: Message, command: CommandObject) -> None:
         with logfire.span("translation_callback"):
