@@ -1,9 +1,12 @@
 import asyncio
+from datetime import UTC
+from datetime import datetime
 from unittest.mock import AsyncMock
 from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
+from aiogram.types import Chat
 from aiogram.types import Message
 from aiogram.types import User
 
@@ -18,6 +21,17 @@ from bot.callbacks.utils import strip_command
 @pytest.fixture
 def test_user() -> User:
     return User(id=123, is_bot=False, first_name="TestUser", username="testuser")
+
+
+@pytest.fixture
+def test_message(test_user: User) -> Message:
+    return Message(
+        message_id=1,
+        date=datetime.now(UTC),
+        chat=Chat(id=123, type="private"),
+        from_user=test_user,
+        text="Hello world",
+    )
 
 
 @pytest.mark.parametrize(
@@ -113,15 +127,49 @@ def test_get_message_text_with_reply(test_user: User):
     assert result == "Original message\n\nReply message"
 
 
-def test_get_message_text_empty(test_user: User):
-    message = Mock(spec=Message)
-    message.text = None
-    message.caption = None
-    message.from_user = test_user
-    message.reply_to_message = None
+@pytest.mark.parametrize("text", [None, "", "/a", "/a@bot"])
+@pytest.mark.parametrize("include_user_name", [False, True])
+def test_get_message_text_empty(test_message, text, include_user_name):
+    message = test_message.model_copy(update={"text": text})
 
-    result = get_message_text(message)
-    assert result == ""
+    assert get_message_text(message, include_user_name=include_user_name) == ""
+
+
+@pytest.mark.parametrize("include_user_name", [False, True])
+def test_get_message_text_uses_caption(test_message, include_user_name):
+    message = test_message.model_copy(update={"text": None, "caption": "/a Describe this"})
+    prefix = "TestUser(testuser): " if include_user_name else ""
+
+    assert get_message_text(message, include_user_name=include_user_name) == f"{prefix}Describe this"
+
+
+@pytest.mark.parametrize(
+    ("current_text", "reply_text", "expected"),
+    [
+        (None, None, None),
+        ("/a", None, None),
+        ("/a", "/a", None),
+        ("/a", "Original message", "TestUser(testuser): Original message"),
+        ("Current message", "/a", "TestUser(testuser): Current message"),
+    ],
+)
+async def test_processed_message_ignores_empty_blocks_with_user_names(test_message, current_text, reply_text, expected):
+    reply_message = test_message.model_copy(update={"text": reply_text})
+    message = test_message.model_copy(update={"text": current_text, "reply_to_message": reply_message})
+
+    assert await get_processed_message_text(message, include_user_name=True) == (expected, None)
+
+
+@patch("bot.callbacks.utils.load_url", new_callable=AsyncMock, return_value="Loaded content")
+async def test_command_only_reply_to_url_with_user_names(mock_load_url, test_message):
+    reply_message = test_message.model_copy(update={"text": "https://example.com"})
+    message = test_message.model_copy(update={"text": "/a", "reply_to_message": reply_message})
+
+    text, error = await get_processed_message_text(message, include_user_name=True)
+
+    assert error is None
+    assert text == "TestUser(testuser): https://example.com\n\nURL content from https://example.com:\nLoaded content"
+    mock_load_url.assert_awaited_once_with("https://example.com")
 
 
 def test_get_message_key():
@@ -445,58 +493,47 @@ async def test_include_reply_to_message_false_excludes_reply_content(mock_parse_
     mock_parse_urls.assert_called_once_with("Reply message")
 
 
-@pytest.mark.asyncio
-async def test_safe_callback_normal_execution():
-    mock_message = Mock(spec=Message)
+@pytest.mark.parametrize("use_keyword", [False, True])
+async def test_safe_callback_normal_execution(test_message, use_keyword):
+    @safe_callback
+    async def test_callback(message: Message) -> str:
+        """Return the message text."""
+        return message.text or ""
+
+    result = await test_callback(message=test_message) if use_keyword else await test_callback(test_message)
+
+    assert result == "Hello world"
+    assert test_callback.__name__ == "test_callback"
+    assert test_callback.__doc__ == "Return the message text."
+
+
+@pytest.mark.parametrize("use_keyword", [False, True])
+async def test_safe_callback_preserves_bound_methods(test_message, use_keyword):
+    class Handler:
+        @safe_callback
+        async def __call__(self, message: Message, *, suffix: str) -> str:
+            return f"{message.text}{suffix}"
+
+    handler = Handler()
+    result = await handler(message=test_message, suffix="!") if use_keyword else await handler(test_message, suffix="!")
+
+    assert result == "Hello world!"
+
+
+@pytest.mark.parametrize("use_keyword", [False, True])
+@pytest.mark.parametrize("error_type", [ValueError, asyncio.CancelledError])
+async def test_safe_callback_reraises_without_sending_response(test_message, use_keyword, error_type):
+    error = error_type("Test error")
 
     @safe_callback
-    async def test_callback(message):
-        return "success"
+    async def test_callback(message: Message) -> None:
+        raise error
 
-    result = await test_callback(mock_message)
-    assert result == "success"
+    with patch.object(Message, "answer", new_callable=AsyncMock) as answer, pytest.raises(error_type) as raised:
+        if use_keyword:
+            await test_callback(message=test_message)
+        else:
+            await test_callback(test_message)
 
-
-@pytest.mark.asyncio
-async def test_safe_callback_reraises_without_sending_a_fixed_response():
-    mock_message = Mock(spec=Message)
-    mock_message.answer = AsyncMock()
-
-    @safe_callback
-    async def test_callback(message):
-        raise ValueError("Test error")
-
-    with pytest.raises(ValueError):
-        await test_callback(mock_message)
-
-    mock_message.answer.assert_not_awaited()
-
-
-@pytest.mark.asyncio
-async def test_safe_callback_reraises_with_keyword_message():
-    mock_message = Mock(spec=Message)
-    mock_message.answer = AsyncMock()
-
-    @safe_callback
-    async def test_callback(message):
-        raise ValueError("Test error")
-
-    with pytest.raises(ValueError):
-        await test_callback(message=mock_message)
-
-    mock_message.answer.assert_not_awaited()
-
-
-@pytest.mark.asyncio
-async def test_safe_callback_reraises_cancellation_without_sending_response():
-    mock_message = Mock(spec=Message)
-    mock_message.answer = AsyncMock()
-
-    @safe_callback
-    async def test_callback(message):
-        raise asyncio.CancelledError
-
-    with pytest.raises(asyncio.CancelledError):
-        await test_callback(mock_message)
-
-    mock_message.answer.assert_not_awaited()
+    assert raised.value is error
+    answer.assert_not_awaited()
