@@ -14,7 +14,7 @@ async def help_callback(message: Message) -> None:
                 "/en - Translate text to English",
                 "/echo - Echo the message",
                 "/yt - Search YouTube",
-                "/t - Query ticker from Yahoo Finance and Taiwan stock exchange",
+                "/t - Query ticker from Yahoo Finance, TWSE, and MAX Exchange (for example: /t BTCUSDT)",
                 "/f - Format and normalize the document in 台灣話",
             ]
         ),

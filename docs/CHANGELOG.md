@@ -39,3 +39,4 @@
 2026-09-11 | fix(errors): preserve retry guidance and close test bot sessions (#473)
 2026-09-11 | docs(agents): clarify repository workflows and safety boundaries (#internal)
 2026-09-12 | fix(callbacks): restore aiogram document downloads, preserve empty input, and retain async callback types (#internal)
+2026-09-16 | feat(ticker): add MAX Exchange explicit-market ticker queries (#internal)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 
+import httpx
 from aiogram.enums import ParseMode
 from aiogram.types import Message
 from twse.stock_info import StockInfoResponse
@@ -10,6 +11,7 @@ from twse.stock_info import get_stock_info
 
 from bot.callbacks.utils import safe_callback
 from bot.callbacks.utils import strip_command
+from bot.tools.max_exchange import query_max_tickers
 from bot.yahoo_finance import escape_markdown
 from bot.yahoo_finance import query_tickers
 
@@ -61,11 +63,20 @@ async def _query_twse(symbols: list[str]) -> list[str]:
     return results
 
 
-def _combine_results(yf_result: str, twse_results: list[str]) -> str:
+async def _query_max(symbols: list[str]) -> list[str]:
+    try:
+        return await query_max_tickers(symbols)
+    except (httpx.HTTPError, ValueError) as error:
+        logger.warning("Failed to query MAX Exchange for %s: %s", symbols, error)
+        return []
+
+
+def _combine_results(yf_result: str, twse_results: list[str], max_results: list[str]) -> str:
     results = []
     if yf_result:
         results.append(yf_result)
     results.extend([result for result in twse_results if result])
+    results.extend([result for result in max_results if result])
     return "\n\n".join(results).strip()
 
 
@@ -77,10 +88,11 @@ async def query_ticker_callback(message: Message) -> None:
 
     yf_result = _query_yahoo(symbols)
     twse_results = await _query_twse(symbols)
-    result = _combine_results(yf_result, twse_results)
+    max_results = await _query_max(symbols)
+    result = _combine_results(yf_result, twse_results, max_results)
 
     if not result:
-        await message.answer(f"無法查詢到股票代碼 {', '.join(symbols)} 的資訊。\n請確認代碼是否正確，或稍後再試。")
+        await message.answer(f"無法查詢到代碼 {', '.join(symbols)} 的資訊。\n請確認代碼是否正確，或稍後再試。")
         return
 
     await message.answer(result, parse_mode=ParseMode.MARKDOWN_V2)

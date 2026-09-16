@@ -75,7 +75,7 @@ See `.env.example` for a complete template.
 | `/a`, `/gpt` | Chat with the agent |
 | `/s` | Summarize a URL |
 | `/jp`, `/tc`, `/en` | Translate message text to Japanese, Traditional Chinese, or English |
-| `/t` | Query ticker data (Yahoo Finance + TWSE) |
+| `/t` | Query ticker data (Yahoo Finance, TWSE, and MAX Exchange; e.g. `/t BTCUSDT`) |
 | `/yt` | Search YouTube |
 | `/f`, `/w` | Rewrite text into article format |
 | `/echo` | Echo the message |

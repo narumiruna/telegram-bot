@@ -10,6 +10,7 @@ from aiogram.types import Message
 from aiogram.types import User
 from twse.stock_info import StockInfo
 
+from bot.callbacks import ticker as ticker_module
 from bot.callbacks.ticker import _query_twse
 from bot.callbacks.ticker import query_ticker_callback
 
@@ -17,6 +18,13 @@ from bot.callbacks.ticker import query_ticker_callback
 @pytest.fixture
 def test_user() -> User:
     return User(id=123, is_bot=False, first_name="TestUser", username="testuser")
+
+
+@pytest.fixture(autouse=True)
+def mock_query_max_tickers():
+    with patch.object(ticker_module, "query_max_tickers", new_callable=AsyncMock) as mock_query:
+        mock_query.return_value = []
+        yield mock_query
 
 
 def _message(text: str, test_user: User) -> tuple[Message, AsyncMock]:
@@ -140,6 +148,23 @@ async def test_query_ticker_callback_multiple_symbols(mock_get_stock_info, mock_
 @pytest.mark.asyncio
 @patch("bot.callbacks.ticker.query_tickers")
 @patch("bot.callbacks.ticker.get_stock_info")
+async def test_query_ticker_callback_max_result(
+    mock_get_stock_info, mock_query_tickers, mock_query_max_tickers, test_user: User
+):
+    mock_query_tickers.return_value = ""
+    mock_get_stock_info.return_value = Mock(msg_array=[])
+    mock_query_max_tickers.return_value = ["MAX Exchange result for BTC/USDT"]
+    message, answer = _message("/ticker BTCUSDT", test_user)
+
+    await query_ticker_callback(message)
+
+    mock_query_max_tickers.assert_awaited_once_with(["BTCUSDT"])
+    answer.assert_awaited_once_with("MAX Exchange result for BTC/USDT", parse_mode=ParseMode.MARKDOWN_V2)
+
+
+@pytest.mark.asyncio
+@patch("bot.callbacks.ticker.query_tickers")
+@patch("bot.callbacks.ticker.get_stock_info")
 async def test_query_ticker_callback_no_results(mock_get_stock_info, mock_query_tickers, test_user: User):
     mock_query_tickers.side_effect = Exception("No data")
     mock_get_stock_info.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
@@ -151,5 +176,5 @@ async def test_query_ticker_callback_no_results(mock_get_stock_info, mock_query_
     assert result is None
     answer.assert_called_once()
     call_args = answer.call_args[0][0]
-    assert "無法查詢到股票代碼" in call_args
+    assert "無法查詢到代碼" in call_args
     assert "INVALID" in call_args
