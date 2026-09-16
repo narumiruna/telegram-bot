@@ -9,6 +9,7 @@ from pydantic import TypeAdapter
 logger = logging.getLogger(__name__)
 
 MAX_API_BASE_URL = "https://max-api.maicoin.com"
+MAX_QUOTE_CURRENCIES = ("usdt", "twd", "btc")
 
 
 class MaxCurrency(BaseModel):
@@ -32,8 +33,19 @@ def _format_number(value: Decimal) -> str:
     return f"{value:,.8f}".rstrip("0").rstrip(".")
 
 
+def _normalize_market_symbol(symbol: str) -> str:
+    return symbol.strip().lower().replace("/", "").replace("-", "").replace("_", "")
+
+
+def _is_max_market_candidate(symbol: str) -> bool:
+    market = _normalize_market_symbol(symbol)
+    return any(
+        len(market) > len(quote_currency) and market.endswith(quote_currency) for quote_currency in MAX_QUOTE_CURRENCIES
+    )
+
+
 def _split_market(symbol: str, currencies: list[MaxCurrency]) -> tuple[str, str] | None:
-    market = symbol.strip().lower().replace("/", "").replace("-", "").replace("_", "")
+    market = _normalize_market_symbol(symbol)
     currency_codes = {currency.currency.lower() for currency in currencies}
     base_currencies = sorted(
         (currency.currency.lower() for currency in currencies if currency.type == "crypto"),
@@ -97,5 +109,9 @@ async def _query_max_tickers(client: httpx.AsyncClient, symbols: list[str]) -> l
 
 
 async def query_max_tickers(symbols: list[str]) -> list[str]:
+    candidates = [symbol for symbol in symbols if _is_max_market_candidate(symbol)]
+    if not candidates:
+        return []
+
     async with httpx.AsyncClient(base_url=MAX_API_BASE_URL, timeout=30.0) as client:
-        return await _query_max_tickers(client, symbols)
+        return await _query_max_tickers(client, candidates)

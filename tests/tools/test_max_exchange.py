@@ -1,9 +1,12 @@
 from collections.abc import Iterator
+from unittest.mock import patch
 
 import httpx
 import pytest
 
-from bot.max_exchange import _query_max_tickers
+from bot.tools import max_exchange as max_exchange_module
+from bot.tools.max_exchange import _query_max_tickers
+from bot.tools.max_exchange import query_max_tickers
 
 
 def _transport(responses: Iterator[httpx.Response], requests: list[httpx.Request]) -> httpx.MockTransport:
@@ -12,6 +15,15 @@ def _transport(responses: Iterator[httpx.Response], requests: list[httpx.Request
         return next(responses)
 
     return httpx.MockTransport(handler)
+
+
+@pytest.mark.asyncio
+async def test_query_max_tickers_skips_non_max_symbols_without_request():
+    with patch.object(max_exchange_module.httpx, "AsyncClient") as mock_client:
+        result = await query_max_tickers(["AAPL", "2330"])
+
+    assert result == []
+    mock_client.assert_not_called()
 
 
 @pytest.mark.asyncio

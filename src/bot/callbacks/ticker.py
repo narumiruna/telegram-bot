@@ -11,7 +11,7 @@ from twse.stock_info import get_stock_info
 
 from bot.callbacks.utils import safe_callback
 from bot.callbacks.utils import strip_command
-from bot.max_exchange import query_max_tickers
+from bot.tools.max_exchange import query_max_tickers
 from bot.yahoo_finance import escape_markdown
 from bot.yahoo_finance import query_tickers
 
