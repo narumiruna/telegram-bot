@@ -216,7 +216,7 @@ requires-dist = [
     { name = "duckduckgo-search", specifier = ">=8.1.1" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "kabigon", specifier = ">=0.19.6" },
-    { name = "logfire", extras = ["httpx", "requests"], specifier = ">=4.41.0" },
+    { name = "logfire", extras = ["httpx", "requests"], specifier = ">=5.1.0" },
     { name = "markdown2", specifier = ">=2.5.5" },
     { name = "mortgage", specifier = ">=1.0.5" },
     { name = "nest-asyncio", specifier = ">=1.6.0" },
