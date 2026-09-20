@@ -60,7 +60,6 @@ async def run_bot() -> None:
         agent_callback = AgentCallback(
             agent,
             max_cache_size=settings.agent_max_cache_size,
-            reply_enabled=settings.agent_reply_enabled,
         )
         shutdown = ShutdownManager(settings.shutdown_timeout)
         shutdown.install_signal_handlers()

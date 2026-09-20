@@ -19,7 +19,6 @@ def test_agent_callback_init():
 
     assert callback.agent == mock_agent
     assert callback.max_cache_size == 100
-    assert callback.reply_enabled is False
     assert callback.memory == {}
 
 
@@ -308,25 +307,6 @@ async def test_handle_command(mock_trace):
 # handle_reply
 
 
-async def test_handle_reply_disabled_by_default():
-    mock_agent = Mock()
-
-    mock_bot_user = Mock()
-    mock_bot_user.id = 42
-
-    mock_reply_message = Mock()
-    mock_reply_message.from_user = mock_bot_user
-
-    mock_message = Mock(spec=Message)
-    mock_message.reply_to_message = mock_reply_message
-    mock_message.bot.id = 42
-
-    callback = AgentCallback(mock_agent)
-    with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
-        await callback.handle_reply(mock_message)
-    mock_handle_message.assert_not_called()
-
-
 @patch("bot.callbacks.agent.trace")
 async def test_handle_reply_valid_reply_to_this_bot(mock_trace):
     mock_agent = Mock()
@@ -342,7 +322,7 @@ async def test_handle_reply_valid_reply_to_this_bot(mock_trace):
     mock_message.reply_to_message = mock_reply_message
     mock_message.bot.id = 42
 
-    callback = AgentCallback(mock_agent, reply_enabled=True)
+    callback = AgentCallback(mock_agent)
     with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
         await callback.handle_reply(mock_message)
     mock_handle_message.assert_called_once_with(mock_message)
@@ -363,7 +343,7 @@ async def test_handle_reply_to_other_bot_is_ignored():
     mock_message.reply_to_message = mock_reply_message
     mock_message.bot.id = 42
 
-    callback = AgentCallback(mock_agent, reply_enabled=True)
+    callback = AgentCallback(mock_agent)
     with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
         await callback.handle_reply(mock_message)
     mock_handle_message.assert_not_called()
@@ -383,7 +363,7 @@ async def test_handle_reply_not_bot_reply():
     mock_message.reply_to_message = mock_reply_message
     mock_message.bot.id = 42
 
-    callback = AgentCallback(mock_agent, reply_enabled=True)
+    callback = AgentCallback(mock_agent)
     with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
         await callback.handle_reply(mock_message)
     mock_handle_message.assert_not_called()
@@ -395,7 +375,7 @@ async def test_handle_reply_no_reply_message():
     mock_message = Mock(spec=Message)
     mock_message.reply_to_message = None
 
-    callback = AgentCallback(mock_agent, reply_enabled=True)
+    callback = AgentCallback(mock_agent)
     with patch.object(callback, "handle_message", new_callable=AsyncMock) as mock_handle_message:
         await callback.handle_reply(mock_message)
     mock_handle_message.assert_not_called()

@@ -7,27 +7,9 @@ from functools import wraps
 
 from aiogram.types import Message
 
-from bot.utils import load_url
+from bot.utils.url import load_url
 
 logger = logging.getLogger(__name__)
-
-
-def parse_url(s: str) -> str:
-    """Parse the first URL from the given string.
-
-    Args:
-        s: String that may contain URLs
-
-    Returns:
-        The first URL found in the string, or empty string if no URL found
-    """
-    url_pattern = r"https?://[^\s]+"
-
-    match = re.search(url_pattern, s)
-    if match:
-        return match.group(0)
-
-    return ""
 
 
 def parse_urls(s: str) -> list[str]:
@@ -66,62 +48,13 @@ def get_user_display_name(message: Message) -> str | None:
     return f"{user.first_name}({user.username})"
 
 
-def get_message_text(
-    message: Message,
-    include_reply_to_message: bool = True,
-    include_user_name: bool = False,
-) -> str:
+def _get_message_text(message: Message, include_user_name: bool = False) -> str:
     message_text = strip_command(message.text or message.caption or "")
+    if not message_text or not include_user_name:
+        return message_text
 
-    if message_text and include_user_name:
-        name = get_user_display_name(message)
-        if name:
-            message_text = f"{name}: {message_text}"
-
-    if include_reply_to_message:
-        reply_to_message = message.reply_to_message
-        if reply_to_message:
-            reply_to_message_text = get_message_text(
-                reply_to_message,
-                include_reply_to_message=False,
-                include_user_name=include_user_name,
-            )
-            if reply_to_message_text:
-                message_text = f"{reply_to_message_text}\n\n{message_text}"
-
-    logger.info("Message text: %s", message_text)
-    return message_text
-
-
-def get_message_text_without_reply(message: Message, include_user_name: bool = False) -> str:
-    """Return the current message text without reply context."""
-    return get_message_text(
-        message,
-        include_reply_to_message=False,
-        include_user_name=include_user_name,
-    )
-
-
-def format_reply_context(reply_content: str, current_text: str) -> str:
-    """Format reply context with explicit labels for the model."""
-    return f"Replied message:\n{reply_content}\n\nCurrent message:\n{current_text}"
-
-
-def _get_reply_message_text(message: Message, include_reply: bool, include_user_name: bool) -> str:
-    """Return the reply-to message text, or empty string if absent / excluded."""
-    if not include_reply:
-        return ""
-    reply_to_message = message.reply_to_message
-    if reply_to_message:
-        return get_message_text_without_reply(reply_to_message, include_user_name=include_user_name)
-    return ""
-
-
-def _build_combined_text(current: str, reply: str) -> str:
-    """Combine current and reply texts into the model input string."""
-    if current and reply:
-        return format_reply_context(reply, current)
-    return reply or current
+    name = get_user_display_name(message)
+    return f"{name}: {message_text}" if name else message_text
 
 
 def append_url_contents(message_text: str, url_contents: list[tuple[str, str]]) -> str:
@@ -147,10 +80,6 @@ def strip_command(text: str) -> str:
     return text
 
 
-def get_message_key(message: Message) -> str:
-    return f"{message.message_id}:{message.chat.id}"
-
-
 async def get_processed_message_text(
     message: Message,
     require_url: bool = False,
@@ -170,14 +99,20 @@ async def get_processed_message_text(
         如果成功: (text, None)
         如果失敗: (None, error_message)
     """
-    current_message_text = get_message_text_without_reply(message, include_user_name=include_user_name)
-    reply_message_text = _get_reply_message_text(message, include_reply_to_message, include_user_name)
+    current_message_text = _get_message_text(message, include_user_name=include_user_name)
+    reply_message_text = ""
+    if include_reply_to_message and message.reply_to_message:
+        reply_message_text = _get_message_text(message.reply_to_message, include_user_name=include_user_name)
 
     if not current_message_text and not reply_message_text:
         return None, None
 
-    message_text = _build_combined_text(current_message_text, reply_message_text)
+    if current_message_text and reply_message_text:
+        message_text = f"Replied message:\n{reply_message_text}\n\nCurrent message:\n{current_message_text}"
+    else:
+        message_text = reply_message_text or current_message_text
 
+    logger.info("Message text: %s", message_text)
     urls = parse_urls(message_text)
 
     # 如果要求 URL 但沒有找到

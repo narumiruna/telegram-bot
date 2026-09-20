@@ -3,7 +3,6 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-from aiogram.filters import CommandObject
 from aiogram.types import Message
 
 from bot.callbacks.writer import writer_callback
@@ -23,7 +22,7 @@ async def test_writer_callback_replies_with_created_page_url(mock_get_processed_
     message.reply = AsyncMock()
     message.answer = AsyncMock()
 
-    await writer_callback(message, Mock(spec=CommandObject))
+    await writer_callback(message)
 
     mock_write_article.assert_awaited_once_with("整理這段內容")
     article.reply.assert_awaited_once_with(message)
@@ -40,7 +39,7 @@ async def test_writer_callback_error_keeps_message_answer(mock_get_processed_mes
     message.reply = AsyncMock()
     message.answer = AsyncMock()
 
-    await writer_callback(message, Mock(spec=CommandObject))
+    await writer_callback(message)
 
     message.answer.assert_called_once_with("something went wrong")
     message.reply.assert_not_called()

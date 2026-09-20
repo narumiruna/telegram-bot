@@ -40,3 +40,5 @@
 2026-09-11 | docs(agents): clarify repository workflows and safety boundaries (#internal)
 2026-09-12 | fix(callbacks): restore aiogram document downloads, preserve empty input, and retain async callback types (#internal)
 2026-09-16 | feat(ticker): add MAX Exchange explicit-market ticker queries (#internal)
+2026-09-21 | docs(plan): add codebase simplification plan (#internal)
+2026-09-21 | refactor(core): simplify runtime and configuration surfaces (#internal)

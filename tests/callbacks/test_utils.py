@@ -10,8 +10,7 @@ from aiogram.types import Chat
 from aiogram.types import Message
 from aiogram.types import User
 
-from bot.callbacks.utils import get_message_key
-from bot.callbacks.utils import get_message_text
+from bot.callbacks.utils import _get_message_text
 from bot.callbacks.utils import get_processed_message_text
 from bot.callbacks.utils import get_user_display_name
 from bot.callbacks.utils import safe_callback
@@ -82,10 +81,8 @@ def test_get_message_text_simple(test_user: User):
     message.text = "Hello world"
     message.caption = None
     message.from_user = test_user
-    message.reply_to_message = None
 
-    result = get_message_text(message)
-    assert result == "Hello world"
+    assert _get_message_text(message) == "Hello world"
 
 
 def test_get_message_text_with_command(test_user: User):
@@ -93,10 +90,8 @@ def test_get_message_text_with_command(test_user: User):
     message.text = "/translate Hello world"
     message.caption = None
     message.from_user = test_user
-    message.reply_to_message = None
 
-    result = get_message_text(message)
-    assert result == "Hello world"
+    assert _get_message_text(message) == "Hello world"
 
 
 def test_get_message_text_with_user_name(test_user: User):
@@ -104,27 +99,8 @@ def test_get_message_text_with_user_name(test_user: User):
     message.text = "Hello world"
     message.caption = None
     message.from_user = test_user
-    message.reply_to_message = None
 
-    result = get_message_text(message, include_user_name=True)
-    assert result == "TestUser(testuser): Hello world"
-
-
-def test_get_message_text_with_reply(test_user: User):
-    reply_message = Mock(spec=Message)
-    reply_message.text = "Original message"
-    reply_message.caption = None
-    reply_message.from_user = test_user
-    reply_message.reply_to_message = None
-
-    message = Mock(spec=Message)
-    message.text = "Reply message"
-    message.caption = None
-    message.from_user = test_user
-    message.reply_to_message = reply_message
-
-    result = get_message_text(message)
-    assert result == "Original message\n\nReply message"
+    assert _get_message_text(message, include_user_name=True) == "TestUser(testuser): Hello world"
 
 
 @pytest.mark.parametrize("text", [None, "", "/a", "/a@bot"])
@@ -132,7 +108,7 @@ def test_get_message_text_with_reply(test_user: User):
 def test_get_message_text_empty(test_message, text, include_user_name):
     message = test_message.model_copy(update={"text": text})
 
-    assert get_message_text(message, include_user_name=include_user_name) == ""
+    assert _get_message_text(message, include_user_name=include_user_name) == ""
 
 
 @pytest.mark.parametrize("include_user_name", [False, True])
@@ -140,7 +116,7 @@ def test_get_message_text_uses_caption(test_message, include_user_name):
     message = test_message.model_copy(update={"text": None, "caption": "/a Describe this"})
     prefix = "TestUser(testuser): " if include_user_name else ""
 
-    assert get_message_text(message, include_user_name=include_user_name) == f"{prefix}Describe this"
+    assert _get_message_text(message, include_user_name=include_user_name) == f"{prefix}Describe this"
 
 
 @pytest.mark.parametrize(
@@ -170,16 +146,6 @@ async def test_command_only_reply_to_url_with_user_names(mock_load_url, test_mes
     assert error is None
     assert text == "TestUser(testuser): https://example.com\n\nURL content from https://example.com:\nLoaded content"
     mock_load_url.assert_awaited_once_with("https://example.com")
-
-
-def test_get_message_key():
-    message = Mock(spec=Message)
-    message.message_id = 123
-    message.chat = Mock()
-    message.chat.id = 456
-
-    result = get_message_key(message)
-    assert result == "123:456"
 
 
 @pytest.mark.asyncio
