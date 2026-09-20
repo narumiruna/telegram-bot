@@ -1,8 +1,12 @@
+from contextlib import asynccontextmanager
+from unittest.mock import AsyncMock
 from unittest.mock import Mock
+from unittest.mock import patch
 
 import pytest
 
 from bot.bot import get_chat_filter
+from bot.bot import run_bot
 from bot.settings import settings
 
 
@@ -73,3 +77,40 @@ def test_get_chat_filter_invalid_chat_id(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(settings, "bot_whitelist", "invalid_id")
     with pytest.raises(ValueError):
         get_chat_filter()
+
+
+@pytest.mark.parametrize(("reply_enabled", "expected_registrations"), [(False, 0), (True, 1)])
+async def test_run_bot_registers_reply_handler_only_when_enabled(monkeypatch, reply_enabled, expected_registrations):
+    agent = Mock()
+
+    @asynccontextmanager
+    async def chat_agent_context():
+        yield agent
+
+    bot = Mock()
+    bot.session.close = AsyncMock()
+    dispatcher = Mock()
+    dispatcher.start_polling = AsyncMock()
+    dispatcher.stop_polling = AsyncMock()
+    router = Mock()
+    router.message.register = Mock()
+    router.errors.register = Mock()
+    shutdown = Mock()
+    shutdown.wait = AsyncMock()
+    shutdown.cancel_tasks = AsyncMock()
+
+    monkeypatch.setattr(settings, "bot_token", "123456:TEST_TOKEN")
+    monkeypatch.setattr(settings, "agent_reply_enabled", reply_enabled)
+
+    with (
+        patch("bot.bot.build_chat_agent", return_value=chat_agent_context()),
+        patch("bot.bot.Bot", return_value=bot),
+        patch("bot.bot.Dispatcher", return_value=dispatcher),
+        patch("bot.bot.Router", return_value=router),
+        patch("bot.bot.ShutdownManager", return_value=shutdown),
+    ):
+        await run_bot()
+
+    registered_callbacks = [call.args[0] for call in router.message.register.call_args_list]
+    reply_registrations = [callback for callback in registered_callbacks if callback.__name__ == "handle_reply"]
+    assert len(reply_registrations) == expected_registrations

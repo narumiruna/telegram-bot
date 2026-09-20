@@ -50,13 +50,11 @@ BOT_WHITELIST=comma,separated,chat_ids   # restrict access to specific chat IDs
 DEVELOPER_CHAT_ID=123456789              # receives error notifications
 
 OPENAI_MODEL=gpt-5.6-luna
-OPENAI_TEMPERATURE=0.0
 AGENT_MAX_CACHE_SIZE=50
 AGENT_REPLY_ENABLED=false      # set true to route replies to bot messages into /a
 MAX_MESSAGE_LENGTH=1000
 
 MCP_CONNECT_TIMEOUT=30
-MCP_CLEANUP_TIMEOUT=10
 MCP_SERVER_TIMEOUT=300
 SHUTDOWN_TIMEOUT=20
 
@@ -86,15 +84,12 @@ See `.env.example` for a complete template.
 
 ## MCP Configuration
 
-MCP servers are configured in `config/*.json`. The default config is loaded automatically:
+MCP servers are assembled in `src/bot/agents/chat.py`.
 
-```sh
-uv run bot                              # uses config/default.json
-uv run bot --config config/custom.json  # uses a custom config
-```
-
-**Always-enabled MCP servers:** `playwright`, `yfmcp`
-**Optional MCP servers** (activated when the corresponding API key is set): Firecrawl (`FIRECRAWL_API_KEY`), SerpAPI (`SERPAPI_API_KEY`)
+- `playwright` and `yfmcp` are always enabled.
+- Firecrawl is enabled when `FIRECRAWL_API_KEY` is set.
+- SerpAPI is enabled when `SERPAPI_API_KEY` is set.
+- Connection and server timeouts use `MCP_CONNECT_TIMEOUT` and `MCP_SERVER_TIMEOUT`.
 
 ## Project Layout
 
@@ -109,7 +104,6 @@ src/bot/
   cli.py         # CLI entrypoint
   settings.py    # Pydantic settings (reads from .env)
 tests/           # pytest suite (mirrors src/bot/ structure)
-config/          # MCP server config files
 docs/            # project documentation
 ```
 

@@ -1,20 +1,15 @@
 from __future__ import annotations
 
-import logging
-
 import logfire
-from aiogram.filters import CommandObject
 from aiogram.types import Message
 
 from bot.agents.summary import summarize
 from bot.callbacks.utils import get_processed_message_text
 from bot.callbacks.utils import safe_callback
 
-logger = logging.getLogger(__name__)
-
 
 @safe_callback
-async def summarize_callback(message: Message, command: CommandObject) -> None:
+async def summarize_callback(message: Message) -> None:
     with logfire.span("summarize_callback"):
         text, error = await get_processed_message_text(message, require_url=True)
         if error:

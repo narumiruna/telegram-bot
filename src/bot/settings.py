@@ -24,14 +24,12 @@ class Settings(BaseSettings):
 
     # OpenAI / LLM settings
     openai_model: str = Field(default="gpt-5.6-luna")
-    openai_temperature: float = Field(default=0.0)
 
     # Observability settings
     logfire_token: str | None = Field(default=None)
 
     # MCP settings
     mcp_connect_timeout: int = Field(default=30)
-    mcp_cleanup_timeout: int = Field(default=10)
     mcp_server_timeout: int = Field(default=300)
 
     # Shutdown settings
