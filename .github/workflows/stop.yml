@@ -1,0 +1,30 @@
+name: Stop
+
+on:
+  workflow_dispatch:
+
+env:
+  UNIT: bot
+  PLIST_FILE: bot.plist
+  PLIST_DIR: /Users/narumi/Library/LaunchAgents
+
+jobs:
+  stop:
+    runs-on: self-hosted
+    steps:
+      - name: Stop and uninstall service
+        shell: bash
+        run: |
+          set -euo pipefail
+          plist="$PLIST_DIR/$PLIST_FILE"
+          if launchctl list "$UNIT" >/dev/null 2>&1; then
+            launchctl stop "$UNIT"
+            if [[ -f "$plist" ]]; then
+              launchctl unload -w "$plist"
+            else
+              launchctl remove "$UNIT"
+            fi
+          else
+            echo "Service $UNIT is not loaded; skip stop/unload."
+          fi
+          rm -f "$plist"

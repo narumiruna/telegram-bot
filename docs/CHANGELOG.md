@@ -42,3 +42,4 @@
 2026-09-16 | feat(ticker): add MAX Exchange explicit-market ticker queries (#internal)
 2026-09-21 | docs(plan): add codebase simplification plan (#internal)
 2026-09-21 | refactor(core): simplify runtime and configuration surfaces (#internal)
+2026-09-24 | ci(stop): add manual workflow to stop and uninstall the bot LaunchAgent (#internal)
